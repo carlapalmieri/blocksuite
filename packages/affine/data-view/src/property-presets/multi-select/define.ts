@@ -11,7 +11,7 @@ import { getTagColor } from '../../core/utils/tags/colors.js';
 export const multiSelectPropertyType = propertyType('multi-select');
 export const multiSelectPropertyModelConfig =
   multiSelectPropertyType.modelConfig<string[], SelectPropertyData>({
-    name: 'Multi-select',
+    name: 'Selección múltiple',
     type: data => tArray(tTag.create({ tags: data.options })),
     defaultData: () => ({
       options: [],

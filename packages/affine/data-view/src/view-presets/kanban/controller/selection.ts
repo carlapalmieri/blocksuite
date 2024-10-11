@@ -347,7 +347,7 @@ export class KanbanSelectionController implements ReactiveController {
     }
     throw new BlockSuiteError(
       ErrorCode.DatabaseBlockError,
-      'Unknown arrow keys, only support: up, down, left, and right keys.'
+      'Tecla de flecha desconocida, solo se admiten: arriba, abajo, izquierda y derecha.'
     );
   }
 
@@ -433,7 +433,7 @@ export class KanbanSelectionController implements ReactiveController {
     }
     throw new BlockSuiteError(
       ErrorCode.DatabaseBlockError,
-      'Unknown arrow keys, only support: up, down, left, and right keys.'
+      'Tecla de flecha desconocida, solo se admiten: arriba, abajo, izquierda y derecha.'
     );
   }
 

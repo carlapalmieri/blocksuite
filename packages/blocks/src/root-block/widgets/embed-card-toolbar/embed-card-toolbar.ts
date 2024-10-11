@@ -80,6 +80,12 @@ export class EmbedCardToolbar extends WidgetComponent<
     this._abortController = new AbortController();
   };
 
+  private readonly viewTypeLabel: Record<string, string> = {
+    inline: 'Vista en linea',
+    card: 'Vista de tarjeta',
+    embed: 'Vista incrustada',
+  };
+
   /*
    * Caches the more menu items.
    * Currently only supports configuring more menu.
@@ -188,12 +194,12 @@ export class EmbedCardToolbar extends WidgetComponent<
       const buttons = [
         {
           type: 'horizontal',
-          label: 'Large horizontal style',
+          label: 'Estilo horizontal grande',
           icon: EmbedCardHorizontalIcon,
         },
         {
           type: 'list',
-          label: 'Small horizontal style',
+          label: 'Estilo horizontal pequeño',
           icon: EmbedCardListIcon,
         },
       ] as {
@@ -208,8 +214,8 @@ export class EmbedCardToolbar extends WidgetComponent<
           .contentPadding=${'8px'}
           .button=${html`
             <editor-icon-button
-              aria-label="Card style"
-              .tooltip=${'Card style'}
+              aria-label="Estilo de tarjeta"
+              .tooltip=${'Estilo de tarjeta'}
             >
               ${PaletteIcon}
             </editor-icon-button>
@@ -342,7 +348,7 @@ export class EmbedCardToolbar extends WidgetComponent<
     }
 
     navigator.clipboard.writeText(this.focusModel.url).catch(console.error);
-    toast(this.host, 'Copied link to clipboard');
+    toast(this.host, 'Enlace copiado al portapapeles');
   }
 
   private _hide() {
@@ -370,7 +376,7 @@ export class EmbedCardToolbar extends WidgetComponent<
     ) {
       buttons.push({
         type: 'open-this-doc',
-        label: 'Open this doc',
+        label: 'Abrir este documento',
         icon: ExpandFullSmallIcon,
         action: () => this.focusBlock?.open(),
       });
@@ -382,7 +388,7 @@ export class EmbedCardToolbar extends WidgetComponent<
     if (element && isPeekable(element)) {
       buttons.push({
         type: 'open-in-center-peek',
-        label: 'Open in center peek',
+        label: 'Abrir en vista central',
         icon: CenterPeekIcon,
         action: () => peek(element),
       });
@@ -399,7 +405,7 @@ export class EmbedCardToolbar extends WidgetComponent<
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Open"
+            aria-label="Abrir"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
           >
@@ -506,14 +512,14 @@ export class EmbedCardToolbar extends WidgetComponent<
 
     buttons.push({
       type: 'inline',
-      label: 'Inline view',
+      label: 'Vista en línea',
       action: () => this._turnIntoInlineView(),
       disabled: this.doc.readonly,
     });
 
     buttons.push({
       type: 'card',
-      label: 'Card view',
+      label: 'Vista de tarjeta',
       action: () => this._convertToCardView(),
       disabled: this.doc.readonly,
     });
@@ -521,7 +527,7 @@ export class EmbedCardToolbar extends WidgetComponent<
     if (this._canConvertToEmbedView || this._isEmbedView) {
       buttons.push({
         type: 'embed',
-        label: 'Embed view',
+        label: 'Vista incrustada',
         action: () => this._convertToEmbedView(),
         disabled: this.doc.readonly || this._embedViewButtonDisabled,
       });
@@ -532,14 +538,15 @@ export class EmbedCardToolbar extends WidgetComponent<
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Switch view"
+            aria-label="Cambiar vista"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
-            .iconContainerWidth=${'110px'}
+            .iconContainerWidth=${'130px'}
           >
             <div class="label">
-              <span style="text-transform: capitalize">${this._viewType}</span>
-              view
+              <span style="text-transform: capitalize"
+                >${this.viewTypeLabel[this._viewType]}</span
+              >
             </div>
             ${SmallArrowDownIcon}
           </editor-icon-button>
@@ -619,9 +626,9 @@ export class EmbedCardToolbar extends WidgetComponent<
             </a>
 
             <editor-icon-button
-              aria-label="Copy"
+              aria-label="Copiar"
               data-testid="copy-link"
-              .tooltip=${'Click to copy link'}
+              .tooltip=${'Haga clic para copiar el enlace'}
               ?disabled=${model.doc.readonly}
               @click=${() => this._copyUrl()}
             >
@@ -629,9 +636,9 @@ export class EmbedCardToolbar extends WidgetComponent<
             </editor-icon-button>
 
             <editor-icon-button
-              aria-label="Edit"
+              aria-label="Editar"
               data-testid="edit"
-              .tooltip=${'Edit'}
+              .tooltip=${'Editar'}
               ?disabled=${this.doc.readonly}
               @click=${() => toggleEmbedCardEditModal(this.host, model)}
             >
@@ -648,8 +655,8 @@ export class EmbedCardToolbar extends WidgetComponent<
 
       html`
         <editor-icon-button
-          aria-label="Caption"
-          .tooltip=${'Add Caption'}
+          aria-label="Descripción"
+          .tooltip=${'Agregar descripción'}
           ?disabled=${this.doc.readonly}
           @click=${() => this._showCaption()}
         >
@@ -661,7 +668,7 @@ export class EmbedCardToolbar extends WidgetComponent<
         <editor-menu-button
           .contentPadding=${'8px'}
           .button=${html`
-            <editor-icon-button aria-label="More" .tooltip=${'More'}>
+            <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
               ${MoreVerticalIcon}
             </editor-icon-button>
           `}

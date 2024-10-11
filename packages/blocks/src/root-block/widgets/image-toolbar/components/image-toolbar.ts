@@ -105,8 +105,8 @@ export class AffineImageToolbar extends LitElement {
         ${renderGroups(this.primaryGroups, this.context)}
         <editor-icon-button
           class="image-toolbar-button more"
-          aria-label="More"
-          .tooltip=${'More'}
+          aria-label="Más"
+          .tooltip=${'Más'}
           .tooltipOffset=${4}
           .showTooltip=${!this._moreMenuOpen}
           @click=${() => this._toggleMoreMenu()}

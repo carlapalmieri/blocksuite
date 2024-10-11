@@ -5,7 +5,7 @@ export const progressPropertyType = propertyType('progress');
 
 export const progressPropertyModelConfig =
   progressPropertyType.modelConfig<number>({
-    name: 'Progress',
+    name: 'Progreso',
     type: () => tNumber.create(),
     defaultData: () => ({}),
     cellToString: data => data?.toString() ?? '',

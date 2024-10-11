@@ -6,14 +6,14 @@ import { tFunction } from '../../../core/logical/typesystem.js';
 export const booleanFilter = {
   isChecked: {
     type: tFunction({ args: [tBoolean.create()], rt: tBoolean.create() }),
-    label: 'Is checked',
+    label: 'Está marcado',
     impl: value => {
       return !!value;
     },
   },
   isUnchecked: {
     type: tFunction({ args: [tBoolean.create()], rt: tBoolean.create() }),
-    label: 'Is unchecked',
+    label: 'No está marcado',
     impl: value => {
       return !value;
     },

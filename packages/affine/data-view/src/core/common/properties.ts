@@ -214,10 +214,10 @@ export class DataViewPropertiesSettingView extends SignalWatcher(
           >
             ${ArrowLeftBigIcon()}
           </div>
-          PROPERTIES
+          PROPIEDADES
         </div>
         <div class="properties-group-op" @click="${clickChangeAll}">
-          ${isAllShowed ? 'Hide All' : 'Show All'}
+          ${isAllShowed ? 'Ocultar todo' : 'Mostrar todo'}
         </div>
       </div>
       <div class="properties-group">

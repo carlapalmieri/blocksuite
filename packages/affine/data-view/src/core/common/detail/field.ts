@@ -124,12 +124,12 @@ export class RecordField extends SignalWatcher(
         items: [
           {
             type: 'group',
-            name: 'Column Prop Group ',
+            name: 'Propiedades de columna',
             children: () => [typeConfig(this.column)],
           },
           {
             type: 'action',
-            name: 'Duplicate Column',
+            name: 'Duplicar columna',
             icon: DuplicateIcon(),
             hide: () =>
               !this.column.duplicate || this.column.type$.value === 'title',
@@ -139,7 +139,7 @@ export class RecordField extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Move Up',
+            name: 'Mover hacia arriba',
             icon: html` <div
               style="transform: rotate(90deg);display:flex;align-items:center;"
             >
@@ -160,7 +160,7 @@ export class RecordField extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Move Down',
+            name: 'Mover hacia abajo',
             icon: html` <div
               style="transform: rotate(90deg);display:flex;align-items:center;"
             >
@@ -187,7 +187,7 @@ export class RecordField extends SignalWatcher(
             children: () => [
               {
                 type: 'action',
-                name: 'Delete Column',
+                name: 'Eliminar columna',
                 icon: DeleteIcon(),
                 hide: () =>
                   !this.column.delete || this.column.type$.value === 'title',

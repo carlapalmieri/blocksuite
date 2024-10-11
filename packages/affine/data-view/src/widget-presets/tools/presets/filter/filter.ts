@@ -68,7 +68,7 @@ export class DataViewHeaderToolsFilter extends WidgetBase {
       @click="${this.addFilter}"
       class="affine-database-filter-button dv-icon-20"
     >
-      ${FilterIcon()} Filter
+      ${FilterIcon()} Filtros
     </div>`;
   }
 

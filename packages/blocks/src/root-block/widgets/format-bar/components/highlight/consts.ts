@@ -15,14 +15,25 @@ const colors = [
   'grey',
 ];
 
+const colorsTranslated: Record<string, string> = {
+  red: 'rojo',
+  orange: 'naranja',
+  yellow: 'amarillo',
+  green: 'verde',
+  teal: 'turquesa',
+  blue: 'azul',
+  purple: 'morado',
+  grey: 'gris',
+};
+
 export const backgroundConfig: HighlightConfig[] = [
   {
-    name: 'Default Background',
+    name: 'Fondo predeterminado',
     color: null,
     hotkey: null,
   },
   ...colors.map(color => ({
-    name: `${color[0].toUpperCase()}${color.slice(1)} Background`,
+    name: `Fondo ${colorsTranslated[color]}`,
     color: `var(--affine-text-highlight-${color})`,
     hotkey: null,
   })),
@@ -30,12 +41,12 @@ export const backgroundConfig: HighlightConfig[] = [
 
 export const foregroundConfig: HighlightConfig[] = [
   {
-    name: 'Default Color',
+    name: 'Texto predeterminado',
     color: null,
     hotkey: null,
   },
   ...colors.map(color => ({
-    name: `${color[0].toUpperCase()}${color.slice(1)}`,
+    name: `Texto ${colorsTranslated[color]}`,
     color: `var(--affine-text-highlight-foreground-${color})`,
     hotkey: null,
   })),

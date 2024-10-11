@@ -16,7 +16,7 @@ const propertyMatchers = [
       rt: tNumber.create(),
     }),
     {
-      name: 'Length',
+      name: 'Longitud',
       impl: value => {
         if (typeof value !== 'string') {
           return 0;
@@ -31,7 +31,7 @@ const propertyMatchers = [
       rt: tNumber.create(),
     }),
     {
-      name: 'Day of month',
+      name: 'Día del mes',
       impl: value => {
         if (typeof value !== 'number') {
           return 0;
@@ -46,7 +46,7 @@ const propertyMatchers = [
       rt: tNumber.create(),
     }),
     {
-      name: 'Day of week',
+      name: 'Día de la semana',
       impl: value => {
         if (typeof value !== 'number') {
           return 0;
@@ -61,7 +61,7 @@ const propertyMatchers = [
       rt: tNumber.create(),
     }),
     {
-      name: 'Month of year',
+      name: 'Mes del año',
       impl: value => {
         if (typeof value !== 'number') {
           return 0;
@@ -76,7 +76,7 @@ const propertyMatchers = [
       rt: tNumber.create(),
     }),
     {
-      name: 'Size',
+      name: 'Tamaño',
       impl: value => {
         if (!Array.isArray(value)) {
           return 0;

@@ -47,122 +47,122 @@ export type SlashMenuTooltip = {
 export const slashMenuToolTips: Record<string, SlashMenuTooltip> = {
   Text: {
     figure: TextTooltip,
-    caption: 'Text',
+    caption: 'Texto',
   },
 
   'Heading 1': {
     figure: Heading1Tooltip,
-    caption: 'Heading #1',
+    caption: 'Encabezado #1',
   },
 
   'Heading 2': {
     figure: Heading2Tooltip,
-    caption: 'Heading #2',
+    caption: 'Encabezado #2',
   },
 
   'Heading 3': {
     figure: Heading3Tooltip,
-    caption: 'Heading #3',
+    caption: 'Encabezado #3',
   },
 
   'Heading 4': {
     figure: Heading4Tooltip,
-    caption: 'Heading #4',
+    caption: 'Encabezado #4',
   },
 
   'Heading 5': {
     figure: Heading5Tooltip,
-    caption: 'Heading #5',
+    caption: 'Encabezado #5',
   },
 
   'Heading 6': {
     figure: Heading6Tooltip,
-    caption: 'Heading #6',
+    caption: 'Encabezado #6',
   },
 
   'Code Block': {
     figure: CodeBlockTooltip,
-    caption: 'Code Block',
+    caption: 'Bloque de Código',
   },
 
   Quote: {
     figure: QuoteTooltip,
-    caption: 'Quote',
+    caption: 'Cita',
   },
 
   Divider: {
     figure: DividerTooltip,
-    caption: 'Divider',
+    caption: 'Divisor',
   },
 
   'Bulleted List': {
     figure: BulletedListTooltip,
-    caption: 'Bulleted List',
+    caption: 'Lista con Viñetas',
   },
 
   'Numbered List': {
     figure: NumberedListTooltip,
-    caption: 'Numbered List',
+    caption: 'Lista Numerada',
   },
 
   'To-do List': {
     figure: ToDoListTooltip,
-    caption: 'To-do List',
+    caption: 'Lista de Tareas',
   },
 
   Bold: {
     figure: BoldTextTooltip,
-    caption: 'Bold Text',
+    caption: 'Texto en Negrita',
   },
 
   Italic: {
     figure: ItalicTooltip,
-    caption: 'Italic',
+    caption: 'Cursiva',
   },
 
   Underline: {
     figure: UnderlineTooltip,
-    caption: 'Underline',
+    caption: 'Subrayado',
   },
 
   Strikethrough: {
     figure: StrikethroughTooltip,
-    caption: 'Strikethrough',
+    caption: 'Tachado',
   },
 
   'New Doc': {
     figure: NewDocTooltip,
-    caption: 'New Doc',
+    caption: 'Documento Nuevo',
   },
 
   'Linked Doc': {
     figure: LinkDocTooltip,
-    caption: 'Link Doc',
+    caption: 'Documento Vinculado',
   },
 
   Link: {
     figure: LinkTooltip,
-    caption: 'Link',
+    caption: 'Enlace',
   },
 
   Attachment: {
     figure: AttachmentTooltip,
-    caption: 'Attachment',
+    caption: 'Adjunto',
   },
 
   Github: {
     figure: GithubRepoTooltip,
-    caption: 'GitHub Repo',
+    caption: 'Repositorio de GitHub',
   },
 
   YouTube: {
     figure: YoutubeVideoTooltip,
-    caption: 'YouTube Video',
+    caption: 'Video de YouTube',
   },
 
   Image: {
     figure: PhotoTooltip,
-    caption: 'Photo',
+    caption: 'Imagen',
   },
 
   'X (Twitter)': {
@@ -182,56 +182,56 @@ export const slashMenuToolTips: Record<string, SlashMenuTooltip> = {
 
   Today: {
     figure: TodayTooltip,
-    caption: 'Today',
+    caption: 'Hoy',
   },
 
   Tomorrow: {
     figure: TomorrowTooltip,
-    caption: 'Tomorrow',
+    caption: 'Mañana',
   },
 
   Yesterday: {
     figure: YesterdayTooltip,
-    caption: 'Yesterday',
+    caption: 'Ayer',
   },
 
   Now: {
     figure: NowTooltip,
-    caption: 'Now',
+    caption: 'Ahora',
   },
 
   'Table View': {
     figure: TableViewTooltip,
-    caption: 'Table View',
+    caption: 'Vista de Tabla',
   },
 
   'Kanban View': {
     figure: KanbanViewTooltip,
-    caption: 'Kanban View',
+    caption: 'Vista de Kanban',
   },
 
   'Move Up': {
     figure: MoveUpTooltip,
-    caption: 'Move Up',
+    caption: 'Mover Arriba',
   },
 
   'Move Down': {
     figure: MoveDownTooltip,
-    caption: 'Move Down',
+    caption: 'Mover Abajo',
   },
 
   Copy: {
     figure: CopyTooltip,
-    caption: 'Copy / Duplicate',
+    caption: 'Copiar / Duplicar',
   },
 
   Delete: {
     figure: DeleteTooltip,
-    caption: 'Delete',
+    caption: 'Eliminar',
   },
 
   'Group & Frame': {
     figure: EdgelessTooltip,
-    caption: 'Edgeless',
+    caption: 'Sin Bordes',
   },
 };

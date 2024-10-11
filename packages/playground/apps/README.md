@@ -1,3 +1,3 @@
-# BlockSuite Playground Apps
+# Aplicaciones de BlockSuite (Versión en Español / Spanish Version)
 
-This directory contains application entries used for the [BlockSuite playground](https://try-blocksuite.vercel.app) online site. They serve as comprehensive examples utilizing the full capabilities of BlockSuite, and also act as the entry point for executing E2E test cases.
+Este directorio contiene aplicaciones de ejemplo para la versión en español de BlockSuite. / This directory contains example applications for the Spanish version of BlockSuite.

@@ -36,7 +36,7 @@ export const popCardMenu = (
   popFilterableSimpleMenu(ele, [
     {
       type: 'action',
-      name: 'Expand Card',
+      name: 'Expandir tarjeta',
       icon: ExpandFullIcon(),
       select: () => {
         openDetail(dataViewEle, rowId, selection);
@@ -44,7 +44,7 @@ export const popCardMenu = (
     },
     {
       type: 'sub-menu',
-      name: 'Move To',
+      name: 'Mover a',
       icon: ArrowRightBigIcon(),
       options: {
         input: {
@@ -62,7 +62,7 @@ export const popCardMenu = (
             .map(group => {
               return {
                 type: 'action',
-                name: group.value != null ? group.name : 'Ungroup',
+                name: group.value != null ? group.name : 'Desagrupar',
                 select: () => {
                   selection.moveCard(rowId, group.key);
                 },
@@ -98,7 +98,7 @@ export const popCardMenu = (
       children: () => [
         {
           type: 'action',
-          name: 'Insert Before',
+          name: 'Insertar antes',
           icon: html` <div
             style="transform: rotate(90deg);display:flex;align-items:center;"
           >
@@ -110,7 +110,7 @@ export const popCardMenu = (
         },
         {
           type: 'action',
-          name: 'Insert After',
+          name: 'Insertar después',
           icon: html` <div
             style="transform: rotate(90deg);display:flex;align-items:center;"
           >
@@ -128,7 +128,7 @@ export const popCardMenu = (
       children: () => [
         {
           type: 'action',
-          name: 'Delete Card',
+          name: 'Eliminar tarjeta',
           class: 'delete-item',
           icon: DeleteIcon(),
           select: () => {

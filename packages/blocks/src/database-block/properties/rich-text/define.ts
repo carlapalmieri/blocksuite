@@ -7,7 +7,7 @@ export const richTextColumnType = propertyType('rich-text');
 
 export const richTextColumnModelConfig =
   richTextColumnType.modelConfig<RichTextCellType>({
-    name: 'Text',
+    name: 'Texto',
     type: () => tRichText.create(),
     defaultData: () => ({}),
     cellToString: data => data?.toString() ?? '',

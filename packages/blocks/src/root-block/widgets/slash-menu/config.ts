@@ -130,18 +130,18 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
   triggerKeys: ['/', '、'],
   ignoreBlockTypes: ['affine:code'],
   maxHeight: 344,
-  tooltipTimeout: 800,
+  tooltipTimeout: 300,
   items: [
     // ---------------------------------------------------------
-    { groupName: 'Basic' },
+    { groupName: 'Básico' },
     ...textConversionConfigs
       .filter(i => i.type && ['h1', 'h2', 'h3', 'text'].includes(i.type))
       .map(createConversionItem),
     {
-      name: 'Other Headings',
+      name: 'Otros Encabezados',
       icon: HeadingIcon,
       subMenu: [
-        { groupName: 'Headings' },
+        { groupName: 'Encabezados' },
         ...textConversionConfigs
           .filter(i => i.type && ['h4', 'h5', 'h6'].includes(i.type))
           .map<SlashMenuActionItem>(createConversionItem),
@@ -170,7 +170,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
               if (flavour === 'affine:code') {
                 if (newModels.length !== 1) {
                   console.error(
-                    "Failed to reset selection! New model length isn't 1"
+                    'No se pudo restablecer la selección! La longitud del nuevo modelo no es 1'
                   );
                   return false;
                 }
@@ -199,8 +199,8 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       })),
 
     {
-      name: 'Inline equation',
-      description: 'Create a equation block.',
+      name: 'Ecuación en línea',
+      description: 'Crear un bloque de ecuación.',
       icon: TeXIcon({
         width: '20',
         height: '20',
@@ -261,13 +261,13 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     // ---------------------------------------------------------
-    { groupName: 'List' },
+    { groupName: 'Lista' },
     ...textConversionConfigs
       .filter(i => i.flavour === 'affine:list')
       .map(createConversionItem),
 
     // ---------------------------------------------------------
-    { groupName: 'Style' },
+    { groupName: 'Estilo' },
     ...textFormatConfigs
       .filter(i => !['Code', 'Link'].includes(i.name))
       .map<SlashMenuActionItem>(({ name, icon, id }) => ({
@@ -299,13 +299,13 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
 
     // ---------------------------------------------------------
     {
-      groupName: 'Page',
+      groupName: 'Página',
       showWhen: ({ model }) =>
         model.doc.schema.flavourSchemaMap.has('affine:embed-linked-doc'),
     },
     {
-      name: 'New Doc',
-      description: 'Start a new document.',
+      name: 'Documento Nuevo',
+      description: 'Iniciar un nuevo documento.',
       icon: NewDocIcon,
       tooltip: slashMenuToolTips['New Doc'],
       showWhen: ({ model }) =>
@@ -321,11 +321,11 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Linked Doc',
-      description: 'Link to another document.',
+      name: 'Documento Vinculado',
+      description: 'Enlazar a otro documento.',
       icon: LinkedDocIcon,
       tooltip: slashMenuToolTips['Linked Doc'],
-      alias: ['dual link'],
+      alias: ['enlace dual'],
       showWhen: ({ rootComponent, model }) => {
         const linkedDocWidgetEle =
           rootComponent.widgetComponents['affine-linked-doc-widget'];
@@ -338,7 +338,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
 
         if (!('showLinkedDocPopover' in linkedDocWidgetEle)) {
           console.warn(
-            'You may not have correctly implemented the linkedDoc widget! "showLinkedDoc(model)" method not found on widget'
+            'Puede que no hayas implementado correctamente el widget de documento vinculado! Método "showLinkedDoc(model)" no encontrado en el widget'
           );
           return false;
         }
@@ -351,9 +351,9 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         const widgetEle =
           rootComponent.widgetComponents['affine-linked-doc-widget'];
         if (!widgetEle) return;
-        // We have checked the existence of showLinkedDoc method in the showWhen
+        // Hemos comprobado la existencia del método showLinkedDoc en el showWhen
         const linkedDocWidget = widgetEle as AffineLinkedDocWidget;
-        // Wait for range to be updated
+        // Esperar a que se actualice el rango
         setTimeout(() => {
           const inlineEditor = getInlineEditorByModel(
             rootComponent.host,
@@ -366,10 +366,10 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     // ---------------------------------------------------------
-    { groupName: 'Content & Media' },
+    { groupName: 'Contenido y Medios' },
     {
-      name: 'Image',
-      description: 'Insert an image.',
+      name: 'Imagen',
+      description: 'Insertar una imagen.',
       icon: ImageIcon20,
       tooltip: slashMenuToolTips['Image'],
       showWhen: ({ model }) =>
@@ -398,8 +398,8 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Link',
-      description: 'Add a bookmark for reference.',
+      name: 'Enlace',
+      description: 'Agregar un enlace para referencia.',
       icon: LinkIcon,
       tooltip: slashMenuToolTips['Link'],
       showWhen: ({ model }) =>
@@ -413,16 +413,16 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         const index = parentModel.children.indexOf(model) + 1;
         await toggleEmbedCardCreateModal(
           rootComponent.host,
-          'Links',
-          'The added link will be displayed as a card view.',
+          'Enlaces',
+          'El enlace agregado se mostrará como una vista de tarjeta.',
           { mode: 'page', parentModel, index }
         );
         tryRemoveEmptyLine(model);
       },
     },
     {
-      name: 'Attachment',
-      description: 'Attach a file to document.',
+      name: 'Adjunto',
+      description: 'Adjuntar un archivo al documento.',
       icon: FileIcon,
       tooltip: slashMenuToolTips['Attachment'],
       alias: ['file'],
@@ -449,7 +449,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
     {
       name: 'YouTube',
-      description: 'Embed a YouTube video.',
+      description: 'Incrustar un video de YouTube.',
       icon: YoutubeIcon,
       tooltip: slashMenuToolTips['YouTube'],
       showWhen: ({ model }) =>
@@ -464,7 +464,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         await toggleEmbedCardCreateModal(
           rootComponent.host,
           'YouTube',
-          'The added YouTube video link will be displayed as an embed view.',
+          'El enlace de video de YouTube agregado se mostrará como una vista incrustada.',
           { mode: 'page', parentModel, index }
         );
         tryRemoveEmptyLine(model);
@@ -472,7 +472,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
     {
       name: 'GitHub',
-      description: 'Link to a GitHub repository.',
+      description: 'Enlazar a un repositorio de GitHub.',
       icon: GithubIcon,
       tooltip: slashMenuToolTips['Github'],
       showWhen: ({ model }) =>
@@ -487,7 +487,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         await toggleEmbedCardCreateModal(
           rootComponent.host,
           'GitHub',
-          'The added GitHub issue or pull request link will be displayed as a card view.',
+          'El enlace de problema o solicitud de extracción de GitHub agregado se mostrará como una vista de tarjeta.',
           { mode: 'page', parentModel, index }
         );
         tryRemoveEmptyLine(model);
@@ -497,7 +497,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
 
     {
       name: 'Figma',
-      description: 'Embed a Figma document.',
+      description: 'Incrustar un documento de Figma.',
       icon: FigmaIcon,
       tooltip: slashMenuToolTips['Figma'],
       showWhen: ({ model }) =>
@@ -512,7 +512,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         await toggleEmbedCardCreateModal(
           rootComponent.host,
           'Figma',
-          'The added Figma link will be displayed as an embed view.',
+          'El enlace de Figma agregado se mostrará como una vista incrustada.',
           { mode: 'page', parentModel, index }
         );
         tryRemoveEmptyLine(model);
@@ -534,7 +534,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         await toggleEmbedCardCreateModal(
           rootComponent.host,
           'Loom',
-          'The added Loom video link will be displayed as an embed view.',
+          'El enlace de video de Loom agregado se mostrará como una vista incrustada.',
           { mode: 'page', parentModel, index }
         );
         tryRemoveEmptyLine(model);
@@ -542,8 +542,8 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     {
-      name: 'Equation',
-      description: 'Create a equation block.',
+      name: 'Ecuación',
+      description: 'Crear un bloque de ecuación.',
       icon: TeXIcon({
         width: '20',
         height: '20',
@@ -596,7 +596,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         .getBlocksByFlavour('affine:frame')
         .map(block => block.model) as FrameBlockModel[];
       const frameItems = frameModels.map<SlashMenuActionItem>(frameModel => ({
-        name: 'Frame: ' + frameModel.title,
+        name: 'Marco: ' + frameModel.title,
         icon: FrameIcon,
         showWhen: () => !insideDatabase(model),
         action: () => {
@@ -627,7 +627,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       ).filter(element => element.get('type') === CanvasElementType.GROUP);
 
       const groupItems = groupElements.map(element => ({
-        name: 'Group: ' + element.get('title'),
+        name: 'Grupo: ' + element.get('title'),
         icon: GroupingIcon(),
         action: () => {
           const { doc } = rootComponent;
@@ -657,7 +657,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       if (items.length !== 0) {
         return [
           {
-            groupName: 'Document Group & Frame',
+            groupName: 'Grupo de Documento y Marco',
           },
           ...items,
         ];
@@ -667,7 +667,7 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     // ---------------------------------------------------------
-    { groupName: 'Date' },
+    { groupName: 'Fecha' },
     () => {
       const now = new Date();
       const tomorrow = new Date();
@@ -678,18 +678,18 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
 
       return [
         {
-          name: 'Today',
+          name: 'Hoy',
           icon: TodayIcon,
-          tooltip: slashMenuToolTips['Today'],
+          tooltip: slashMenuToolTips['Hoy'],
           description: formatDate(now),
           action: ({ rootComponent, model }) => {
             insertContent(rootComponent.host, model, formatDate(now));
           },
         },
         {
-          name: 'Tomorrow',
+          name: 'Mañana',
           icon: TomorrowIcon,
-          tooltip: slashMenuToolTips['Tomorrow'],
+          tooltip: slashMenuToolTips['Mañana'],
           description: formatDate(tomorrow),
           action: ({ rootComponent, model }) => {
             const tomorrow = new Date();
@@ -698,9 +698,9 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
           },
         },
         {
-          name: 'Yesterday',
+          name: 'Ayer',
           icon: YesterdayIcon,
-          tooltip: slashMenuToolTips['Yesterday'],
+          tooltip: slashMenuToolTips['Ayer'],
           description: formatDate(yesterday),
           action: ({ rootComponent, model }) => {
             const yesterday = new Date();
@@ -709,9 +709,9 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
           },
         },
         {
-          name: 'Now',
+          name: 'Ahora',
           icon: NowIcon,
-          tooltip: slashMenuToolTips['Now'],
+          tooltip: slashMenuToolTips['Ahora'],
           description: formatTime(now),
           action: ({ rootComponent, model }) => {
             insertContent(rootComponent.host, model, formatTime(now));
@@ -721,13 +721,13 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     // ---------------------------------------------------------
-    { groupName: 'Database' },
+    { groupName: 'Base de Datos' },
     {
-      name: 'Table View',
-      description: 'Display items in a table format.',
+      name: 'Vista de Tabla',
+      description: 'Agregar una vista de tabla.',
       alias: ['database'],
       icon: DatabaseTableViewIcon20,
-      tooltip: slashMenuToolTips['Table View'],
+      tooltip: slashMenuToolTips['Vista de Tabla'],
       showWhen: ({ model }) =>
         model.doc.schema.flavourSchemaMap.has('affine:database') &&
         !insideDatabase(model) &&
@@ -750,10 +750,10 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Todo',
+      name: 'Tareas',
       alias: ['todo view'],
       icon: DatabaseTableViewIcon20,
-      tooltip: slashMenuToolTips['Todo'],
+      tooltip: slashMenuToolTips['Tareas'],
       showWhen: ({ model }) =>
         model.doc.schema.flavourSchemaMap.has('affine:database') &&
         !insideDatabase(model) &&
@@ -782,11 +782,11 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Kanban View',
-      description: 'Visualize data in a dashboard.',
+      name: 'Vista Kanban',
+      description: 'Visualizar datos en un tablero.',
       alias: ['database'],
       icon: DatabaseKanbanViewIcon20,
-      tooltip: slashMenuToolTips['Kanban View'],
+      tooltip: slashMenuToolTips['Vista Kanban'],
       showWhen: ({ model }) =>
         model.doc.schema.flavourSchemaMap.has('affine:database') &&
         !insideDatabase(model) &&
@@ -810,12 +810,12 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
     },
 
     // ---------------------------------------------------------
-    { groupName: 'Actions' },
+    { groupName: 'Acciones' },
     {
-      name: 'Move Up',
-      description: 'Shift this line up.',
+      name: 'Mover Arriba',
+      description: 'Mover esta línea hacia arriba.',
       icon: ArrowUpBigIcon,
-      tooltip: slashMenuToolTips['Move Up'],
+      tooltip: slashMenuToolTips['Mover Arriba'],
       action: ({ rootComponent, model }) => {
         const doc = rootComponent.doc;
         const previousSiblingModel = doc.getPrev(model);
@@ -828,10 +828,10 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Move Down',
-      description: 'Shift this line down.',
+      name: 'Mover Abajo',
+      description: 'Mover esta línea hacia abajo.',
       icon: ArrowDownBigIcon,
-      tooltip: slashMenuToolTips['Move Down'],
+      tooltip: slashMenuToolTips['Mover Abajo'],
       action: ({ rootComponent, model }) => {
         const doc = rootComponent.doc;
         const nextSiblingModel = doc.getNext(model);
@@ -844,17 +844,17 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Copy',
-      description: 'Copy this line to clipboard.',
+      name: 'Copiar',
+      description: 'Copiar esta línea al portapapeles.',
       icon: PasteIcon,
-      tooltip: slashMenuToolTips['Copy'],
+      tooltip: slashMenuToolTips['Copiar'],
       action: ({ rootComponent, model }) => {
         const slice = Slice.fromModels(rootComponent.std.doc, [model]);
 
         rootComponent.std.clipboard
           .copy(slice)
           .then(() => {
-            toast(rootComponent.host, 'Copied to clipboard');
+            toast(rootComponent.host, 'Copiado al portapapeles');
           })
           .catch(e => {
             console.error(e);
@@ -862,19 +862,19 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Duplicate',
-      description: 'Create a duplicate of this line.',
+      name: 'Duplicar',
+      description: 'Crear un duplicado de esta línea.',
       icon: CopyIcon,
-      tooltip: slashMenuToolTips['Copy'],
+      tooltip: slashMenuToolTips['Duplicar'],
       action: ({ rootComponent, model }) => {
         if (!model.text || !(model.text instanceof Text)) {
-          console.error("Can't duplicate a block without text");
+          console.error('No se puede duplicar un bloque sin texto');
           return;
         }
         const parent = rootComponent.doc.getParent(model);
         if (!parent) {
           console.error(
-            'Failed to duplicate block! Parent not found: ' +
+            'No se pudo duplicar el bloque! No se encontró el padre: ' +
               model.id +
               '|' +
               model.flavour
@@ -898,11 +898,11 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
       },
     },
     {
-      name: 'Delete',
-      description: 'Remove this line permanently.',
+      name: 'Eliminar',
+      description: 'Eliminar línea permanentemente.',
       alias: ['remove'],
       icon: DeleteIcon,
-      tooltip: slashMenuToolTips['Delete'],
+      tooltip: slashMenuToolTips['Eliminar'],
       action: ({ rootComponent, model }) => {
         rootComponent.doc.deleteBlock(model);
       },

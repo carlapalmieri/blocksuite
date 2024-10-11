@@ -101,10 +101,10 @@ export class BlockQueryDataSource extends DataSourceBase {
 
   private newColumnName() {
     let i = 1;
-    while (this.block.columns.some(column => column.name === `Column ${i}`)) {
+    while (this.block.columns.some(column => column.name === `Columna ${i}`)) {
       i++;
     }
-    return `Column ${i}`;
+    return `Columna ${i}`;
   }
 
   cellValueChange(rowId: string, propertyId: string, value: unknown): void {
@@ -229,7 +229,7 @@ export class BlockQueryDataSource extends DataSourceBase {
       return viewColumn.name;
     }
     if (propertyId === 'type') {
-      return 'Block Type';
+      return 'Tipo de bloque';
     }
     return this.getProperty(propertyId)?.name ?? '';
   }

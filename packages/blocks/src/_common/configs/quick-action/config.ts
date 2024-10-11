@@ -34,7 +34,7 @@ export interface QuickActionConfig {
 export const quickActionConfig: QuickActionConfig[] = [
   {
     id: 'copy',
-    name: 'Copy',
+    name: 'Copiar',
     disabledToolTip: undefined,
     icon: CopyIcon,
     hotkey: undefined,
@@ -46,7 +46,7 @@ export const quickActionConfig: QuickActionConfig[] = [
         .getSelectedModels()
         .with({
           onCopy: () => {
-            toast(host, 'Copied to clipboard');
+            toast(host, 'Copiado al portapapeles');
           },
         })
         .draftSelectedModels()
@@ -56,9 +56,9 @@ export const quickActionConfig: QuickActionConfig[] = [
   },
   {
     id: 'convert-to-database',
-    name: 'Group as Table',
+    name: 'Agrupar como Tabla',
     disabledToolTip:
-      'Contains Block types that cannot be converted to Database',
+      'Contiene tipos de bloque que no se pueden convertir a Base de datos',
     icon: DatabaseTableViewIcon20,
     showWhen: host => {
       const [_, ctx] = host.std.command
@@ -98,7 +98,7 @@ export const quickActionConfig: QuickActionConfig[] = [
   },
   {
     id: 'convert-to-linked-doc',
-    name: 'Create Linked Doc',
+    name: 'Crear Documento Vinculado',
     icon: LinkedDocIcon,
     hotkey: `Mod-Shift-l`,
     showWhen: host => {

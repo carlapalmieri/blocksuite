@@ -126,7 +126,7 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
       {
         type: 'action',
         isSelected: !this.column.statCalcOp$.value,
-        name: 'None',
+        name: 'Ninguno',
         select: () => {
           this.column.updateStatCalcOp();
         },
@@ -208,7 +208,7 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
     >
       <div class="content">
         ${!this.statsResult$.value
-          ? html`Calculate ${ArrowDownSmallIcon()}`
+          ? html`Calcular ${ArrowDownSmallIcon()}`
           : html`
               <span class="label">${this.statsResult$.value.name}</span>
               <span class="value">${this.statsResult$.value.value} </span>

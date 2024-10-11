@@ -85,7 +85,7 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
   copy = () => {
     const slice = Slice.fromModels(this.doc, [this.model]);
     this.std.clipboard.copySlice(slice).catch(console.error);
-    toast(this.host, 'Copied to clipboard');
+    toast(this.host, 'Copiado al portapapeles');
   };
 
   download = () => {
@@ -199,8 +199,10 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
     const { LoadingIcon } = getEmbedCardIcons();
 
     const titleIcon = this.loading ? LoadingIcon : AttachmentIcon16;
-    const titleText = this.loading ? 'Loading...' : name;
-    const infoText = this.error ? 'File loading failed.' : humanFileSize(size);
+    const titleText = this.loading ? 'Cargando...' : name;
+    const infoText = this.error
+      ? 'Error al cargar el archivo.'
+      : humanFileSize(size);
 
     const fileType = name.split('.').pop() ?? '';
     const FileTypeIcon = getAttachmentFileIcons(fileType);

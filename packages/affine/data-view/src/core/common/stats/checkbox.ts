@@ -4,43 +4,43 @@ import { tBoolean } from '../../logical/index.js';
 
 export const checkboxTypeStatsFunctions: StatsFunction[] = [
   {
-    group: 'Count',
+    group: 'Contar',
     type: 'count-values',
     dataType: tBoolean.create(),
   },
   {
-    group: 'Count',
+    group: 'Contar',
     type: 'count-unique-values',
     dataType: tBoolean.create(),
   },
   {
-    group: 'Count',
+    group: 'Contar',
     type: 'count-empty',
     dataType: tBoolean.create(),
-    menuName: 'Count Unchecked',
-    displayName: 'Unchecked',
+    menuName: 'Contar sin marcar',
+    displayName: 'Sin marcar',
     impl: data => {
       const emptyList = data.filter(value => !value);
       return emptyList.length.toString();
     },
   },
   {
-    group: 'Count',
+    group: 'Contar',
     type: 'count-not-empty',
     dataType: tBoolean.create(),
-    menuName: 'Count Checked',
-    displayName: 'Checked',
+    menuName: 'Contar marcado',
+    displayName: 'Marcado',
     impl: (data: unknown[]) => {
       const notEmptyList = data.filter(value => !!value);
       return notEmptyList.length.toString();
     },
   },
   {
-    group: 'Percent',
+    group: 'Porcentaje',
     type: 'percent-empty',
     dataType: tBoolean.create(),
-    menuName: 'Percent Unchecked',
-    displayName: 'Unchecked',
+    menuName: 'Porcentaje sin marcar',
+    displayName: 'Sin marcar',
     impl: (data: unknown[]) => {
       if (data.length === 0) return '';
       const emptyList = data.filter(value => !value);
@@ -48,11 +48,11 @@ export const checkboxTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Percent',
+    group: 'Porcentaje',
     type: 'percent-not-empty',
     dataType: tBoolean.create(),
-    menuName: 'Percent Checked',
-    displayName: 'Checked',
+    menuName: 'Porcentaje marcado',
+    displayName: 'Marcado',
     impl: (data: unknown[]) => {
       if (data.length === 0) return '';
       const notEmptyList = data.filter(value => !!value);

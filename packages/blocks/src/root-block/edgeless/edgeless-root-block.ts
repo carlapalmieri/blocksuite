@@ -406,8 +406,8 @@ export class EdgelessRootBlockComponent extends BlockComponent<
 
         this.clipboardController
           .copyAsPng(blocks, shapes)
-          .then(() => toast(this.host, 'Copied to clipboard'))
-          .catch(() => toast(this.host, 'Failed to copy as PNG'))
+          .then(() => toast(this.host, 'Copiado al portapapeles'))
+          .catch(() => toast(this.host, 'Error al copiar como PNG'))
           .finally(() => {
             canCopyAsPng = true;
           });
@@ -511,7 +511,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
 
     const attachmentService = this.std.getService('affine:attachment');
     if (!attachmentService) {
-      console.error('Attachment service not found');
+      console.error('Servicio de adjunto no encontrado');
       return [];
     }
     const maxFileSize = attachmentService.maxFileSize;
@@ -519,7 +519,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
     if (isSizeExceeded) {
       toast(
         this.host,
-        `You can only upload files less than ${humanFileSize(
+        `Solo puedes subir archivos menores a ${humanFileSize(
           maxFileSize,
           true,
           0
@@ -572,7 +572,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
         if (error instanceof Error) {
           toast(
             this.host,
-            `Failed to upload attachment! ${error.message || error.toString()}`
+            `Error al subir el adjunto! ${error.message || error.toString()}`
           );
         }
       } finally {
@@ -607,7 +607,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
 
     const imageService = this.std.getService('affine:image');
     if (!imageService) {
-      console.error('Image service not found');
+      console.error('Servicio de imagen no encontrado');
       return [];
     }
     const maxFileSize = imageService.maxFileSize;
@@ -615,7 +615,7 @@ export class EdgelessRootBlockComponent extends BlockComponent<
     if (isSizeExceeded) {
       toast(
         this.host,
-        `You can only upload files less than ${humanFileSize(
+        `Solo puedes subir archivos menores a ${humanFileSize(
           maxFileSize,
           true,
           0

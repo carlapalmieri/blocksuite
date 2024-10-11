@@ -38,12 +38,12 @@ export function AttachmentOptionsTemplate({
 }) {
   const disableEmbed = !allowEmbed(model, anchor.service.maxFileSize);
   const readonly = model.doc.readonly;
-  const viewType = model.embed ? 'embed' : 'card';
+  const viewType = model.embed ? 'embebida' : 'tarjeta';
 
   const viewActions = [
     {
       type: 'card',
-      label: 'Card view',
+      label: 'Vista de tarjeta',
       disabled: readonly || !model.embed,
       action: () => {
         model.doc.updateBlock(model, { embed: false });
@@ -52,7 +52,7 @@ export function AttachmentOptionsTemplate({
     },
     {
       type: 'embed',
-      label: 'Embed view',
+      label: 'Vista incrustada',
       disabled: readonly || disableEmbed,
       action: () => {
         convertToEmbed(model, anchor.service.maxFileSize);
@@ -79,8 +79,8 @@ export function AttachmentOptionsTemplate({
       ? nothing
       : html`
           <editor-icon-button
-            aria-label="Rename"
-            .tooltip=${'Rename'}
+            aria-label="Renombrar"
+            .tooltip=${'Renombrar'}
             @click=${() => {
               abortController.abort();
               const renameAbortController = new AbortController();
@@ -110,14 +110,14 @@ export function AttachmentOptionsTemplate({
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Switch view"
+            aria-label="Cambiar vista"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
-            .iconContainerWidth=${'110px'}
+            .iconContainerWidth=${'130px'}
           >
             <div class="label">
-              <span style="text-transform: capitalize">${viewType}</span>
-              view
+              Vista de
+              <span>${viewType}</span>
             </div>
             ${SmallArrowDownIcon}
           </editor-icon-button>
@@ -145,8 +145,8 @@ export function AttachmentOptionsTemplate({
       ? nothing
       : html`
           <editor-icon-button
-            aria-label="Download"
-            .tooltip=${'Download'}
+            aria-label="Descargar"
+            .tooltip=${'Descargar'}
             @click=${() => anchor.download()}
           >
             ${DownloadIcon}
@@ -157,8 +157,8 @@ export function AttachmentOptionsTemplate({
       ? nothing
       : html`
           <editor-icon-button
-            aria-label="Caption"
-            .tooltip=${'Caption'}
+            aria-label="Agregar descripción"
+            .tooltip=${'Agregar descripción'}
             @click=${() => anchor.captionEditor?.show()}
           >
             ${CaptionIcon}
@@ -169,7 +169,7 @@ export function AttachmentOptionsTemplate({
       <editor-menu-button
         .contentPadding=${'8px'}
         .button=${html`
-          <editor-icon-button aria-label="More" .tooltip=${'More'}>
+          <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
             ${MoreVerticalIcon}
           </editor-icon-button>
         `}

@@ -2,7 +2,7 @@ import { propertyType, tString } from '@blocksuite/data-view';
 
 export const linkColumnType = propertyType('link');
 export const linkColumnModelConfig = linkColumnType.modelConfig<string>({
-  name: 'Link',
+  name: 'Enlace',
   type: () => tString.create(),
   defaultData: () => ({}),
   cellToString: data => data?.toString() ?? '',

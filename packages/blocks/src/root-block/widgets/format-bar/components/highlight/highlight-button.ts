@@ -82,7 +82,7 @@ const HighlightPanel = (
         )}
 
         <!-- Text Background Highlight -->
-        <div class="highligh-panel-heading">Background</div>
+        <div class="highligh-panel-heading">Fondo</div>
         ${backgroundConfig.map(
           ({ name, color }) => html`
             <editor-menu-action

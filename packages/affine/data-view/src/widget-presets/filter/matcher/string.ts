@@ -9,7 +9,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Is',
+    label: 'Es',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||
@@ -26,7 +26,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Is not',
+    label: 'No es',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||
@@ -43,7 +43,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Contains',
+    label: 'Contiene',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||
@@ -60,7 +60,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Does no contains',
+    label: 'No contiene',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||
@@ -77,7 +77,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Starts with',
+    label: 'Comienza con',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||
@@ -94,7 +94,7 @@ export const stringFilter = {
       args: [tString.create(), tString.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Ends with',
+    label: 'Termina con',
     impl: (value, target) => {
       if (
         typeof value !== 'string' ||

@@ -62,13 +62,13 @@ export class TableClipboardController implements ReactiveController {
         if (area[0]?.row) {
           toast(
             this.std.host,
-            `${area.length} row${area.length > 1 ? 's' : ''} copied to clipboard`
+            `${area.length} fila${area.length > 1 ? 's' : ''} copiada al portapapeles`
           );
         } else {
           const count = area.flatMap(row => row.cells).length;
           toast(
             this.std.host,
-            `${count} cell${count > 1 ? 's' : ''} copied to clipboard`
+            `${count} celda${count > 1 ? 's' : ''} copiada al portapapeles`
           );
         }
       })

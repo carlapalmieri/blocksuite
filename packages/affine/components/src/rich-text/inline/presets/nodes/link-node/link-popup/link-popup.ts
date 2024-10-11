@@ -57,7 +57,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
           class="affine-link-popover-input"
           type="text"
           spellcheck="false"
-          placeholder="Paste or type a link"
+          placeholder="Pegar o escribir un enlace"
           @paste=${this._updateConfirmBtn}
           @input=${this._updateConfirmBtn}
         />
@@ -104,10 +104,10 @@ export class LinkPopup extends WithDisposable(LitElement) {
             class="affine-edit-input"
             id="text-input"
             type="text"
-            placeholder="Enter text"
+            placeholder="Escribe un texto"
             @input=${this._updateConfirmBtn}
           />
-          <label class="affine-edit-label" for="text-input">Text</label>
+          <label class="affine-edit-label" for="text-input">Texto</label>
         </div>
         <div class="affine-edit-area link">
           <input
@@ -115,10 +115,10 @@ export class LinkPopup extends WithDisposable(LitElement) {
             class="affine-edit-input"
             type="text"
             spellcheck="false"
-            placeholder="Paste or type a link"
+            placeholder="Pegar o escribir un enlace"
             @input=${this._updateConfirmBtn}
           />
-          <label class="affine-edit-label" for="link-input">Link</label>
+          <label class="affine-edit-label" for="link-input">Enlace</label>
         </div>
         ${this._confirmBtnTemplate()}
       </div>
@@ -128,11 +128,6 @@ export class LinkPopup extends WithDisposable(LitElement) {
   private _embedOptions: EmbedOptions | null = null;
 
   private _openLink = () => {
-    if (this.openLink) {
-      this.openLink();
-      return;
-    }
-
     let link = this.currentLink;
     if (!link) return;
     if (!link.match(/^[a-zA-Z]+:\/\//)) {
@@ -172,18 +167,18 @@ export class LinkPopup extends WithDisposable(LitElement) {
         </a>
 
         <editor-icon-button
-          aria-label="Copy"
+          aria-label="Copiar"
           data-testid="copy-link"
-          .tooltip=${'Click to copy link'}
+          .tooltip=${'Click para copiar el enlace'}
           @click=${this._copyUrl}
         >
           ${CopyIcon}
         </editor-icon-button>
 
         <editor-icon-button
-          aria-label="Edit"
+          aria-label="Editar"
           data-testid="edit"
-          .tooltip=${'Edit'}
+          .tooltip=${'Editar'}
           @click=${this._edit}
         >
           ${EditIcon}
@@ -196,7 +191,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
         <editor-menu-button
           .contentPadding=${'8px'}
           .button=${html`
-            <editor-icon-button aria-label="More" .tooltip=${'More'}>
+            <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
               ${MoreVerticalIcon}
             </editor-icon-button>
           `}
@@ -350,7 +345,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
     if (!this.currentLink) return;
     navigator.clipboard.writeText(this.currentLink).catch(console.error);
     if (!this.host) return;
-    toast(this.host, 'Copied link to clipboard');
+    toast(this.host, 'Enlace copiado al portapapeles');
     this.abortController.abort();
   }
 
@@ -358,21 +353,21 @@ export class LinkPopup extends WithDisposable(LitElement) {
     return renderActions([
       [
         {
-          label: 'Open',
+          label: 'Abrir',
           type: 'open',
           icon: OpenIcon,
           action: this._openLink,
         },
 
         {
-          label: 'Copy',
+          label: 'Copiar',
           type: 'copy',
           icon: CopyIcon,
           action: this._copyUrl,
         },
 
         {
-          label: 'Remove link',
+          label: 'Remover enlace',
           type: 'remove-link',
           icon: UnlinkIcon,
           action: this._removeLink,
@@ -382,7 +377,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
       [
         {
           type: 'delete',
-          label: 'Delete',
+          label: 'Eliminar',
           icon: DeleteIcon,
           action: this._delete,
         },
@@ -454,19 +449,19 @@ export class LinkPopup extends WithDisposable(LitElement) {
 
     buttons.push({
       type: 'inline',
-      label: 'Inline view',
+      label: 'Vista en linea',
     });
 
     buttons.push({
       type: 'card',
-      label: 'Card view',
+      label: 'Vista de tarjeta',
       action: () => this._convertToCardView(),
     });
 
     if (this._canConvertToEmbedView) {
       buttons.push({
         type: 'embed',
-        label: 'Embed view',
+        label: 'Vista incrustada',
         action: () => this._convertToEmbedView(),
       });
     }
@@ -476,12 +471,12 @@ export class LinkPopup extends WithDisposable(LitElement) {
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Switch view"
+            aria-label="Cambiar vista"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
-            .iconContainerWidth=${'110px'}
+            .iconContainerWidth=${'130px'}
           >
-            <div class="label">Inline view</div>
+            <div class="label">Vista en linea</div>
             ${SmallArrowDownIcon}
           </editor-icon-button>
         `}

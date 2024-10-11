@@ -76,7 +76,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
       options: {
         input: {
           search: true,
-          placeholder: 'Search',
+          placeholder: 'Buscar',
         },
         items: this.tableViewManager.propertyMetas.map(config => {
           return {
@@ -324,7 +324,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
         items: [
           {
             type: 'group',
-            name: 'Column Prop Group',
+            name: 'Propiedades de columna',
             children: () => [
               typeConfig(this.column),
               // Number format begin
@@ -332,7 +332,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
                 ? ([
                     {
                       type: 'sub-menu',
-                      name: 'Number Format',
+                      name: 'Formato de número',
 
                       hide: () =>
                         !this.column.dataUpdate ||
@@ -380,7 +380,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
             children: () => [
               {
                 type: 'action',
-                name: 'Hide In View',
+                name: 'Ocultar en vista',
                 icon: ViewIcon(),
                 hide: () =>
                   this.column.hide$.value ||
@@ -394,7 +394,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
 
           {
             type: 'action',
-            name: 'Duplicate Column',
+            name: 'Duplicar columna',
             icon: DuplicateIcon(),
             hide: () =>
               !this.column.duplicate || this.column.type$.value === 'title',
@@ -404,7 +404,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Insert Left Column',
+            name: 'Insertar columna a la izquierda',
             icon: InsertLeftIcon(),
             select: () => {
               this.tableViewManager.propertyAdd({
@@ -424,7 +424,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Insert Right Column',
+            name: 'Insertar columna a la derecha',
             icon: InsertRightIcon(),
             select: () => {
               this.tableViewManager.propertyAdd({
@@ -447,7 +447,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Move Left',
+            name: 'Mover a la izquierda',
             icon: MoveLeftIcon(),
             hide: () => this.column.isFirst,
             select: () => {
@@ -465,7 +465,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
           },
           {
             type: 'action',
-            name: 'Move Right',
+            name: 'Mover a la derecha',
             icon: MoveRightIcon(),
             hide: () => this.column.isLast,
             select: () => {
@@ -487,7 +487,7 @@ export class DatabaseHeaderColumn extends SignalWatcher(
             children: () => [
               {
                 type: 'action',
-                name: 'Delete Column',
+                name: 'Eliminar columna',
                 icon: DeleteIcon(),
                 hide: () =>
                   !this.column.delete || this.column.type$.value === 'title',

@@ -205,7 +205,7 @@ export class EdgelessChangeEmbedCardButton extends WithDisposable(LitElement) {
     }
 
     navigator.clipboard.writeText(this.model.url).catch(console.error);
-    toast(this.std.host, 'Copied link to clipboard');
+    toast(this.std.host, 'Enlace copiado al portapapeles');
     this.edgeless.service.selection.clear();
   };
 
@@ -493,13 +493,13 @@ export class EdgelessChangeEmbedCardButton extends WithDisposable(LitElement) {
       const buttons = [
         {
           type: 'card',
-          label: 'Card view',
+          label: 'Vista de tarjeta',
           handler: () => this._convertToCardView(),
           disabled: this.model.doc.readonly,
         },
         {
           type: 'embed',
-          label: 'Embed view',
+          label: 'Vista incrustada',
           handler: () => this._convertToEmbedView(),
           disabled: this.model.doc.readonly || this._embedViewButtonDisabled,
         },

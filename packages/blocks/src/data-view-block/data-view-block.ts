@@ -89,7 +89,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
       options: {
         input: {
           initValue: this.model.title,
-          placeholder: 'Untitled',
+          placeholder: 'Sin título',
           onComplete: text => {
             this.model.title = text;
           },
@@ -119,7 +119,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
                 type: 'action',
                 icon: DeleteIcon,
                 class: 'delete-item',
-                name: 'Delete Database',
+                name: 'Eliminar base de datos',
                 select: () => {
                   this.model.children.slice().forEach(block => {
                     this.doc.deleteBlock(block);

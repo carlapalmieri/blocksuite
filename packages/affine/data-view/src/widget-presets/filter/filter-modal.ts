@@ -108,7 +108,7 @@ export class AdvancedFilterModal extends WithDisposable(ShadowlessElement) {
           @click=${this.onDelete}
           class="filter-modal-button filter-delete-button"
         >
-          Delete
+          Eliminar
         </div>
       </div>
     `;

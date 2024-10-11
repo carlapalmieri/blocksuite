@@ -1348,7 +1348,8 @@ export async function initImageState(page: Page, prependParagraph = false) {
     await new Promise(res => setTimeout(res, 200));
 
     const pageRoot = document.querySelector('affine-page-root');
-    if (!pageRoot) throw new Error('Cannot find doc page');
+    if (!pageRoot)
+      throw new Error('No se pudo encontrar la página del documento');
     const imageBlob = await fetch(`${location.origin}/test-card-1.png`).then(
       response => response.blob()
     );

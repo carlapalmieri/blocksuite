@@ -76,22 +76,22 @@ export class EmbedCardEditModal extends WithDisposable(ShadowlessElement) {
         <div class="embed-card-modal-mask" @click=${() => this.remove()}></div>
         <div class="embed-card-modal-wrapper">
           <div class="embed-card-modal-row">
-            <label for="card-title">Text</label>
+            <label for="card-title">Texto</label>
             <input
               class="embed-card-modal-input title"
               id="card-title"
               type="text"
-              placeholder="Title"
+              placeholder="Título"
               value=${this._titleInputValue}
               @input=${this._handleInput}
             />
           </div>
           <div class="embed-card-modal-row">
-            <label for="card-description">Description</label>
+            <label for="card-description">Descripción</label>
             <textarea
               class="embed-card-modal-input description"
               id="card-description"
-              placeholder="Write a description..."
+              placeholder="Escribe una descripción..."
               .value=${this.model.description ?? ''}
             ></textarea>
           </div>
@@ -104,7 +104,7 @@ export class EmbedCardEditModal extends WithDisposable(ShadowlessElement) {
               ?disabled=${this._titleInputValue.length === 0}
               @click=${() => this._onSave()}
             >
-              Save
+              Guardar
             </button>
           </div>
         </div>

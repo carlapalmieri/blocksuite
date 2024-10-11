@@ -142,7 +142,7 @@ export class EmbedCardCreateModal extends WithDisposable(ShadowlessElement) {
             class="embed-card-modal-input link"
             id="card-description"
             type="text"
-            placeholder="Input in https://..."
+            placeholder="Ingresa un enlace https://..."
             value=${this._linkInputValue}
             @input=${this._handleInput}
           />
@@ -157,7 +157,7 @@ export class EmbedCardCreateModal extends WithDisposable(ShadowlessElement) {
             ?disabled=${!isValidUrl(this._linkInputValue)}
             @click=${this._onConfirm}
           >
-            Confirm
+            Confirmar
           </button>
         </div>
       </div>

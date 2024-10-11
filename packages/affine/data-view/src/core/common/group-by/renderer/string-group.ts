@@ -36,7 +36,7 @@ export class StringGroupView extends BaseGroup<NonNullable<unknown>, string> {
 
   protected override render(): unknown {
     if (!this.value) {
-      return html` <div>Ungroups</div>`;
+      return html` <div>Sin agrupar</div>`;
     }
     return html` <div
       @click="${this._click}"

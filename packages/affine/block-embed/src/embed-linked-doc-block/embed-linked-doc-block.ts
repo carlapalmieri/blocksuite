@@ -196,7 +196,7 @@ export class EmbedLinkedDocBlockComponent extends EmbedBlockComponent<EmbedLinke
   get docTitle() {
     return this.linkedDoc?.meta?.title.length
       ? this.linkedDoc.meta.title
-      : 'Untitled';
+      : 'Sin título';
   }
 
   get editorMode() {
@@ -380,22 +380,22 @@ export class EmbedLinkedDocBlockComponent extends EmbedBlockComponent<EmbedLinke
             : LinkedDocIcon;
 
     const titleText = isError
-      ? linkedDoc?.meta?.title || 'Untitled'
+      ? linkedDoc?.meta?.title || 'Sin título'
       : isLoading
-        ? 'Loading...'
+        ? 'Cargando...'
         : isDeleted
-          ? `Deleted doc`
-          : linkedDoc?.meta?.title || 'Untitled';
+          ? `Documento eliminado`
+          : linkedDoc?.meta?.title || 'Sin título';
 
     const showDefaultNoteContent = isError || isLoading || isDeleted || isEmpty;
     const defaultNoteContent = isError
-      ? 'This linked doc failed to load.'
+      ? 'Este documento vinculado no se pudo cargar.'
       : isLoading
         ? ''
         : isDeleted
-          ? 'This linked doc is deleted.'
+          ? 'Este documento vinculado ha sido eliminado.'
           : isEmpty
-            ? 'Preview of the doc will be displayed here.'
+            ? 'La vista previa del documento se mostrará aquí.'
             : '';
 
     const dateText =

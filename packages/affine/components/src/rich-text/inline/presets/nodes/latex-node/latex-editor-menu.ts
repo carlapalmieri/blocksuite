@@ -177,7 +177,9 @@ export class LatexEditorMenu extends SignalWatcher(
           })}</span
         >
       </div>
-      <div class="latex-editor-hint">Shift Enter to line break</div>
+      <div class="latex-editor-hint">
+        Presiona Shift + Enter para hacer un salto de línea
+      </div>
     </div>`;
   }
 

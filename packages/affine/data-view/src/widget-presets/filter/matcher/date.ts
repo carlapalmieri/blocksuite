@@ -9,7 +9,7 @@ export const dateFilter = {
       args: [tDate.create(), tDate.create()],
       rt: tBoolean.create(),
     }),
-    label: 'Before',
+    label: 'Antes de',
     impl: (value, target) => {
       if (typeof value !== 'number' || typeof target !== 'number') {
         return true;
@@ -22,7 +22,7 @@ export const dateFilter = {
       args: [tDate.create(), tDate.create()],
       rt: tBoolean.create(),
     }),
-    label: 'After',
+    label: 'Después de',
     impl: (value, target) => {
       if (typeof value !== 'number' || typeof target !== 'number') {
         return true;

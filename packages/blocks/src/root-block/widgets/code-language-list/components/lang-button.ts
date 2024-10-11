@@ -57,7 +57,7 @@ export class LanguageListButton extends WithDisposable(
     this.onActiveStatusChange(true);
 
     const options: FilterableListOptions = {
-      placeholder: 'Search for a language',
+      placeholder: 'Buscar un lenguaje',
       onSelect: item => {
         const sortedBundledLanguages = this._sortedBundledLanguages;
         const index = sortedBundledLanguages.indexOf(item);

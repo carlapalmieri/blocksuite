@@ -4,7 +4,7 @@ import { propertyType } from '../../core/property/property-config.js';
 export const imagePropertyType = propertyType('image');
 
 export const imagePropertyModelConfig = imagePropertyType.modelConfig<string>({
-  name: 'image',
+  name: 'Imagen',
   type: () => tImage.create(),
   defaultData: () => ({}),
   cellToString: data => data ?? '',

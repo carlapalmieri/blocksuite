@@ -21,7 +21,6 @@ import {
   Heading5Icon,
   Heading6Icon,
   ItalicIcon,
-  LinkedDocIcon,
   LinkIcon,
   MoreVerticalIcon,
   NumberedListIcon,
@@ -32,7 +31,6 @@ import {
 } from '@blocksuite/affine-components/icons';
 import { toast } from '@blocksuite/affine-components/toast';
 import { renderGroups } from '@blocksuite/affine-components/toolbar';
-import { TelemetryProvider } from '@blocksuite/affine-shared/services';
 import { tableViewMeta } from '@blocksuite/data-view/view-presets';
 import { assertExists } from '@blocksuite/global/utils';
 import { Slice } from '@blocksuite/store';
@@ -40,12 +38,6 @@ import { html, type TemplateResult } from 'lit';
 
 import type { AffineFormatBarWidget } from './format-bar.js';
 
-import {
-  convertSelectedBlocksToLinkedDoc,
-  getTitleFromSelectedModels,
-  notifyDocCreated,
-  promptDocTitle,
-} from '../../../_common/utils/render-linked-doc.js';
 import { convertToDatabase } from '../../../database-block/data-source.js';
 import { DATABASE_CONVERT_WHITE_LIST } from '../../../database-block/utils.js';
 import { FormatBarContext } from './context.js';
@@ -142,7 +134,7 @@ export function toolbarDefaultConfig(toolbar: AffineFormatBarWidget) {
     .addDivider()
     .addInlineAction({
       id: 'convert-to-database',
-      name: 'Create Table',
+      name: 'Crear Tabla',
       icon: DatabaseTableViewIcon20,
       isActive: () => false,
       action: () => {
@@ -190,136 +182,86 @@ export function toolbarDefaultConfig(toolbar: AffineFormatBarWidget) {
       },
     })
     .addDivider()
-    .addInlineAction({
-      id: 'convert-to-linked-doc',
-      name: 'Create Linked Doc',
-      icon: LinkedDocIcon,
-      isActive: () => false,
-      action: (chain, formatBar) => {
-        const [_, ctx] = chain
-          .getSelectedModels({
-            types: ['block', 'text'],
-            mode: 'highest',
-          })
-          .run();
-        const { selectedModels } = ctx;
-        assertExists(selectedModels);
-        if (!selectedModels.length) return;
-
-        const host = formatBar.host;
-        host.selection.clear();
-
-        const doc = host.doc;
-        const autofill = getTitleFromSelectedModels(selectedModels);
-        void promptDocTitle(host, autofill).then(title => {
-          if (title === null) return;
-          convertSelectedBlocksToLinkedDoc(doc, selectedModels, title);
-          notifyDocCreated(host, doc);
-          host.std.getOptional(TelemetryProvider)?.track('DocCreated', {
-            control: 'create linked doc',
-            page: 'doc editor',
-            module: 'format toolbar',
-            type: 'embed-linked-doc',
-          });
-          host.std.getOptional(TelemetryProvider)?.track('LinkedDocCreated', {
-            control: 'create linked doc',
-            page: 'doc editor',
-            module: 'format toolbar',
-            type: 'embed-linked-doc',
-          });
-        });
-      },
-      showWhen: chain => {
-        const [_, ctx] = chain
-          .getSelectedModels({
-            types: ['block', 'text'],
-            mode: 'highest',
-          })
-          .run();
-        const { selectedModels } = ctx;
-        return !!selectedModels && selectedModels.length > 0;
-      },
-    })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'text',
-      name: 'Text',
+      name: 'Texto',
       icon: TextIcon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h1',
-      name: 'Heading 1',
+      name: 'Encabezado 1',
       icon: Heading1Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h2',
-      name: 'Heading 2',
+      name: 'Encabezado 2',
       icon: Heading2Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h3',
-      name: 'Heading 3',
+      name: 'Encabezado 3',
       icon: Heading3Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h4',
-      name: 'Heading 4',
+      name: 'Encabezado 4',
       icon: Heading4Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h5',
-      name: 'Heading 5',
+      name: 'Encabezado 5',
       icon: Heading5Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'h6',
-      name: 'Heading 6',
+      name: 'Encabezado 6',
       icon: Heading6Icon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:list',
       type: 'bulleted',
-      name: 'Bulleted List',
+      name: 'Lista con Viñetas',
       icon: BulletedListIcon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:list',
       type: 'numbered',
-      name: 'Numbered List',
+      name: 'Lista Numerada',
       icon: NumberedListIcon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:list',
       type: 'todo',
-      name: 'To-do List',
+      name: 'Lista de Tareas',
       icon: CheckBoxIcon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:code',
-      name: 'Code Block',
+      name: 'Código',
       icon: CodeIcon,
     })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'quote',
-      name: 'Quote',
+      name: 'Cita',
       icon: QuoteIcon,
     });
 }
 
 export const BUILT_IN_GROUPS: MenuItemGroup<FormatBarContext>[] = [
   {
-    type: 'clipboard',
+    type: 'Portapapeles',
     items: [
       {
         type: 'copy',
-        label: 'Copy',
+        label: 'Copiar',
         icon: CopyIcon,
         disabled: c => c.doc.readonly,
         action: c => {
@@ -328,7 +270,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<FormatBarContext>[] = [
             .getSelectedModels()
             .with({
               onCopy: () => {
-                toast(c.host, 'Copied to clipboard');
+                toast(c.host, 'Copiado al portapapeles');
               },
             })
             .draftSelectedModels()
@@ -338,7 +280,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<FormatBarContext>[] = [
       },
       {
         type: 'duplicate',
-        label: 'Duplicate',
+        label: 'Duplicar',
         icon: DuplicateIcon,
         disabled: c => c.doc.readonly,
         action: c => {
@@ -398,7 +340,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<FormatBarContext>[] = [
     items: [
       {
         type: 'delete',
-        label: 'Delete',
+        label: 'Eliminar',
         icon: DeleteIcon,
         disabled: c => c.doc.readonly,
         action: c => {
@@ -439,7 +381,7 @@ export function toolbarMoreButton(toolbar: AffineFormatBarWidget) {
     <editor-menu-button
       .contentPadding=${'8px'}
       .button=${html`
-        <editor-icon-button aria-label="More" .tooltip=${'More'}>
+        <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
           ${MoreVerticalIcon}
         </editor-icon-button>
       `}

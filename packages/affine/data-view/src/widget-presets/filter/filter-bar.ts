@@ -95,7 +95,7 @@ export class FilterBar extends WithDisposable(ShadowlessElement) {
       class="filter-bar-add-filter dv-icon-16 dv-round-4 dv-hover"
       @click="${this.addFilter}"
     >
-      ${PlusIcon()} Add filter
+      ${PlusIcon()} Agregar filtro
     </div>`;
   };
 
@@ -112,7 +112,7 @@ export class FilterBar extends WithDisposable(ShadowlessElement) {
       style="height: 100%;"
       @click="${showMore}"
     >
-      ${max - count} More
+      ${max - count} Más
     </div>`;
   };
 
@@ -188,7 +188,8 @@ export class FilterBar extends WithDisposable(ShadowlessElement) {
       this.expandGroup(e.target as HTMLElement, i);
     };
     const length = condition.conditions.length;
-    const text = length > 1 ? `${length} rules` : `${length} rule`;
+    const text =
+      length > 1 || length === 0 ? `${length} reglas` : `${length} regla`;
     return html` <div
       style="margin-right: 8px;"
       class="filter-group-tag dv-icon-16 dv-border dv-round-8"

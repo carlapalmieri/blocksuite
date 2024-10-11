@@ -20,7 +20,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<SurfaceRefToolbarContext>[] = [
     items: [
       {
         type: 'copy',
-        label: 'Copy',
+        label: 'Copiar', // 'Copy'
         icon: CopyIcon,
         action: ctx => {
           if (!(ctx.blockComponent.referenceModel && ctx.doc.root?.id)) {
@@ -54,7 +54,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<SurfaceRefToolbarContext>[] = [
       },
       {
         type: 'download',
-        label: 'Download',
+        label: 'Descargar', // 'Download'
         icon: DownloadIcon,
         action: ctx => {
           if (!(ctx.blockComponent.referenceModel && ctx.doc.root?.id)) {
@@ -99,7 +99,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<SurfaceRefToolbarContext>[] = [
     items: [
       {
         type: 'delete',
-        label: 'Delete',
+        label: 'Eliminar', // 'Delete'
         icon: DeleteIcon,
         disabled: ({ doc }) => doc.readonly,
         action: ({ blockComponent, doc, close }) => {

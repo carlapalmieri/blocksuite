@@ -111,7 +111,7 @@ export class GroupSetting extends SignalWatcher(
         <div
           style="padding: 0 4px; font-size: 12px;color: var(--affine-text-secondary-color);line-height: 20px;"
         >
-          Groups
+          Grupos
         </div>
         <div></div>
       </div>
@@ -159,7 +159,7 @@ export const selectGroupByProperty = (
     onClose,
     input: {
       search: true,
-      placeholder: 'Search',
+      placeholder: 'Buscar',
     },
     items: [
       ...view.propertiesWithoutFilter$.value
@@ -196,7 +196,7 @@ export const selectGroupByProperty = (
             type: 'action',
             icon: DeleteIcon(),
             class: 'delete-item',
-            name: 'Remove Grouping',
+            name: 'Eliminar agrupación',
             select: () => {
               if (view instanceof TableSingleView) {
                 view.changeGroup(undefined);
@@ -240,7 +240,7 @@ export const popGroupSetting = (
         search: true,
       },
       items: [
-        menuTitleItem('GROUP', () => {
+        menuTitleItem('AGRUPAR', () => {
           onBack();
           menuHandler.close();
         }),
@@ -250,7 +250,7 @@ export const popGroupSetting = (
           children: () => [
             {
               type: 'sub-menu',
-              name: 'Group By',
+              name: 'Agrupar por',
               postfix: html`
                 <div
                   style="display:flex;align-items:center;gap: 4px;font-size: 12px;line-height: 20px;color: var(--affine-text-secondary-color);margin-right: 4px;margin-left: 8px;"

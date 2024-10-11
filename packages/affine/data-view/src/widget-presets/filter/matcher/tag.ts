@@ -15,7 +15,7 @@ export const tagFilter = {
       args: [tTypeRef('options'), tArray(tTypeRef('options'))],
       rt: tBoolean.create(),
     }),
-    label: 'Is one of',
+    label: 'Es uno de',
     impl: (value, target) => {
       if (!Array.isArray(target) || !target.length) {
         return true;
@@ -29,7 +29,7 @@ export const tagFilter = {
       args: [tTypeRef('options'), tArray(tTypeRef('options'))],
       rt: tBoolean.create(),
     }),
-    label: 'Is not one of',
+    label: 'No es uno de',
     impl: (value, target) => {
       if (!Array.isArray(target) || !target.length) {
         return true;

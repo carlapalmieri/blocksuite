@@ -220,7 +220,7 @@ export const popAddNewFilter = (
   popFilterableSimpleMenu(target, [
     {
       type: 'action',
-      name: 'Add filter',
+      name: 'Agregar filtro',
       select: () => {
         props.onChange({
           ...props.value,
@@ -230,7 +230,7 @@ export const popAddNewFilter = (
     },
     {
       type: 'action',
-      name: 'Add filter group',
+      name: 'Agregar grupo de filtros',
       select: () => {
         props.onChange({
           ...props.value,

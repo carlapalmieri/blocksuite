@@ -101,7 +101,7 @@ function getAttachment(page: Page) {
     turnToEmbed: async () => {
       await expect(switchViewButton).toBeVisible();
       await switchViewButton.click();
-      await page.getByRole('button', { name: 'Embed view' }).click();
+      await page.getByRole('button', { name: 'Vista incrustada' }).click();
       await assertRichImage(page, 1);
     },
     rename: async (newName: string) => {

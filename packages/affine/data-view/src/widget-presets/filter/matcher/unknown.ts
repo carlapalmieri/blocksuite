@@ -6,7 +6,7 @@ import { tFunction, tUnknown } from '../../../core/logical/typesystem.js';
 export const unknownFilter = {
   isNotEmpty: {
     type: tFunction({ args: [tUnknown.create()], rt: tBoolean.create() }),
-    label: 'Is not empty',
+    label: 'No está vacío',
     impl: value => {
       if (Array.isArray(value)) {
         return value.length > 0;
@@ -19,7 +19,7 @@ export const unknownFilter = {
   },
   isEmpty: {
     type: tFunction({ args: [tUnknown.create()], rt: tBoolean.create() }),
-    label: 'Is empty',
+    label: 'Está vacío',
     impl: value => {
       if (Array.isArray(value)) {
         return value.length === 0;

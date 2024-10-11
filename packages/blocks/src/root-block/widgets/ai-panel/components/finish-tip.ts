@@ -79,7 +79,7 @@ export class AIFinishTip extends WithDisposable(LitElement) {
                     if (this.copied) {
                       this.host.std
                         .getOptional(NotificationProvider)
-                        ?.toast('Copied to clipboard');
+                        ?.toast('Copiado al portapapeles');
                     }
                   }}
                 >

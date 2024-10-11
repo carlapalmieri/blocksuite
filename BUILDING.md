@@ -1,4 +1,8 @@
-# Building and Testing BlockSuite
+# Building and Testing BlockSuite (Versión en Español / Spanish Version)
+
+## Notas / Notes
+
+Esta versión de BlockSuite ha sido parcialmente traducida al español. Asegúrate de seguir las instrucciones de construcción y prueba como se describe, ya que la funcionalidad no ha cambiado. / This version of BlockSuite has been partially translated into Spanish. Make sure to follow the build and test instructions as described, as the functionality has not changed.
 
 ## Using Playground
 

@@ -26,7 +26,7 @@ export const inputConfig = (property: Property): MenuOptions['input'] => {
 export const typeConfig = (property: Property): NormalMenu => {
   return {
     type: 'sub-menu',
-    name: 'Type',
+    name: 'Tipo',
     hide: () => !property.typeSet || property.type$.value === 'title',
     postfix: html`<div
       class="affine-database-column-type-icon"

@@ -239,7 +239,7 @@ export class DataViewTable extends DataViewBase<
         @click="${add}"
       >
         <div class="dv-icon-16" style="display:flex;">${AddCursorIcon()}</div>
-        <div>New Group</div>
+        <div>Nuevo grupo</div>
       </div>
     </div>`;
   };

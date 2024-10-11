@@ -19,7 +19,7 @@ export class EdgelessMoreButton extends WithDisposable(LitElement) {
       <editor-menu-button
         .contentPadding=${'8px'}
         .button=${html`
-          <editor-icon-button aria-label="More" .tooltip=${'More'}>
+          <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
             ${this.vertical
               ? MoreVerticalIcon({ width: '20', height: '20' })
               : MoreHorizontalIcon({ width: '20', height: '20' })}

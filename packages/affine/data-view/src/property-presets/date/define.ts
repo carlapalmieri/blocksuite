@@ -3,7 +3,7 @@ import { propertyType } from '../../core/property/property-config.js';
 
 export const datePropertyType = propertyType('date');
 export const datePropertyModelConfig = datePropertyType.modelConfig<number>({
-  name: 'Date',
+  name: 'Fecha',
   type: () => tDate.create(),
   defaultData: () => ({}),
   cellToString: data => data?.toString() ?? '',

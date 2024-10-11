@@ -57,10 +57,10 @@ export class EmbedCardEditCaptionEditModal extends WithDisposable(
         <div class="embed-card-modal-mask" @click=${() => this.remove()}></div>
         <div class="embed-card-modal-wrapper">
           <div class="embed-card-modal-row">
-            <label for="card-title">Caption</label>
+            <label for="card-title">Descripción</label>
             <textarea
               class="embed-card-modal-input caption"
-              placeholder="Write a caption..."
+              placeholder="Escribe una descripción..."
               .value=${this._model.caption ?? ''}
             ></textarea>
           </div>
@@ -72,7 +72,7 @@ export class EmbedCardEditCaptionEditModal extends WithDisposable(
               })}
               @click=${() => this._onSave()}
             >
-              Save
+              Guardar
             </button>
           </div>
         </div>

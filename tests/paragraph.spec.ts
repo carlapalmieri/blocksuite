@@ -957,7 +957,7 @@ test('should placeholder works', async ({ page }) => {
   const placeholder = page.locator('.affine-paragraph-placeholder.visible');
   await expect(placeholder).toBeVisible();
   await expect(placeholder).toHaveCount(1);
-  await expect(placeholder).toContainText("Type '/' for commands");
+  await expect(placeholder).toContainText("Escribe '/' para ver los comandos");
 
   await type(page, '1');
   await expect(placeholder).not.toBeVisible();
@@ -967,11 +967,11 @@ test('should placeholder works', async ({ page }) => {
   await updateBlockType(page, 'affine:paragraph', 'h1');
 
   await expect(placeholder).toBeVisible();
-  await expect(placeholder).toHaveText('Heading 1');
+  await expect(placeholder).toHaveText('Encabezado 1');
   await updateBlockType(page, 'affine:paragraph', 'text');
   await focusRichText(page, 0);
   await expect(placeholder).toBeVisible();
-  await expect(placeholder).toContainText("Type '/' for commands");
+  await expect(placeholder).toContainText("Escribe '/' para ver los comandos");
 
   await pressEnter(page);
   await expect(placeholder).toHaveCount(1);

@@ -21,7 +21,7 @@ export const PRIMARY_GROUPS: MenuItemGroup<ImageToolbarContext>[] = [
     items: [
       {
         type: 'download',
-        label: 'Download',
+        label: 'Descargar', // 'Download'
         icon: DownloadIcon,
         generate: ({ blockComponent }) => {
           return {
@@ -47,7 +47,7 @@ export const PRIMARY_GROUPS: MenuItemGroup<ImageToolbarContext>[] = [
       },
       {
         type: 'caption',
-        label: 'Caption',
+        label: 'Descripción', // 'Caption'
         icon: CaptionIcon,
         when: ({ doc }) => !doc.readonly,
         generate: ({ blockComponent }) => {
@@ -82,7 +82,7 @@ export const clipboardGroup: MenuItemGroup<ImageToolbarContext> = {
   items: [
     {
       type: 'copy',
-      label: 'Copy',
+      label: 'Copiar', // 'Copy'
       icon: CopyIcon,
       action: ({ blockComponent, close }) => {
         blockComponent.copy();
@@ -91,7 +91,7 @@ export const clipboardGroup: MenuItemGroup<ImageToolbarContext> = {
     },
     {
       type: 'duplicate',
-      label: 'Duplicate',
+      label: 'Duplicar', // 'Duplicate'
       icon: DuplicateIcon,
       when: ({ doc }) => !doc.readonly,
       action: ({ blockComponent, abortController }) => {
@@ -106,7 +106,7 @@ export const conversionsGroup: MenuItemGroup<ImageToolbarContext> = {
   type: 'conversions',
   items: [
     {
-      label: 'Turn into card view',
+      label: 'Convertir a vista de tarjeta', // 'Turn into card view'
       type: 'turn-into-card-view',
       icon: BookmarkIcon,
       when: ({ doc, blockComponent }) => {
@@ -129,7 +129,7 @@ export const deleteGroup: MenuItemGroup<ImageToolbarContext> = {
   items: [
     {
       type: 'delete',
-      label: 'Delete',
+      label: 'Eliminar', // 'Delete'
       icon: DeleteIcon,
       when: ({ doc }) => !doc.readonly,
       action: ({ doc, blockComponent, close }) => {

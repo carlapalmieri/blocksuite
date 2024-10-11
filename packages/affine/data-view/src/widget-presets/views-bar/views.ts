@@ -151,7 +151,7 @@ export class DataViewHeaderViews extends WidgetBase {
         items: [
           {
             type: 'action',
-            name: 'Edit View',
+            name: 'Editar vista',
             icon: renderUniLit(this.getRenderer(id).icon, {}),
             select: () => {
               this.closest('affine-data-view-renderer')
@@ -161,7 +161,7 @@ export class DataViewHeaderViews extends WidgetBase {
           },
           {
             type: 'action',
-            name: 'Move Left',
+            name: 'Mover a la izquierda',
             hide: () => index === 0,
             icon: MoveLeftIcon(),
             select: () => {
@@ -174,7 +174,7 @@ export class DataViewHeaderViews extends WidgetBase {
           },
           {
             type: 'action',
-            name: 'Move Right',
+            name: 'Mover a la derecha',
             icon: MoveRightIcon(),
             hide: () => index === views.length - 1,
             select: () => {
@@ -187,7 +187,7 @@ export class DataViewHeaderViews extends WidgetBase {
           },
           {
             type: 'action',
-            name: 'Duplicate',
+            name: 'Duplicar',
             icon: DuplicateIcon(),
             select: () => {
               this.viewManager.viewDuplicate(id);
@@ -199,7 +199,7 @@ export class DataViewHeaderViews extends WidgetBase {
             children: () => [
               {
                 type: 'action',
-                name: 'Delete View',
+                name: 'Eliminar vista',
                 icon: DeleteIcon(),
                 select: () => {
                   view.delete();
@@ -229,7 +229,7 @@ export class DataViewHeaderViews extends WidgetBase {
     }
     return html`
       <div class="database-view-button dv-hover" @click="${this._showMore}">
-        ${views.length - count} More
+        ${views.length - count} Más
       </div>
     `;
   };

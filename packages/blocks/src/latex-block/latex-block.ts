@@ -50,7 +50,7 @@ export class LatexBlockComponent extends CaptionedBlockComponent<LatexBlockModel
 
         if (latex.length === 0) {
           render(
-            html`<span class="latex-block-empty-placeholder">Equation</span>`,
+            html`<span class="latex-block-empty-placeholder">Ecuación</span>`,
             katexContainer
           );
         } else {
@@ -65,7 +65,7 @@ export class LatexBlockComponent extends CaptionedBlockComponent<LatexBlockModel
             delete katexContainer['_$litPart$'];
             render(
               html`<span class="latex-block-error-placeholder"
-                >Error equation</span
+                >Error en la ecuación</span
               >`,
               katexContainer
             );

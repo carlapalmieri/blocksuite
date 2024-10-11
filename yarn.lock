@@ -6315,9 +6315,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blocksuite@workspace:.":
+"blocksuite-es@workspace:.":
   version: 0.0.0-use.local
-  resolution: "blocksuite@workspace:."
+  resolution: "blocksuite-es@workspace:."
   dependencies:
     "@changesets/cli": "npm:^2.27.7"
     "@commitlint/cli": "npm:^19.4.0"

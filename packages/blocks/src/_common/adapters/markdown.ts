@@ -339,7 +339,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
                 views: [
                   {
                     id: nanoid(),
-                    name: 'Table View',
+                    name: 'Vista de tabla',
                     mode: 'table',
                     columns: [],
                     filter: {

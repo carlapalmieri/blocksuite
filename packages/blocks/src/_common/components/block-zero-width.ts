@@ -12,6 +12,7 @@ export class BlockZeroWidth extends LitElement {
       position: absolute;
       bottom: -10px;
       width: 100%;
+      height: 0px;
       cursor: text;
       z-index: 1;
     }

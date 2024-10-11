@@ -25,19 +25,19 @@ export const BUILT_IN_GROUPS: MenuItemGroup<EmbedCardToolbarContext>[] = [
     items: [
       {
         type: 'copy',
-        label: 'Copy',
+        label: 'Copiar', // 'Copy'
         icon: CopyIcon,
         disabled: ({ doc }) => doc.readonly,
         action: async ({ host, doc, std, blockComponent, close }) => {
           const slice = Slice.fromModels(doc, [blockComponent.model]);
           await std.clipboard.copySlice(slice);
-          toast(host, 'Copied link to clipboard');
+          toast(host, 'Enlace copiado al portapapeles');
           close();
         },
       },
       {
         type: 'duplicate',
-        label: 'Duplicate',
+        label: 'Duplicar', // 'Duplicate'
         icon: DuplicateIcon,
         disabled: ({ doc }) => doc.readonly,
         action: ({ doc, blockComponent, close }) => {
@@ -59,7 +59,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<EmbedCardToolbarContext>[] = [
       },
       {
         type: 'reload',
-        label: 'Reload',
+        label: 'Recargar', // 'Reload'
         icon: RefreshIcon,
         disabled: ({ doc }) => doc.readonly,
         action: ({ blockComponent, close }) => {
@@ -85,7 +85,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<EmbedCardToolbarContext>[] = [
     items: [
       {
         type: 'delete',
-        label: 'Delete',
+        label: 'Eliminar', // 'Delete'
         icon: DeleteIcon,
         disabled: ({ doc }) => doc.readonly,
         action: ({ doc, blockComponent, close }) => {

@@ -133,7 +133,7 @@ export const popCreateFilter = (
         children: () => [
           {
             type: 'action',
-            name: 'Add filter group',
+            name: 'Agregar grupo de filtros',
             icon: AddCursorIcon(),
             select: () => {
               props.onSelect(firstFilterInGroup(props.vars));

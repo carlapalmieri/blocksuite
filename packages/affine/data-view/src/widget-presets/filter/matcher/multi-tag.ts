@@ -15,7 +15,7 @@ export const multiTagFilter = {
       args: [tArray(tTypeRef('options')), tArray(tTypeRef('options'))],
       rt: tBoolean.create(),
     }),
-    label: 'Contains all',
+    label: 'Contiene todos',
     impl: (value, target) => {
       if (!Array.isArray(target) || !Array.isArray(value) || !target.length) {
         return true;
@@ -30,7 +30,7 @@ export const multiTagFilter = {
       rt: tBoolean.create(),
     }),
     name: 'containsOneOf',
-    label: 'Contains one of',
+    label: 'Contiene uno de',
     impl: (value, target) => {
       if (!Array.isArray(target) || !Array.isArray(value) || !target.length) {
         return true;
@@ -44,7 +44,7 @@ export const multiTagFilter = {
       args: [tArray(tTypeRef('options')), tArray(tTypeRef('options'))],
       rt: tBoolean.create(),
     }),
-    label: 'Does not contains one of',
+    label: 'No contiene uno de',
     impl: (value, target) => {
       if (!Array.isArray(target) || !Array.isArray(value) || !target.length) {
         return true;
@@ -58,7 +58,7 @@ export const multiTagFilter = {
       args: [tArray(tTypeRef('options')), tArray(tTypeRef('options'))],
       rt: tBoolean.create(),
     }),
-    label: 'Does not contains all',
+    label: 'No contiene todos',
     impl: (value, target) => {
       if (!Array.isArray(target) || !Array.isArray(value) || !target.length) {
         return true;

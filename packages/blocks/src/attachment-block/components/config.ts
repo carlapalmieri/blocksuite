@@ -19,14 +19,14 @@ export const BUILT_IN_GROUPS: MenuItemGroup<AttachmentToolbarMoreMenuContext>[] 
       items: [
         {
           type: 'copy',
-          label: 'Copy',
+          label: 'Copiar',
           icon: CopyIcon,
           disabled: ({ doc }) => doc.readonly,
           action: ctx => ctx.blockComponent.copy(),
         },
         {
           type: 'duplicate',
-          label: 'Duplicate',
+          label: 'Duplicar',
           icon: DuplicateIcon,
           disabled: ({ doc }) => doc.readonly,
           action: ({ doc, blockComponent, close }) => {
@@ -41,7 +41,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<AttachmentToolbarMoreMenuContext>[] 
         },
         {
           type: 'reload',
-          label: 'Reload',
+          label: 'Recargar',
           icon: RefreshIcon,
           disabled: ({ doc }) => doc.readonly,
           action: ({ blockComponent, close }) => {
@@ -51,7 +51,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<AttachmentToolbarMoreMenuContext>[] 
         },
         {
           type: 'download',
-          label: 'Download',
+          label: 'Descargar',
           icon: DownloadIcon,
           disabled: ({ doc }) => doc.readonly,
           action: ({ blockComponent, close }) => {
@@ -66,7 +66,7 @@ export const BUILT_IN_GROUPS: MenuItemGroup<AttachmentToolbarMoreMenuContext>[] 
       items: [
         {
           type: 'delete',
-          label: 'Delete',
+          label: 'Eliminar',
           icon: DeleteIcon,
           disabled: ({ doc }) => doc.readonly,
           action: ({ doc, blockComponent, close }) => {

@@ -47,11 +47,11 @@ export class CodeBlockComponent extends CaptionedBlockComponent<
   languageName$: Signal<string> = computed(() => {
     const lang = this.model.language$.value;
     if (lang === null) {
-      return 'Plain Text';
+      return 'Texto plano';
     }
 
     const matchedInfo = this.service.langs.find(info => info.id === lang);
-    return matchedInfo ? matchedInfo.name : 'Plain Text';
+    return matchedInfo ? matchedInfo.name : 'Texto plano';
   });
 
   get inlineEditor() {
@@ -355,10 +355,10 @@ export class CodeBlockComponent extends CaptionedBlockComponent<
     this.std.clipboard
       .copySlice(slice)
       .then(() => {
-        toast(this.host, 'Copied to clipboard');
+        toast(this.host, 'Copiado al portapapeles');
       })
       .catch(e => {
-        toast(this.host, 'Copied failed, something went wrong');
+        toast(this.host, 'Error al copiar, algo salió mal');
         console.error(e);
       });
   }

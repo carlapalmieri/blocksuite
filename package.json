@@ -1,5 +1,5 @@
 {
-  "name": "blocksuite",
+  "name": "blocksuite-es",
   "version": "0.16.0",
   "private": true,
   "type": "commonjs",
@@ -127,5 +127,6 @@
   },
   "dependencies": {
     "@size-limit/esbuild-why": "^11.1.5"
-  }
+  },
+  "description": "Versión en español de BlockSuite / Spanish version of BlockSuite"
 }

@@ -1,4 +1,4 @@
-# BlockSuite
+# BlockSuite (Versión en Español / Spanish Version)
 
 <p align="center">
   <picture style="width: 500px">

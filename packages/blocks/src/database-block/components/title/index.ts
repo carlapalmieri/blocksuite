@@ -42,7 +42,7 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
     }
 
     .affine-database-title [data-title-empty='true']::before {
-      content: 'Untitled';
+      content: 'Sin título';
       position: absolute;
       pointer-events: none;
       color: var(--affine-text-primary-color);
@@ -146,7 +146,7 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
         data-block-is-database-title="true"
         title="${this.titleText.toString()}"
       ></rich-text>
-      <div class="database-title" style="float:left;height: 0;">Untitled</div>
+      <div class="database-title" style="float:left;height: 0;">Sin título</div>
     </div>`;
   }
 

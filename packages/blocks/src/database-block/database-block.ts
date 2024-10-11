@@ -102,7 +102,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
     const options = this.optionsConfig.configure(this.model, {
       input: {
         initValue: this.model.title.toString(),
-        placeholder: 'Untitled',
+        placeholder: 'Sin título',
         onComplete: text => {
           this.model.title.replace(0, this.model.title.length, text);
         },
@@ -111,13 +111,13 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
         {
           type: 'action',
           icon: CopyIcon(),
-          name: 'Copy',
+          name: 'Copiar',
           select: () => {
             const slice = Slice.fromModels(this.doc, [this.model]);
             this.std.clipboard
               .copySlice(slice)
               .then(() => {
-                toast(this.host, 'Copied to clipboard');
+                toast(this.host, 'Copiado al portapapeles');
               })
               .catch(console.error);
           },
@@ -130,7 +130,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
               type: 'action',
               icon: DeleteIcon(),
               class: 'delete-item',
-              name: 'Delete Database',
+              name: 'Eliminar Base de datos',
               select: () => {
                 this.model.children.slice().forEach(block => {
                   this.doc.deleteBlock(block);

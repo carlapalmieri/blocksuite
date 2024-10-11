@@ -38,7 +38,7 @@ export type KanbanViewData = BasicViewDataType<
   DataType
 >;
 export const kanbanViewModel = kanbanViewType.createModel<KanbanViewData>({
-  defaultName: 'Kanban View',
+  defaultName: 'Vista de Kanban',
   dataViewManager: KanbanSingleView,
   defaultData: viewManager => {
     const columns = viewManager.dataSource.properties$.value;

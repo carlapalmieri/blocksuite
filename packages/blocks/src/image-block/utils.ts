@@ -54,7 +54,7 @@ export async function uploadBlobForImage(
     if (error instanceof Error) {
       toast(
         editorHost,
-        `Failed to upload image! ${error.message || error.toString()}`
+        `Error al subir la imagen! ${error.message || error.toString()}`
       );
     }
   } finally {
@@ -162,7 +162,7 @@ export async function downloadImageBlob(
 ) {
   const { host, downloading } = block;
   if (downloading) {
-    toast(host, 'Download in progress...');
+    toast(host, 'Descargando...');
     return;
   }
 
@@ -170,11 +170,11 @@ export async function downloadImageBlob(
 
   const blob = await getImageBlob(block.model);
   if (!blob) {
-    toast(host, `Unable to download image!`);
+    toast(host, `No se pudo descargar la imagen!`);
     return;
   }
 
-  toast(host, `Downloading image...`);
+  toast(host, `Descargando imagen...`);
 
   downloadBlob(blob, 'image');
 
@@ -234,7 +234,7 @@ export async function copyImageBlob(
   const { host, model } = block;
   let blob = await getImageBlob(model);
   if (!blob) {
-    console.error('Failed to get image blob');
+    console.error('No se pudo obtener el blob de la imagen');
     return;
   }
 
@@ -245,7 +245,7 @@ export async function copyImageBlob(
       if (!dataURL)
         throw new BlockSuiteError(
           ErrorCode.DefaultRuntimeError,
-          'Cant convert a blob to data URL.'
+          'No se pudo convertir un blob a URL de datos.'
         );
       // @ts-ignore
       await window.apis.clipboard?.copyAsImageFromString(dataURL);
@@ -254,7 +254,7 @@ export async function copyImageBlob(
       if (blob.type !== 'image/png') {
         const pngBlob = await convertToPng(blob);
         if (!pngBlob) {
-          console.error('Failed to convert blob to PNG');
+          console.error('No se pudo convertir el blob a PNG');
           return;
         }
         blob = pngBlob;
@@ -262,7 +262,7 @@ export async function copyImageBlob(
 
       if (!globalThis.isSecureContext) {
         console.error(
-          'Clipboard API is not available in insecure context',
+          'La API de Clipboard no está disponible en un contexto no seguro',
           blob.type,
           blob
         );
@@ -274,7 +274,7 @@ export async function copyImageBlob(
       ]);
     }
 
-    toast(host, 'Copied image to clipboard');
+    toast(host, 'Imagen copiada al portapapeles');
   } catch (error) {
     console.error(error);
   }
@@ -305,7 +305,7 @@ export function addSiblingImageBlock(
   if (isSizeExceeded) {
     toast(
       editorHost,
-      `You can only upload files less than ${humanFileSize(
+      `Solo puedes subir archivos menores a ${humanFileSize(
         maxFileSize,
         true,
         0
@@ -347,7 +347,7 @@ export function addImageBlocks(
   if (isSizeExceeded) {
     toast(
       editorHost,
-      `You can only upload files less than ${humanFileSize(
+      `Solo puedes subir archivos menores a ${humanFileSize(
         maxFileSize,
         true,
         0
@@ -375,7 +375,7 @@ export async function turnImageIntoCardView(
 ) {
   const doc = block.doc;
   if (!doc.schema.flavourSchemaMap.has('affine:attachment')) {
-    console.error('The attachment flavour is not supported!');
+    console.error('El tipo de adjunto no es compatible!');
     return;
   }
 
@@ -383,7 +383,7 @@ export async function turnImageIntoCardView(
   const sourceId = model.sourceId;
   const blob = await getImageBlob(model);
   if (!sourceId || !blob) {
-    console.error('Image data not available');
+    console.error('No se pudo obtener los datos de la imagen');
     return;
   }
 

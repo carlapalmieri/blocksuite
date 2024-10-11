@@ -81,7 +81,7 @@ export class SelectGroupView extends BaseGroup<
       return html` <div
         style="font-size: 14px;color: var(--affine-text-primary-color);line-height: 22px;"
       >
-        Ungroups
+        Sin agrupar
       </div>`;
     }
     const style = styleMap({

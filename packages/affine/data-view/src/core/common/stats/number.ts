@@ -4,34 +4,34 @@ import { tNumber } from '../../logical/data-type.js';
 
 export const numberStatsFunctions: StatsFunction[] = [
   {
-    group: 'More options',
-    menuName: 'Sum',
+    group: 'Más opciones',
+    menuName: 'Suma',
     type: 'sum',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
       const numbers = withoutNull(data);
       if (numbers.length === 0) {
-        return 'None';
+        return 'Ninguno';
       }
       return numbers.reduce((a, b) => a + b, 0).toString();
     },
   },
   {
-    group: 'More options',
-    menuName: 'Average',
+    group: 'Más opciones',
+    menuName: 'Promedio',
     type: 'average',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
       const numbers = withoutNull(data);
       if (numbers.length === 0) {
-        return 'None';
+        return 'Ninguno';
       }
       return (numbers.reduce((a, b) => a + b, 0) / numbers.length).toString();
     },
   },
   {
-    group: 'More options',
-    menuName: 'Median',
+    group: 'Más opciones',
+    menuName: 'Mediana',
     type: 'median',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
@@ -43,12 +43,12 @@ export const numberStatsFunctions: StatsFunction[] = [
         const index = arr.length / 2;
         result = (arr[index] + arr[index - 1]) / 2;
       }
-      return result?.toString() ?? 'None';
+      return result?.toString() ?? 'Ninguno';
     },
   },
   {
-    group: 'More options',
-    menuName: 'Min',
+    group: 'Más opciones',
+    menuName: 'Mínimo',
     type: 'min',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
@@ -62,12 +62,12 @@ export const numberStatsFunctions: StatsFunction[] = [
           }
         }
       }
-      return min?.toString() ?? 'None';
+      return min?.toString() ?? 'Ninguno';
     },
   },
   {
-    group: 'More options',
-    menuName: 'Max',
+    group: 'Más opciones',
+    menuName: 'Máximo',
     type: 'max',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
@@ -81,12 +81,12 @@ export const numberStatsFunctions: StatsFunction[] = [
           }
         }
       }
-      return max?.toString() ?? 'None';
+      return max?.toString() ?? 'Ninguno';
     },
   },
   {
-    group: 'More options',
-    menuName: 'Range',
+    group: 'Más opciones',
+    menuName: 'Rango',
     type: 'range',
     dataType: tNumber.create(),
     impl: (data: number[]) => {
@@ -107,7 +107,7 @@ export const numberStatsFunctions: StatsFunction[] = [
         }
       }
       if (min == null || max == null) {
-        return 'None';
+        return 'Ninguno';
       }
       return (max - min).toString();
     },

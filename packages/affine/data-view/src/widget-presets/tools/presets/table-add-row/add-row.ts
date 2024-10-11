@@ -161,7 +161,7 @@ export class DataViewHeaderToolsAddRow extends WidgetBase {
       draggable="true"
       @click="${this._onAddNewRecord}"
     >
-      ${PlusIcon()}<span>New Record</span>
+      ${PlusIcon()}<span>Nueva fila</span>
     </div>`;
   }
 

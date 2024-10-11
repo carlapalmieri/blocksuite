@@ -135,7 +135,7 @@ export class BlockCaptionEditor<
 
     return html`<textarea
       .disabled=${this.doc.readonly}
-      placeholder="Write a caption"
+      placeholder="Escribe una descripción"
       class="block-caption-editor"
       .value=${this.caption ?? ''}
       @input=${this._onInputChange}

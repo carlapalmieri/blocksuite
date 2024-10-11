@@ -174,7 +174,10 @@ export class FilterRootView extends WithDisposable(ShadowlessElement) {
     popFilterableSimpleMenu(target, [
       {
         type: 'action',
-        name: filter.type === 'filter' ? 'Turn into group' : 'Wrap in group',
+        name:
+          filter.type === 'filter'
+            ? 'Convertir en grupo'
+            : 'Encapsular en grupo',
         icon: ConvertIcon(),
         onHover: hover => {
           this.containerClass = hover
@@ -188,7 +191,7 @@ export class FilterRootView extends WithDisposable(ShadowlessElement) {
       },
       {
         type: 'action',
-        name: 'Duplicate',
+        name: 'Duplicar',
         icon: DuplicateIcon(),
         onHover: hover => {
           this.containerClass = hover
@@ -211,7 +214,7 @@ export class FilterRootView extends WithDisposable(ShadowlessElement) {
         children: () => [
           {
             type: 'action',
-            name: 'Delete',
+            name: 'Eliminar',
             icon: DeleteIcon(),
             class: 'delete-item',
             onHover: hover => {
@@ -237,7 +240,7 @@ export class FilterRootView extends WithDisposable(ShadowlessElement) {
     const data = this.data;
     return html`
       <div style="padding: 15px 20px">
-        ${menuTitle('FILTER', () => {
+        ${menuTitle('FILTRAR', () => {
           this.onBack?.();
         })}
       </div>
@@ -308,7 +311,7 @@ export class FilterRootView extends WithDisposable(ShadowlessElement) {
         })}
       </div>
       <div class="filter-root-button add-new" @click="${this._addNew}">
-        ${PlusIcon()} Add ${ArrowDownSmallIcon()}
+        ${PlusIcon()} Agregar ${ArrowDownSmallIcon()}
       </div>
     `;
   }

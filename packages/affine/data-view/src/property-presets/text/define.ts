@@ -4,7 +4,7 @@ import { propertyType } from '../../core/property/property-config.js';
 export const textPropertyType = propertyType('text');
 
 export const textPropertyModelConfig = textPropertyType.modelConfig<string>({
-  name: 'Plain-Text',
+  name: 'Texto plano',
   type: () => tString.create(),
   defaultData: () => ({}),
   cellToString: data => data ?? '',

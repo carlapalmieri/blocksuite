@@ -47,7 +47,7 @@ export const popRowMenu = (
         children: () => [
           {
             type: 'action',
-            name: 'Copy',
+            name: 'Copiar',
             icon: html` <div
               style="transform: rotate(90deg);display:flex;align-items:center;"
             >
@@ -65,7 +65,7 @@ export const popRowMenu = (
         children: () => [
           {
             type: 'action',
-            name: 'Delete Rows',
+            name: 'Eliminar filas',
             class: 'delete-item',
             icon: DeleteIcon(),
             select: () => {
@@ -81,7 +81,7 @@ export const popRowMenu = (
   popFilterableSimpleMenu(ele, [
     {
       type: 'action',
-      name: 'Expand Row',
+      name: 'Expandir fila',
       icon: ExpandFullIcon(),
       select: () => {
         openDetail(dataViewEle, row.id, selectionController);
@@ -115,7 +115,7 @@ export const popRowMenu = (
       children: () => [
         {
           type: 'action',
-          name: 'Insert Before',
+          name: 'Insertar antes',
           icon: html` <div
             style="transform: rotate(90deg);display:flex;align-items:center;"
           >
@@ -127,7 +127,7 @@ export const popRowMenu = (
         },
         {
           type: 'action',
-          name: 'Insert After',
+          name: 'Insertar después',
           icon: html` <div
             style="transform: rotate(90deg);display:flex;align-items:center;"
           >
@@ -153,7 +153,7 @@ export const popRowMenu = (
       children: () => [
         {
           type: 'action',
-          name: 'Delete Row',
+          name: 'Eliminar fila',
           class: 'delete-item',
           icon: DeleteIcon(),
           select: () => {

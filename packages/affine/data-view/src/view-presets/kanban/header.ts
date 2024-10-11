@@ -55,7 +55,7 @@ export class KanbanHeader extends SignalWatcher(
     return html`
       <div></div>
       <div>
-        <div class="select-group" @click="${this.clickGroup}">Group</div>
+        <div class="select-group" @click="${this.clickGroup}">Grupo</div>
       </div>
     `;
   }

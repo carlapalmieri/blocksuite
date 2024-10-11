@@ -15,7 +15,7 @@ export const selectPropertyModelConfig = selectPropertyType.modelConfig<
   string,
   SelectPropertyData
 >({
-  name: 'Select',
+  name: 'Selección',
   type: data => tTag.create({ tags: data.options }),
   defaultData: () => ({
     options: [],

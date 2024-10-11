@@ -49,7 +49,7 @@ const editLinkStyle = css`
     padding: 4px 10px;
     display: grid;
     gap: 8px;
-    grid-template-columns: 26px auto;
+    grid-template-columns: 36px auto;
     grid-template-rows: repeat(1, 1fr);
     grid-template-areas: 'label input';
     user-select: none;

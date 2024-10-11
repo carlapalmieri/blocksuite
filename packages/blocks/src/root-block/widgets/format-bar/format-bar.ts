@@ -361,7 +361,6 @@ export class AffineFormatBarWidget extends WidgetComponent {
           'affine:paragraph',
           'affine:list',
           'affine:code',
-          'affine:image',
         ])
       ) {
         return false;
@@ -485,7 +484,7 @@ export class AffineFormatBarWidget extends WidgetComponent {
     const { key } = config;
     return this.addInlineAction({
       id: key,
-      name: camelCaseToWords(key),
+      name: keyToDescription[key],
       icon: config.icon,
       isActive: chain => {
         const [result] = chain.isTextStyleActive({ key }).run();
@@ -594,6 +593,15 @@ function camelCaseToWords(s: string) {
   const result = s.replace(/([A-Z])/g, ' $1');
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
+
+export const keyToDescription: Record<string, string> = {
+  bold: 'Negrita',
+  italic: 'Cursiva',
+  underline: 'Subrayado',
+  strike: 'Tachado',
+  code: 'Código',
+  link: 'Enlace',
+};
 
 declare global {
   interface HTMLElementTagNameMap {

@@ -155,7 +155,7 @@ export class DataViewHeaderToolsSearch extends WidgetBase {
           ${SearchIcon()}
         </div>
         <input
-          placeholder="Search..."
+          placeholder="Buscar..."
           class="affine-database-search-input"
           @input="${this._onSearch}"
           @click="${(event: MouseEvent) => event.stopPropagation()}"
@@ -175,9 +175,9 @@ export class DataViewHeaderToolsSearch extends WidgetBase {
                 borderRadius: '4px',
                 background: 'var(--affine-white-10)',
               })}
-              >Esc</span
+              >Escape</span
             >
-            to clear all
+            para borrar todo
           </affine-tooltip>
         </div>
       </label>

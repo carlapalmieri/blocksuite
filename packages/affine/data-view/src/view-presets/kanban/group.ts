@@ -133,7 +133,7 @@ export class KanbanGroup extends SignalWatcher(
     popFilterableSimpleMenu(ele, [
       {
         type: 'action',
-        name: 'Ungroup',
+        name: 'Desagrupar',
         hide: () => this.group.value == null,
         select: () => {
           this.group.rows.forEach(id => {
@@ -143,7 +143,7 @@ export class KanbanGroup extends SignalWatcher(
       },
       {
         type: 'action',
-        name: 'Delete Cards',
+        name: 'Eliminar tarjetas',
         select: () => {
           this.view.rowDelete(this.group.rows);
         },
@@ -185,7 +185,7 @@ export class KanbanGroup extends SignalWatcher(
               >
                 ${AddCursorIcon()}
               </div>
-              Add
+              Agregar
             </div>`}
       </div>
     `;

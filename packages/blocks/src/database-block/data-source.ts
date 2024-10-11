@@ -418,17 +418,17 @@ export const databaseViewInitTemplate = (
         {
           id: ids[0],
           color: getTagColor(),
-          value: 'TODO',
+          value: 'Por hacer',
         },
         {
           id: ids[1],
           color: getTagColor(),
-          value: 'In Progress',
+          value: 'En progreso',
         },
         {
           id: ids[2],
           color: getTagColor(),
-          value: 'Done',
+          value: 'Listo',
         },
       ],
     })
@@ -437,7 +437,7 @@ export const databaseViewInitTemplate = (
     const rowId = model.doc.addBlock(
       'affine:paragraph',
       {
-        text: new model.doc.Text(`Task ${i + 1}`),
+        text: new model.doc.Text(`Tarea ${i + 1}`),
       },
       model.id
     );

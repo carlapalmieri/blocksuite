@@ -146,7 +146,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
       [
         {
           type: 'delete',
-          label: 'Delete',
+          label: 'Eliminar',
           icon: DeleteIcon,
           disabled: this.doc.readonly,
           action: () => this._delete(),
@@ -164,7 +164,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
   private _openMenuButton() {
     const buttons: MenuItem[] = [
       {
-        label: 'Open this doc',
+        label: 'Abrir este documento',
         type: 'open-this-doc',
         icon: ExpandFullSmallIcon,
         action: () => this._openDoc(),
@@ -176,7 +176,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
 
     if (isPeekable(this.target)) {
       buttons.push({
-        label: 'Open in center peek',
+        label: 'Abrir en peek central',
         type: 'open-in-center-peek',
         icon: CenterPeekIcon,
         action: () => peek(this.target),
@@ -230,12 +230,12 @@ export class ReferencePopup extends WithDisposable(LitElement) {
 
     buttons.push({
       type: 'inline',
-      label: 'Inline view',
+      label: 'Vista en linea',
     });
 
     buttons.push({
       type: 'card',
-      label: 'Card view',
+      label: 'Vista de tarjeta',
       action: () => this._convertToCardView(),
       disabled: this.doc.readonly,
     });
@@ -243,7 +243,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
     if (isSyncedDocEnabled) {
       buttons.push({
         type: 'embed',
-        label: 'Embed view',
+        label: 'Vista incrustada',
         action: () => this._convertToEmbedView(),
         disabled:
           this.doc.readonly ||
@@ -257,7 +257,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Switch view"
+            aria-label="Cambiar vista"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
             .iconContainerWidth=${'110px'}
@@ -317,7 +317,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
         <editor-menu-button
           .contentPadding=${'8px'}
           .button=${html`
-            <editor-icon-button aria-label="More" .tooltip=${'More'}>
+            <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
               ${MoreVerticalIcon}
             </editor-icon-button>
           `}

@@ -5,7 +5,7 @@ export const checkboxPropertyType = propertyType('checkbox');
 
 export const checkboxPropertyModelConfig =
   checkboxPropertyType.modelConfig<boolean>({
-    name: 'Checkbox',
+    name: 'Casilla',
     type: () => tBoolean.create(),
     defaultData: () => ({}),
     cellToString: data => (data ? 'True' : 'False'),

@@ -5,7 +5,7 @@ import { propertyType, tRichText } from '@blocksuite/data-view';
 export const titleColumnType = propertyType('title');
 
 export const titlePurePropertyConfig = titleColumnType.modelConfig<Text>({
-  name: 'Title',
+  name: 'Título',
   type: () => tRichText.create(),
   defaultData: () => ({}),
   cellToString: data => data?.toString() ?? '',

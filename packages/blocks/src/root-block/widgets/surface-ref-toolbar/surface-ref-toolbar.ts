@@ -194,7 +194,7 @@ function SurfaceRefToolbarOptions({
       <editor-menu-button
         .contentPadding=${'8px'}
         .button=${html`
-          <editor-icon-button aria-label="More" .tooltip=${'More'}>
+          <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
             ${MoreVerticalIcon}
           </editor-icon-button>
         `}

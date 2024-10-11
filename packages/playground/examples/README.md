@@ -1,3 +1,3 @@
-# BlockSuite Playground Examples
+# Ejemplos de BlockSuite (Versión en Español / Spanish Version)
 
-This directory hosts a collection of simple examples designed for internal demonstration and debugging of specific functionalities within BlockSuite. They are built and deployed together with the [playground apps](../apps).
+Este directorio contiene ejemplos de uso para la versión en español de BlockSuite. / This directory contains usage examples for the Spanish version of BlockSuite.

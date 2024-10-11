@@ -1003,7 +1003,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
                 views: [
                   {
                     id: nanoid(),
-                    name: 'Table View',
+                    name: 'Vista de tabla',
                     mode: 'table',
                     columns: [],
                     filter: {
@@ -1128,7 +1128,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
       type: 'page',
       meta: {
         id: payload.pageId ?? nanoid(),
-        title: hastGetTextContent(titleAst, 'Untitled'),
+        title: hastGetTextContent(titleAst, 'Sin título'),
         createDate: Date.now(),
         tags: [],
       },

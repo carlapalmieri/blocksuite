@@ -62,7 +62,7 @@ export class MultiTagSelect extends WithDisposable(ShadowlessElement) {
         items: [
           {
             type: 'action',
-            name: 'Delete',
+            name: 'Eliminar',
             icon: DeleteIcon(),
             class: 'delete-item',
             select: () => {
@@ -71,7 +71,7 @@ export class MultiTagSelect extends WithDisposable(ShadowlessElement) {
           },
           {
             type: 'group',
-            name: 'color',
+            name: 'Color',
             children: () =>
               selectOptionColors.map(item => {
                 const styles = styleMap({
@@ -349,7 +349,7 @@ export class MultiTagSelect extends WithDisposable(ShadowlessElement) {
           })}
           <input
             class="select-input"
-            placeholder="Type here..."
+            placeholder="Escribe aquí..."
             .value="${this.text}"
             @input="${this._onInput}"
             @keydown="${this._onInputKeydown}"
@@ -358,7 +358,7 @@ export class MultiTagSelect extends WithDisposable(ShadowlessElement) {
         </div>
         <div class="select-option-container">
           <div class="select-option-container-header">
-            Select tag or create one
+            Selecciona una etiqueta o crea una
           </div>
           ${repeat(
             this.filteredOptions,
@@ -385,7 +385,7 @@ export class MultiTagSelect extends WithDisposable(ShadowlessElement) {
                   >
                     ${select.isCreate
                       ? html` <div class="select-option-new-icon">
-                          Create ${PlusIcon()}
+                          Crear ${PlusIcon()}
                         </div>`
                       : ''}
                     <div style="display:flex;flex-direction: column">

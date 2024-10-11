@@ -9,16 +9,16 @@ export class ParagraphBlockService extends BlockService {
 
   placeholderGenerator: (model: ParagraphBlockModel) => string = model => {
     if (model.type === 'text') {
-      return "Type '/' for commands";
+      return "Escribe '/' para ver los comandos";
     }
 
     const placeholders = {
-      h1: 'Heading 1',
-      h2: 'Heading 2',
-      h3: 'Heading 3',
-      h4: 'Heading 4',
-      h5: 'Heading 5',
-      h6: 'Heading 6',
+      h1: 'Encabezado 1',
+      h2: 'Encabezado 2',
+      h3: 'Encabezado 3',
+      h4: 'Encabezado 4',
+      h5: 'Encabezado 5',
+      h6: 'Encabezado 6',
       quote: '',
     };
     return placeholders[model.type];

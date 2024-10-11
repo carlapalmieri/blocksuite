@@ -219,19 +219,19 @@ export async function popImageMoreMenu(page: Page) {
   const menu = page.locator('.image-more-popup-menu');
 
   const turnIntoCardButton = page.locator('editor-menu-action', {
-    hasText: 'Turn into card view',
+    hasText: 'Convertir en vista de tarjeta',
   });
 
   const copyButton = page.locator('editor-menu-action', {
-    hasText: 'Copy',
+    hasText: 'Copiar',
   });
 
   const duplicateButton = page.locator('editor-menu-action', {
-    hasText: 'Duplicate',
+    hasText: 'Duplicar',
   });
 
   const deleteButton = page.locator('editor-menu-action', {
-    hasText: 'Delete',
+    hasText: 'Eliminar',
   });
 
   return {

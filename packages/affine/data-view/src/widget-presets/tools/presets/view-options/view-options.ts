@@ -112,11 +112,11 @@ export const popViewOptions = (
       items: [
         {
           type: 'group',
-          name: 'Layout',
+          name: 'Diseño',
           children: () => [
             {
               type: 'sub-menu',
-              name: 'Layout',
+              name: 'Diseño',
               options: {
                 input: {
                   search: true,
@@ -144,7 +144,7 @@ export const popViewOptions = (
         },
         {
           type: 'action',
-          name: 'Properties',
+          name: 'Propiedades',
           icon: InfoIcon(),
           postfix: ArrowRightSmallIcon(),
           select: () => {
@@ -158,7 +158,7 @@ export const popViewOptions = (
         },
         {
           type: 'action',
-          name: 'Filter',
+          name: 'Filtros',
           icon: FilterIcon(),
           postfix: ArrowRightSmallIcon(),
           select: () => {
@@ -179,7 +179,7 @@ export const popViewOptions = (
         },
         {
           type: 'action',
-          name: 'Group',
+          name: 'Agrupar',
           icon: GroupingIcon(),
           postfix: ArrowRightSmallIcon(),
           select: () => {
@@ -193,7 +193,7 @@ export const popViewOptions = (
         },
         {
           type: 'action',
-          name: 'Duplicate',
+          name: 'Duplicar',
           icon: DuplicateIcon(),
           select: () => {
             view.duplicate();
@@ -205,7 +205,7 @@ export const popViewOptions = (
           children: () => [
             {
               type: 'action',
-              name: 'Delete View',
+              name: 'Eliminar vista',
               icon: DeleteIcon(),
               select: () => {
                 view.delete();

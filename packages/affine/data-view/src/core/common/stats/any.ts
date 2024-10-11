@@ -4,9 +4,9 @@ import { tUnknown } from '../../logical/typesystem.js';
 
 export const anyTypeStatsFunctions: StatsFunction[] = [
   {
-    group: 'Count',
-    menuName: 'Count All',
-    displayName: 'All',
+    group: 'Contar',
+    menuName: 'Contar todos',
+    displayName: 'Todos',
     type: 'count-all',
     dataType: tUnknown.create(),
     impl: (data: unknown[]) => {
@@ -14,9 +14,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Count',
-    menuName: 'Count Values',
-    displayName: 'Values',
+    group: 'Contar',
+    menuName: 'Contar valores',
+    displayName: 'Valores',
     type: 'count-values',
     dataType: tUnknown.create(),
     impl: (data: unknown[], { meta }) => {
@@ -32,9 +32,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Count',
-    menuName: 'Count Unique Values',
-    displayName: 'Unique Values',
+    group: 'Contar',
+    menuName: 'Contar valores únicos',
+    displayName: 'Valores únicos',
     type: 'count-unique-values',
     dataType: tUnknown.create(),
     impl: (data: unknown[], { meta }) => {
@@ -50,9 +50,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Count',
-    menuName: 'Count Empty',
-    displayName: 'Empty',
+    group: 'Contar',
+    menuName: 'Contar vacíos',
+    displayName: 'Vacíos',
     type: 'count-empty',
     dataType: tUnknown.create(),
     impl: (data, { meta }) => {
@@ -61,9 +61,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Count',
-    menuName: 'Count Not Empty',
-    displayName: 'Not Empty',
+    group: 'Contar',
+    menuName: 'Contar no vacíos',
+    displayName: 'No vacíos',
     type: 'count-not-empty',
     dataType: tUnknown.create(),
     impl: (data: unknown[], { meta }) => {
@@ -72,9 +72,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Percent',
-    menuName: 'Percent Empty',
-    displayName: 'Empty',
+    group: 'Porcentaje',
+    menuName: 'Porcentaje vacíos',
+    displayName: 'Vacíos',
     type: 'percent-empty',
     dataType: tUnknown.create(),
     impl: (data: unknown[], { meta }) => {
@@ -84,9 +84,9 @@ export const anyTypeStatsFunctions: StatsFunction[] = [
     },
   },
   {
-    group: 'Percent',
-    menuName: 'Percent Not Empty',
-    displayName: 'Not Empty',
+    group: 'Porcentaje',
+    menuName: 'Porcentaje no vacíos',
+    displayName: 'No vacíos',
     type: 'percent-not-empty',
     dataType: tUnknown.create(),
     impl: (data: unknown[], { meta }) => {
