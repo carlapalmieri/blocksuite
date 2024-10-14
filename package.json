@@ -37,7 +37,8 @@
     "ci:version": "changeset version && yarn install --no-frozen-lockfile",
     "ci:publish": "yarn build:packages && yarn workspaces foreach -Ap --no-private npm publish --tolerate-republish --access public --tag latest",
     "ci:version:canary": "changeset version --snapshot canary && yarn install --no-frozen-lockfile",
-    "ci:publish:canary": "yarn build:packages && yarn workspaces foreach -Ap --no-private npm publish --access public --tag canary",
+    "ci:publish:canary": "yarn build:packages && yarn workspaces foreach -Ap --no-private pack",
+    "clean": "find . -name 'package.tgz' -delete && find . -name 'tsconfig.tsbuildinfo' -delete",
     "postinstall": "husky"
   },
   "lint-staged": {

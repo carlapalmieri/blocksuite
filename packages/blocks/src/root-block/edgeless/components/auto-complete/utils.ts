@@ -105,7 +105,7 @@ export class AutoCompleteNoteOverlay extends AutoCompleteTargetOverlay {
     ctx.fillStyle = 'black';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText("Type '/' for command", x + 24, y + h / 2);
+    ctx.fillText("Escribe '/' para ver los comandos", x + 24, y + h / 2);
   }
 }
 
