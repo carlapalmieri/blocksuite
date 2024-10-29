@@ -42,7 +42,7 @@ export type LinkedMenuGroup = {
   overflowText?: string;
 };
 
-const DEFAULT_DOC_NAME = 'Untitled';
+const DEFAULT_DOC_NAME = 'Sin título';
 const DISPLAY_NAME_LENGTH = 8;
 
 export function createLinkedDocMenuGroup(
@@ -57,33 +57,33 @@ export function createLinkedDocMenuGroup(
     .filter(({ id }) => id !== doc.id)
     .filter(({ title }) => isFuzzyMatch(title, query));
   const MAX_DOCS = 6;
-
+  const docs = filteredDocList.map(doc => ({
+    key: doc.id,
+    name: doc.title || DEFAULT_DOC_NAME,
+    icon:
+      editorHost.std.get(DocModeProvider).getPrimaryMode(doc.id) === 'edgeless'
+        ? LinkedEdgelessIcon
+        : LinkedDocIcon,
+    action: () => {
+      abort();
+      insertLinkedNode({
+        inlineEditor,
+        docId: doc.id,
+      });
+      editorHost.std.getOptional(TelemetryProvider)?.track('LinkedDocCreated', {
+        control: 'linked doc',
+        module: 'inline @',
+        type: 'doc',
+        other: 'existing doc',
+      });
+    },
+  }));
   return {
-    name: 'Link to Doc',
-    items: filteredDocList.map(doc => ({
-      key: doc.id,
-      name: doc.title || DEFAULT_DOC_NAME,
-      icon:
-        editorHost.std.get(DocModeProvider).getPrimaryMode(doc.id) ===
-        'edgeless'
-          ? LinkedEdgelessIcon
-          : LinkedDocIcon,
-      action: () => {
-        abort();
-        insertLinkedNode({
-          inlineEditor,
-          docId: doc.id,
-        });
-        editorHost.std
-          .getOptional(TelemetryProvider)
-          ?.track('LinkedDocCreated', {
-            control: 'linked doc',
-            module: 'inline @',
-            type: 'doc',
-            other: 'existing doc',
-          });
-      },
-    })),
+    name:
+      docs.length > 0
+        ? 'Enlace a una nota'
+        : 'No se encontraron notas para enlazar',
+    items: docs,
     maxDisplay: MAX_DOCS,
     overflowText: `${filteredDocList.length - MAX_DOCS} more docs`,
   };
@@ -177,8 +177,13 @@ export function getMenus(
   inlineEditor: AffineInlineEditor
 ): Promise<LinkedMenuGroup[]> {
   return Promise.resolve([
-    createLinkedDocMenuGroup(query, abort, editorHost, inlineEditor),
-    createNewDocMenuGroup(query, abort, editorHost, inlineEditor),
+    createLinkedDocMenuGroup(
+      query,
+      abort,
+      editorHost,
+      inlineEditor
+    ) as LinkedMenuGroup,
+    /*  createNewDocMenuGroup(query, abort, editorHost, inlineEditor) as LinkedMenuGroup, */
   ]);
 }
 

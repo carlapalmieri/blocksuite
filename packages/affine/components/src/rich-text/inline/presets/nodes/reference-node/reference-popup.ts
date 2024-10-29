@@ -164,7 +164,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
   private _openMenuButton() {
     const buttons: MenuItem[] = [
       {
-        label: 'Abrir este documento',
+        label: 'Abrir nota',
         type: 'open-this-doc',
         icon: ExpandFullSmallIcon,
         action: () => this._openDoc(),
@@ -194,7 +194,7 @@ export class ReferencePopup extends WithDisposable(LitElement) {
         .contentPadding=${'8px'}
         .button=${html`
           <editor-icon-button
-            aria-label="Open doc"
+            aria-label="Abrir nota"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
           >
@@ -260,10 +260,10 @@ export class ReferencePopup extends WithDisposable(LitElement) {
             aria-label="Cambiar vista"
             .justify=${'space-between'}
             .labelHeight=${'20px'}
-            .iconContainerWidth=${'110px'}
+            .iconContainerWidth=${'120px'}
+            .disabled=${true}
           >
-            <span class="label">Inline view</span>
-            ${SmallArrowDownIcon}
+            <span class="label">Vista en linea</span>
           </editor-icon-button>
         `}
       >

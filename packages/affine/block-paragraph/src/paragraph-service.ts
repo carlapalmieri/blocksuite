@@ -3,13 +3,31 @@ import {
   ParagraphBlockSchema,
 } from '@blocksuite/affine-model';
 import { BlockService } from '@blocksuite/block-std';
+import { html, type TemplateResult } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 
 export class ParagraphBlockService extends BlockService {
   static override readonly flavour = ParagraphBlockSchema.model.flavour;
 
-  placeholderGenerator: (model: ParagraphBlockModel) => string = model => {
+  inlineCodeStyle = {
+    'font-family': 'var(--affine-font-code-family)',
+    background: 'var(--affine-background-code-block)',
+    border: '1px solid var(--affine-border-color)',
+    'border-radius': '4px',
+    'font-variant-ligatures': 'none',
+    'line-height': 'auto',
+    'margin-top': '-1px',
+  };
+
+  placeholderGenerator: (
+    model: ParagraphBlockModel
+  ) => string | TemplateResult = model => {
     if (model.type === 'text') {
-      return "Escribe '/' para ver los comandos";
+      const template = html`<div>
+        Escribe <code style=${styleMap(this.inlineCodeStyle)}>/</code> para ver
+        los comandos
+      </div>`;
+      return template;
     }
 
     const placeholders = {

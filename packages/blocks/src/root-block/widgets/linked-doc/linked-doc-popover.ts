@@ -201,51 +201,49 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
     // XXX This is a side effect
     let accIdx = 0;
     return html`<div class="linked-doc-popover" style="${style}">
-      ${this._actionGroup
-        .filter(group => group.items.length)
-        .map((group, idx) => {
-          return html`
-            <div class="divider" ?hidden=${idx === 0}></div>
-            <div class="group-title">${group.name}</div>
-            <div class="group" style=${group.styles ?? ''}>
-              ${group.items.map(({ key, name, icon, action }) => {
-                accIdx++;
-                const curIdx = accIdx - 1;
-                const tooltip = this._showTooltip
-                  ? html`<affine-tooltip tip-position=${'right'}
-                      >${name}</affine-tooltip
-                    >`
-                  : nothing;
-                return html`<icon-button
-                  width="280px"
-                  height="32px"
-                  data-id=${key}
-                  text=${name}
-                  hover=${this._activatedItemIndex === curIdx}
-                  @click=${() => {
-                    action()?.catch(console.error);
-                  }}
-                  @mousemove=${() => {
-                    // Use `mousemove` instead of `mouseover` to avoid navigate conflict with keyboard
-                    this._activatedItemIndex = curIdx;
-                    // show tooltip whether text length overflows
-                    for (const button of this.iconButtons.values()) {
-                      if (button.dataset.id == key && button.textElement) {
-                        const isOverflowing = this._isTextOverflowing(
-                          button.textElement
-                        );
-                        this._showTooltip = isOverflowing;
-                        break;
-                      }
+      ${this._actionGroup.map((group, idx) => {
+        return html`
+          <div class="divider" ?hidden=${idx === 0}></div>
+          <div class="group-title">${group.name}</div>
+          <div class="group" style=${group.styles ?? ''}>
+            ${group.items.map(({ key, name, icon, action }) => {
+              accIdx++;
+              const curIdx = accIdx - 1;
+              const tooltip = this._showTooltip
+                ? html`<affine-tooltip tip-position=${'right'}
+                    >${name}</affine-tooltip
+                  >`
+                : nothing;
+              return html`<icon-button
+                width="280px"
+                height="32px"
+                data-id=${key}
+                text=${name}
+                hover=${this._activatedItemIndex === curIdx}
+                @click=${() => {
+                  action()?.catch(console.error);
+                }}
+                @mousemove=${() => {
+                  // Use `mousemove` instead of `mouseover` to avoid navigate conflict with keyboard
+                  this._activatedItemIndex = curIdx;
+                  // show tooltip whether text length overflows
+                  for (const button of this.iconButtons.values()) {
+                    if (button.dataset.id == key && button.textElement) {
+                      const isOverflowing = this._isTextOverflowing(
+                        button.textElement
+                      );
+                      this._showTooltip = isOverflowing;
+                      break;
                     }
-                  }}
-                >
-                  ${icon} ${tooltip}
-                </icon-button>`;
-              })}
-            </div>
-          `;
-        })}
+                  }
+                }}
+              >
+                ${icon} ${tooltip}
+              </icon-button>`;
+            })}
+          </div>
+        `;
+      })}
     </div>`;
   }
 
