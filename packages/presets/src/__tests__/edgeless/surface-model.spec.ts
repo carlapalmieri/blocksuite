@@ -35,7 +35,7 @@ describe('elements management', () => {
       type: 'shape',
     });
 
-    model.removeElement(id);
+    model.deleteElement(id);
 
     expect(model.elementModels.length).toBe(0);
   });
@@ -178,13 +178,9 @@ describe('group', () => {
       },
     });
 
-    model.removeElement(groupId);
+    model.deleteElement(groupId);
     expect(model.getGroup(id)).toBeNull();
     expect(model.getGroup(id2)).toBeNull();
-    // @ts-ignore
-    expect(model._elementToGroup.get(id)).toBeUndefined();
-    // @ts-ignore
-    expect(model._elementToGroup.get(id2)).toBeUndefined();
   });
 
   test('children can be updated with a plain object', () => {
@@ -318,7 +314,7 @@ describe('connector', () => {
       },
     });
 
-    model.removeElement(connectorId);
+    model.deleteElement(connectorId);
 
     await wait();
 

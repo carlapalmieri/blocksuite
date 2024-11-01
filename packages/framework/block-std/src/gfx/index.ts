@@ -3,10 +3,24 @@ export {
   renderableInEdgeless,
   SortOrder,
 } from '../utils/layer.js';
-export { GfxController, GfxControllerIdentifier } from './controller.js';
+export {
+  descendantElementsImpl,
+  getAncestorContainersImpl,
+  getTopElements,
+  hasDescendantElementImpl,
+} from '../utils/tree.js';
+export { GfxController } from './controller.js';
+export { GfxExtension, GfxExtensionIdentifier } from './extension.js';
 export * from './gfx-block-model.js';
 export { GridManager } from './grid.js';
+export { GfxControllerIdentifier } from './identifiers.js';
 export { LayerManager, type ReorderingDirection } from './layer.js';
+export { GfxSelectionManager } from './selection.js';
+export {
+  type GfxContainerElement,
+  gfxContainerSymbol,
+  isGfxContainerElm,
+} from './surface/container-element.js';
 export {
   convert,
   convertProps,
@@ -23,13 +37,10 @@ export {
 } from './surface/decorators/index.js';
 export {
   type BaseElementProps,
-  type GfxContainerElement,
-  gfxContainerSymbol,
   type GfxElementGeometry,
   GfxGroupLikeElementModel as GfxGroupLikeElementModel,
   GfxLocalElementModel,
   GfxPrimitiveElementModel as GfxPrimitiveElementModel,
-  isGfxContainerElm,
   type PointTestOptions,
   type SerializedElement,
 } from './surface/element-model.js';
@@ -38,7 +49,20 @@ export {
   type SurfaceBlockProps,
   type SurfaceMiddleware,
 } from './surface/surface-model.js';
-export * from './viewport.js';
 
+export {
+  SurfaceMiddlewareBuilder,
+  SurfaceMiddlewareExtension,
+} from './surface-middleware.js';
+
+export {
+  BaseTool,
+  type GfxToolsFullOption,
+  type GfxToolsFullOptionValue,
+  type GfxToolsMap,
+  type GfxToolsOption,
+} from './tool/tool.js';
+export { ToolController } from './tool/tool-controller.js';
+export * from './viewport.js';
 export { GfxViewportElement } from './viewport-element.js';
 export { generateKeyBetween, generateNKeysBetween } from 'fractional-indexing';

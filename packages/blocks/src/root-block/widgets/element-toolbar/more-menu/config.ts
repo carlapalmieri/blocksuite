@@ -8,7 +8,7 @@ import type { MenuItemGroup } from '@blocksuite/affine-components/toolbar';
 
 import { isPeekable, peek } from '@blocksuite/affine-components/peek';
 import { TelemetryProvider } from '@blocksuite/affine-shared/services';
-import { Bound } from '@blocksuite/global/utils';
+import { Bound, getCommonBoundWithRotation } from '@blocksuite/global/utils';
 import {
   ArrowDownBigBottomIcon,
   ArrowDownBigIcon,
@@ -36,7 +36,6 @@ import {
   notifyDocCreated,
   promptDocTitle,
 } from '../../../../_common/utils/render-linked-doc.js';
-import { edgelessElementsBound } from '../../../edgeless/utils/bound-utils.js';
 import { duplicate } from '../../../edgeless/utils/clipboard-utils.js';
 import { getSortedCloneElements } from '../../../edgeless/utils/clone-utils.js';
 import { moveConnectors } from '../../../edgeless/utils/connector.js';
@@ -322,10 +321,14 @@ export const conversionsGroup: MenuItemGroup<ElementToolbarMoreMenuContext> = {
           elements,
           title
         );
+        // delete selected elements
+        doc.transact(() => {
+          deleteElements(edgeless, elements);
+        });
         // insert linked doc card
         const width = 364;
         const height = 390;
-        const bound = edgelessElementsBound(elements);
+        const bound = getCommonBoundWithRotation(elements);
         const cardId = service.addBlock(
           'affine:embed-linked-doc',
           {
@@ -335,6 +338,10 @@ export const conversionsGroup: MenuItemGroup<ElementToolbarMoreMenuContext> = {
           },
           surface.model.id
         );
+        selection.set({
+          elements: [cardId],
+          editing: false,
+        });
         std.getOptional(TelemetryProvider)?.track('CanvasElementAdded', {
           control: 'context-menu',
           page: 'whiteboard editor',
@@ -354,14 +361,6 @@ export const conversionsGroup: MenuItemGroup<ElementToolbarMoreMenuContext> = {
           module: 'format toolbar',
           type: 'embed-linked-doc',
           other: 'new doc',
-        });
-        // delete selected elements
-        doc.transact(() => {
-          deleteElements(edgeless, elements);
-        });
-        selection.set({
-          elements: [cardId],
-          editing: false,
         });
 
         notifyDocCreated(host, doc);

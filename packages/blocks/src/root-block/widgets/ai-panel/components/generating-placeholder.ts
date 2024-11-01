@@ -2,9 +2,10 @@ import {
   DarkLoadingIcon,
   LightLoadingIcon,
 } from '@blocksuite/affine-components/icons';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ColorScheme } from '@blocksuite/affine-model';
+import { unsafeCSSVar } from '@blocksuite/affine-shared/theme';
 import { WithDisposable } from '@blocksuite/global/utils';
-import { baseTheme, cssVar } from '@toeverything/theme';
+import { baseTheme } from '@toeverything/theme';
 import {
   css,
   html,
@@ -28,7 +29,7 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
 
     .generating-header {
       width: 100%;
-      font-size: ${unsafeCSS(cssVar('fontXs'))};
+      font-size: ${unsafeCSSVar('fontXs')};
       font-style: normal;
       font-weight: 500;
       line-height: 20px;
@@ -37,7 +38,7 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
 
     .generating-header,
     .loading-progress {
-      color: ${unsafeCSS(cssVar('textSecondaryColor'))};
+      color: ${unsafeCSSVar('textSecondaryColor')};
       font-family: ${unsafeCSS(baseTheme.fontSansFamily)};
     }
 
@@ -49,9 +50,9 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
       box-sizing: border-box;
       width: 100%;
       border-radius: 4px;
-      border: 2px solid ${unsafeCSS(cssVar('primaryColor'))};
-      background: ${unsafeCSS(cssVar('blue50'))};
-      color: ${unsafeCSS(cssVar('brandColor'))};
+      border: 2px solid ${unsafeCSSVar('primaryColor')};
+      background: ${unsafeCSSVar('blue50')};
+      color: ${unsafeCSSVar('brandColor')};
       gap: 4px;
     }
 
@@ -76,20 +77,19 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
     }
 
     .loading-text {
-      font-size: ${unsafeCSS(cssVar('fontBase'))};
+      font-size: ${unsafeCSSVar('fontBase')};
       height: 24px;
       line-height: 24px;
     }
 
     .loading-stage {
-      font-size: ${unsafeCSS(cssVar('fontXs'))};
+      font-size: ${unsafeCSSVar('fontXs')};
       height: 20px;
       line-height: 20px;
     }
   `;
 
   protected override render() {
-    const theme = ThemeObserver.mode;
     const loadingText = this.stages[this.loadingProgress - 1] || '';
 
     return html`<style>
@@ -102,7 +102,9 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
         : nothing}
       <div class="generating-body">
         <div class="generating-icon">
-          ${theme === 'light' ? DarkLoadingIcon : LightLoadingIcon}
+          ${this.theme === ColorScheme.Light
+            ? DarkLoadingIcon
+            : LightLoadingIcon}
         </div>
         <div class="loading-progress">
           <div class="loading-text">${loadingText}</div>
@@ -133,6 +135,9 @@ export class GeneratingPlaceholder extends WithDisposable(LitElement) {
 
   @property({ attribute: false })
   accessor stages!: string[];
+
+  @property({ attribute: false })
+  accessor theme!: ColorScheme;
 }
 
 declare global {

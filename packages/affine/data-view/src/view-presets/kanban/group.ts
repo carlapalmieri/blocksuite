@@ -1,4 +1,8 @@
-import { popFilterableSimpleMenu } from '@blocksuite/affine-components/context-menu';
+import {
+  menu,
+  popFilterableSimpleMenu,
+  popupTargetFromElement,
+} from '@blocksuite/affine-components/context-menu';
 import { ShadowlessElement } from '@blocksuite/block-std';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
 import { AddCursorIcon } from '@blocksuite/icons/lit';
@@ -7,11 +11,11 @@ import { property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { html } from 'lit/static-html.js';
 
-import type { GroupData } from '../../core/common/group-by/helper.js';
 import type { DataViewRenderer } from '../../core/data-view.js';
+import type { GroupData } from '../../core/group-by/manager.js';
 import type { KanbanSingleView } from './kanban-view-manager.js';
 
-import { GroupTitle } from '../../core/common/group-by/group-title.js';
+import { GroupTitle } from '../../core/group-by/group-title.js';
 
 const styles = css`
   affine-data-view-kanban-group {
@@ -130,9 +134,8 @@ export class KanbanGroup extends SignalWatcher(
 
   private clickGroupOptions = (e: MouseEvent) => {
     const ele = e.currentTarget as HTMLElement;
-    popFilterableSimpleMenu(ele, [
-      {
-        type: 'action',
+    popFilterableSimpleMenu(popupTargetFromElement(ele), [
+      menu.action({
         name: 'Desagrupar',
         hide: () => this.group.value == null,
         select: () => {
@@ -140,14 +143,13 @@ export class KanbanGroup extends SignalWatcher(
             this.group.manager.removeFromGroup(id, this.group.key);
           });
         },
-      },
-      {
-        type: 'action',
+      }),
+      menu.action({
         name: 'Eliminar tarjetas',
         select: () => {
           this.view.rowDelete(this.group.rows);
         },
-      },
+      }),
     ]);
   };
 

@@ -3,13 +3,20 @@ import type { Boxed, Y } from '@blocksuite/store';
 import { type Constructor, Slot } from '@blocksuite/global/utils';
 import { BlockModel, DocCollection, nanoid } from '@blocksuite/store';
 
+import type { GfxModel } from '../gfx-block-model.js';
+
+import { TreeManager } from '../tree.js';
+import {
+  type GfxContainerElement,
+  isGfxContainerElm,
+} from './container-element.js';
 import { createDecoratorState } from './decorators/common.js';
 import { initializeObservers, initializeWatchers } from './decorators/index.js';
-import { syncElementFromY } from './element-model.js';
 import {
   type BaseElementProps,
   GfxGroupLikeElementModel,
   GfxPrimitiveElementModel,
+  syncElementFromY,
 } from './element-model.js';
 
 export type SurfaceBlockProps = {
@@ -23,12 +30,19 @@ export interface ElementUpdatedData {
   local: boolean;
 }
 
-export type SurfaceMiddleware = (
-  surface: SurfaceBlockModel,
-  hooks: SurfaceBlockModel['hooks']
-) => () => void;
+export type MiddlewareCtx = {
+  type: 'beforeAdd';
+  payload: {
+    type: string;
+    props: Record<string, unknown>;
+  };
+};
+
+export type SurfaceMiddleware = (ctx: MiddlewareCtx) => void;
 
 export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
+  private _tree = new TreeManager(this);
+
   protected _decoratorState = createDecoratorState();
 
   protected _elementCtorMap: Record<
@@ -48,11 +62,9 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     }
   >();
 
-  protected _elementToGroup = new Map<string, string>();
-
   protected _elementTypeMap = new Map<string, GfxPrimitiveElementModel[]>();
 
-  protected _groupToElements = new Map<string, string[]>();
+  protected _middlewares: SurfaceMiddleware[] = [];
 
   protected _surfaceBlockModel = true;
 
@@ -66,19 +78,6 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
   }>();
 
   elementUpdated = new Slot<ElementUpdatedData>();
-
-  /**
-   * Hooks is used to attach extra logic when calling `addElement`、`updateElement`(or assign property directly) and `removeElement`.
-   * It's useful when dealing with relation between different model.
-   */
-  protected hooks = {
-    update: new Slot<Omit<ElementUpdatedData, 'local'>>(),
-    remove: new Slot<{
-      id: string;
-      type: string;
-      model: GfxPrimitiveElementModel;
-    }>(),
-  };
 
   get elementModels() {
     const models: GfxPrimitiveElementModel[] = [];
@@ -270,7 +269,6 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
           case 'delete':
             if (this._elementModels.has(id)) {
               const { model, unmount } = this._elementModels.get(id)!;
-              this._elementToGroup.delete(id);
               removeFromType(model.type, model);
               this._elementModels.delete(id);
               deletedElements.push({ model, unmount });
@@ -319,6 +317,11 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     });
   }
 
+  private _initTreeWatcher() {
+    const disposable = this._tree.watch();
+    this.deleted.on(() => disposable.dispose());
+  }
+
   private _propsToY(type: string, props: Record<string, unknown>) {
     const ctor = this._elementCtorMap[type];
 
@@ -331,94 +334,22 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
   }
 
   private _watchGroupRelationChange() {
-    const addToGroup = (elementId: string, groupId: string) => {
-      this._elementToGroup.set(elementId, groupId);
-      this._groupToElements.set(
-        groupId,
-        (this._groupToElements.get(groupId) || []).concat(elementId)
-      );
-    };
-    const removeFromGroup = (elementId: string, groupId: string) => {
-      if (this._elementToGroup.has(elementId)) {
-        const group = this._elementToGroup.get(elementId)!;
-        if (group === groupId) {
-          this._elementToGroup.delete(elementId);
-        }
-      }
-
-      if (this._groupToElements.has(groupId)) {
-        const elements = this._groupToElements.get(groupId)!;
-        const index = elements.indexOf(elementId);
-
-        if (index !== -1) {
-          elements.splice(index, 1);
-          elements.length === 0 && this._groupToElements.delete(groupId);
-        }
-      }
-    };
     const isGroup = (
       element: GfxPrimitiveElementModel
     ): element is GfxGroupLikeElementModel =>
       element instanceof GfxGroupLikeElementModel;
 
-    this.elementModels.forEach(model => {
-      if (isGroup(model)) {
-        model.childIds.forEach(childId => {
-          addToGroup(childId, model.id);
-        });
-      }
-    });
-
-    this.elementUpdated.on(({ id, oldValues }) => {
+    const disposable = this.elementUpdated.on(({ id, oldValues }) => {
       const element = this.getElementById(id)!;
 
       if (isGroup(element) && oldValues['childIds']) {
-        (oldValues['childIds'] as string[]).forEach(childId => {
-          removeFromGroup(childId, id);
-        });
-
-        element.childIds.forEach(childId => {
-          addToGroup(childId, id);
-        });
-
         if (element.childIds.length === 0) {
-          this.removeElement(id);
-        }
-      }
-    });
-
-    this.elementAdded.on(({ id }) => {
-      const element = this.getElementById(id)!;
-
-      if (isGroup(element)) {
-        element.childIds.forEach(childId => {
-          addToGroup(childId, id);
-        });
-      }
-    });
-
-    this.elementRemoved.on(({ id, model }) => {
-      if (isGroup(model)) {
-        const children = [...(this._groupToElements.get(id) || [])];
-
-        children.forEach(childId => removeFromGroup(childId, id));
-      }
-    });
-
-    const disposeGroup = this.doc.slots.blockUpdated.on(({ type, id }) => {
-      switch (type) {
-        case 'delete': {
-          const group = this.getGroup(id);
-
-          if (group) {
-            // eslint-disable-next-line unicorn/prefer-dom-node-remove
-            group.removeChild(id);
-          }
+          this.deleteElement(id);
         }
       }
     });
     this.deleted.on(() => {
-      disposeGroup.dispose();
+      disposable.dispose();
     });
   }
 
@@ -436,8 +367,8 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
 
   protected _init() {
     this._initElementModels();
+    this._initTreeWatcher();
     this._watchGroupRelationChange();
-    this.applyMiddlewares();
   }
 
   addElement<T extends object = Record<string, unknown>>(
@@ -446,6 +377,18 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     if (this.doc.readonly) {
       throw new Error('Cannot add element in readonly mode');
     }
+
+    const middlewareCtx: MiddlewareCtx = {
+      type: 'beforeAdd',
+      payload: {
+        type: props.type,
+        props,
+      },
+    };
+
+    this._middlewares.forEach(mid => mid(middlewareCtx));
+
+    props = middlewareCtx.payload.props as Partial<T> & { type: string };
 
     const id = nanoid();
 
@@ -465,7 +408,35 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     return id;
   }
 
-  protected applyMiddlewares() {}
+  applyMiddlewares(middlewares: SurfaceMiddleware[]) {
+    this._middlewares = middlewares;
+  }
+
+  deleteElement(id: string) {
+    if (this.doc.readonly) {
+      throw new Error('Cannot remove element in readonly mode');
+    }
+
+    if (!this.hasElementById(id)) {
+      return;
+    }
+
+    this.doc.transact(() => {
+      const element = this.getElementById(id)!;
+
+      if (element instanceof GfxGroupLikeElementModel) {
+        element.childIds.forEach(childId => {
+          if (this.hasElementById(childId)) {
+            this.deleteElement(childId);
+          } else if (this.doc.hasBlock(childId)) {
+            this.doc.deleteBlock(this.doc.getBlock(childId)!.model);
+          }
+        });
+      }
+
+      this.elements.getValue()!.delete(id);
+    });
+  }
 
   override dispose(): void {
     super.dispose();
@@ -476,9 +447,10 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
 
     this._elementModels.forEach(({ unmount }) => unmount());
     this._elementModels.clear();
+  }
 
-    this.hooks.update.dispose();
-    this.hooks.remove.dispose();
+  getContainer(elementId: string) {
+    return this._tree.getContainer(elementId);
   }
 
   getElementById(id: string): GfxPrimitiveElementModel | null {
@@ -493,8 +465,9 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     T extends
       GfxGroupLikeElementModel<BaseElementProps> = GfxGroupLikeElementModel<BaseElementProps>,
   >(id: string): T | null {
-    return this._elementToGroup.has(id)
-      ? (this.getElementById(this._elementToGroup.get(id)!) as T)
+    const container = this.getContainer(id);
+    return container instanceof GfxGroupLikeElementModel
+      ? (container as T)
       : null;
   }
 
@@ -514,48 +487,26 @@ export class SurfaceBlockModel extends BlockModel<SurfaceBlockProps> {
     return this._elementModels.has(id);
   }
 
+  isContainer(element: GfxModel): element is GfxModel & GfxContainerElement;
+  isContainer(id: string): boolean;
+  isContainer(element: string | GfxModel): boolean {
+    if (typeof element === 'string') {
+      const el = this.getElementById(element);
+      if (el) return isGfxContainerElm(el);
+
+      const blockModel = this.doc.getBlock(element)?.model;
+      if (blockModel) return isGfxContainerElm(blockModel);
+
+      return false;
+    } else {
+      return isGfxContainerElm(element);
+    }
+  }
+
   isInMindmap(id: string) {
     const group = this.getGroup(id);
 
     return group?.type === 'mindmap';
-  }
-
-  removeElement(id: string) {
-    if (this.doc.readonly) {
-      throw new Error('Cannot remove element in readonly mode');
-    }
-
-    if (!this.hasElementById(id)) {
-      return;
-    }
-
-    this.doc.transact(() => {
-      const element = this.getElementById(id)!;
-      const group = this.getGroup(id);
-
-      if (element instanceof GfxGroupLikeElementModel) {
-        element.childIds.forEach(childId => {
-          if (this.hasElementById(childId)) {
-            this.removeElement(childId);
-          } else if (this.doc.hasBlock(childId)) {
-            this.doc.deleteBlock(this.doc.getBlock(childId)!.model);
-          }
-        });
-      }
-
-      if (group) {
-        // eslint-disable-next-line unicorn/prefer-dom-node-remove
-        group.removeChild(id);
-      }
-
-      this.elements.getValue()!.delete(id);
-
-      this.hooks.remove.emit({
-        id,
-        model: element as GfxPrimitiveElementModel,
-        type: element.type,
-      });
-    });
   }
 
   updateElement<T extends object = Record<string, unknown>>(

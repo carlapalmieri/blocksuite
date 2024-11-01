@@ -1,4 +1,8 @@
-import { popFilterableSimpleMenu } from '@blocksuite/affine-components/context-menu';
+import {
+  menu,
+  popFilterableSimpleMenu,
+  popupTargetFromElement,
+} from '@blocksuite/affine-components/context-menu';
 import { ShadowlessElement } from '@blocksuite/block-std';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
 import { PlusIcon } from '@blocksuite/icons/lit';
@@ -6,12 +10,12 @@ import { css, html, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import type { GroupData } from '../../core/common/group-by/helper.js';
 import type { DataViewRenderer } from '../../core/data-view.js';
+import type { GroupData } from '../../core/group-by/manager.js';
 import type { DataViewTable } from './table-view.js';
 import type { TableSingleView } from './table-view-manager.js';
 
-import { GroupTitle } from '../../core/common/group-by/group-title.js';
+import { GroupTitle } from '../../core/group-by/group-title.js';
 import { LEFT_TOOL_BAR_WIDTH } from './consts.js';
 import { TableAreaSelection } from './types.js';
 
@@ -99,9 +103,8 @@ export class TableGroup extends SignalWatcher(
       return;
     }
     const ele = e.currentTarget as HTMLElement;
-    popFilterableSimpleMenu(ele, [
-      {
-        type: 'action',
+    popFilterableSimpleMenu(popupTargetFromElement(ele), [
+      menu.action({
         name: 'Desagrupar',
         hide: () => group.value == null,
         select: () => {
@@ -109,14 +112,13 @@ export class TableGroup extends SignalWatcher(
             group.manager.removeFromGroup(id, group.key);
           });
         },
-      },
-      {
-        type: 'action',
+      }),
+      menu.action({
         name: 'Eliminar tarjetas',
         select: () => {
           this.view.rowDelete(group.rows);
         },
-      },
+      }),
     ]);
   };
 

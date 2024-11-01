@@ -2,7 +2,8 @@ import type { BlockStdScope } from '@blocksuite/block-std';
 import type { Doc } from '@blocksuite/store';
 
 import { ColorScheme, FrameBlockModel } from '@blocksuite/affine-model';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
+import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
 import {
   docContext,
   GfxBlockComponent,
@@ -14,8 +15,8 @@ import { GfxControllerIdentifier } from '@blocksuite/block-std/gfx';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
 import { Bound, type SerializedXYWH } from '@blocksuite/global/utils';
 import { consume } from '@lit/context';
-import { cssVarV2 } from '@toeverything/theme/v2';
-import { css, html, nothing, unsafeCSS } from 'lit';
+import { cssVarV2, themeToVar } from '@toeverything/theme/v2';
+import { css, html, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -45,7 +46,7 @@ export class EdgelessFrameTitle extends SignalWatcher(
       z-index: 1;
       left: 0px;
       top: 0px;
-      border: 1px solid ${unsafeCSS(cssVarV2('edgeless/frame/border/default'))};
+      border: 1px solid ${unsafeCSSVarV2('edgeless/frame/border/default')};
       border-radius: 4px;
       width: fit-content;
       height: ${frameTitleStyleVars.height}px;
@@ -73,26 +74,22 @@ export class EdgelessFrameTitle extends SignalWatcher(
   private _cachedWidth = 0;
 
   get colors() {
-    let backgroundColor = ThemeObserver.getColorValue(
-      this.model.background,
-      undefined,
-      true
-    );
+    let backgroundColor = this.std
+      .get(ThemeProvider)
+      .getColorValue(this.model.background, undefined, true);
     if (isTransparent(backgroundColor)) {
-      backgroundColor = ThemeObserver.getPropertyValue(
-        cssVarV2('edgeless/frame/background/white').replace(
-          /var\((--.*)\)/,
-          '$1'
-        )
-      );
+      backgroundColor = this.std
+        .get(ThemeProvider)
+        .getCssVariableColor(themeToVar('edgeless/frame/background/white'));
     }
 
     const { r, g, b, a } = parseStringToRgba(backgroundColor);
 
+    const theme = this.std.get(ThemeProvider).theme;
     let textColor: string;
     {
       let rPrime, gPrime, bPrime;
-      if (ThemeObserver.instance.mode$.value === ColorScheme.Light) {
+      if (theme === ColorScheme.Light) {
         rPrime = 1 - a + a * r;
         gPrime = 1 - a + a * g;
         bPrime = 1 - a + a * b;
@@ -196,12 +193,6 @@ export class EdgelessFrameTitle extends SignalWatcher(
     );
 
     _disposables.add(
-      rootService.slots.edgelessToolUpdated.on(tool => {
-        this._isNavigator = tool.type === 'frameNavigator';
-      })
-    );
-
-    _disposables.add(
       gfx.viewport.viewportUpdated.on(({ zoom }) => {
         this._zoom = zoom;
       })
@@ -232,9 +223,10 @@ export class EdgelessFrameTitle extends SignalWatcher(
     const model = this.model;
     const bound = Bound.deserialize(model.xywh);
 
-    const { _isNavigator, _editing, _zoom: zoom } = this;
-
+    const { _editing, _zoom: zoom } = this;
     const { nestedFrameOffset, height } = frameTitleStyleVars;
+    const _isNavigator =
+      this.gfx.tool.currentToolName$.value === 'frameNavigator';
 
     const nestedFrame = this._nestedFrame;
     const maxWidth = nestedFrame
@@ -311,9 +303,6 @@ export class EdgelessFrameTitle extends SignalWatcher(
   private accessor _frameTitleEl!: HTMLDivElement;
 
   @state()
-  private accessor _isNavigator = false;
-
-  @state()
   private accessor _nestedFrame = false;
 
   @state()
@@ -351,18 +340,13 @@ export class FrameBlockComponent extends GfxBlockComponent<FrameBlockModel> {
     );
   }
 
-  override firstUpdated() {
-    this.rootService.slots.edgelessToolUpdated.on(tool => {
-      this._isNavigator = tool.type === 'frameNavigator';
-    });
-  }
-
   override renderGfxBlock() {
-    const { model, _isNavigator, showBorder, rootService } = this;
-    const backgroundColor = ThemeObserver.generateColorProperty(
-      model.background,
-      '--affine-platte-transparent'
-    );
+    const { model, showBorder, rootService, std } = this;
+    const backgroundColor = std
+      .get(ThemeProvider)
+      .generateColorProperty(model.background, '--affine-platte-transparent');
+    const _isNavigator =
+      this.gfx.tool.currentToolName$.value === 'frameNavigator';
     const frameIndex = rootService.layer.getZIndex(model);
 
     return html`
@@ -391,9 +375,6 @@ export class FrameBlockComponent extends GfxBlockComponent<FrameBlockModel> {
   override toZIndex(): string {
     return 'auto';
   }
-
-  @state()
-  private accessor _isNavigator = false;
 
   @state()
   accessor showBorder = true;

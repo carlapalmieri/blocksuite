@@ -1,7 +1,6 @@
 import type {
   Connection,
   ConnectorElementModel,
-  NoteBlockModel,
   ShapeElementModel,
 } from '@blocksuite/affine-model';
 import type { XYWH } from '@blocksuite/global/utils';
@@ -17,6 +16,7 @@ import {
 } from '@blocksuite/affine-components/icons';
 import {
   DEFAULT_NOTE_BACKGROUND_COLOR,
+  DEFAULT_NOTE_WIDTH,
   DEFAULT_SHAPE_FILL_COLOR,
   DEFAULT_SHAPE_STROKE_COLOR,
   DEFAULT_TEXT_COLOR,
@@ -25,12 +25,17 @@ import {
   FontWeight,
   getShapeName,
   GroupElementModel,
+  NoteBlockModel,
   ShapeStyle,
   TextElementModel,
 } from '@blocksuite/affine-model';
-import { EditPropsStore } from '@blocksuite/affine-shared/services';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import {
+  EditPropsStore,
+  ThemeProvider,
+} from '@blocksuite/affine-shared/services';
 import { captureEventTarget } from '@blocksuite/affine-shared/utils';
+import { type BlockStdScope, stdContext } from '@blocksuite/block-std';
+import { GfxControllerIdentifier } from '@blocksuite/block-std/gfx';
 import {
   assertInstanceOf,
   Bound,
@@ -39,6 +44,7 @@ import {
   WithDisposable,
 } from '@blocksuite/global/utils';
 import { DocCollection } from '@blocksuite/store';
+import { consume } from '@lit/context';
 import { baseTheme } from '@toeverything/theme';
 import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -48,7 +54,6 @@ import { styleMap } from 'lit/directives/style-map.js';
 import type { EdgelessRootBlockComponent } from '../../edgeless-root-block.js';
 
 import {
-  DEFAULT_NOTE_WIDTH,
   SHAPE_OVERLAY_HEIGHT,
   SHAPE_OVERLAY_WIDTH,
 } from '../../utils/consts.js';
@@ -117,6 +122,10 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
     | AutoCompleteTextOverlay
     | null = null;
 
+  get gfx() {
+    return this.std.get(GfxControllerIdentifier);
+  }
+
   constructor(
     position: [number, number],
     edgeless: EdgelessRootBlockComponent,
@@ -184,11 +193,13 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
       },
       doc.root?.id
     );
+    const note = doc.getBlock(id)?.model;
+    assertInstanceOf(note, NoteBlockModel);
     doc.addBlock('affine:paragraph', { type: 'text' }, id);
     const group = this.currentSource.group;
 
     if (group instanceof GroupElementModel) {
-      group.addChild(id);
+      group.addChild(note);
     }
     this.connector.target = {
       id,
@@ -245,11 +256,15 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
         y: bound.y,
       });
       if (!textId) return;
+
+      const textElement = edgelessService.getElementById(textId);
+      if (!textElement) return;
+
       edgelessService.updateElement(this.connector.id, {
         target: { id: textId, position },
       });
       if (this.currentSource.group instanceof GroupElementModel) {
-        this.currentSource.group.addChild(textId);
+        this.currentSource.group.addChild(textElement);
       }
 
       this.edgeless.service.selection.set({
@@ -275,7 +290,7 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
         target: { id: textId, position },
       });
       if (this.currentSource.group instanceof GroupElementModel) {
-        this.currentSource.group.addChild(textId);
+        this.currentSource.group.addChild(textElement);
       }
 
       this.edgeless.service.selection.set({
@@ -436,8 +451,10 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
     const xywh = this._getTargetXYWH(w, h)?.xywh;
     if (!xywh) return;
 
-    const strokeColor = ThemeObserver.getPropertyValue('--affine-black-30');
-    this._overlay = new AutoCompleteFrameOverlay(xywh, strokeColor);
+    const strokeColor = this.std
+      .get(ThemeProvider)
+      .getCssVariableColor('--affine-black-30');
+    this._overlay = new AutoCompleteFrameOverlay(this.gfx, xywh, strokeColor);
     this.edgeless.surface.renderer.addOverlay(this._overlay);
   }
 
@@ -448,13 +465,15 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
     )?.xywh;
     if (!xywh) return;
 
-    const background = ThemeObserver.getColorValue(
-      this.edgeless.std.get(EditPropsStore).lastProps$.value['affine:note']
-        .background,
-      DEFAULT_NOTE_BACKGROUND_COLOR,
-      true
-    );
-    this._overlay = new AutoCompleteNoteOverlay(xywh, background);
+    const background = this.edgeless.std
+      .get(ThemeProvider)
+      .getColorValue(
+        this.edgeless.std.get(EditPropsStore).lastProps$.value['affine:note']
+          .background,
+        DEFAULT_NOTE_BACKGROUND_COLOR,
+        true
+      );
+    this._overlay = new AutoCompleteNoteOverlay(this.gfx, xywh, background);
     this.edgeless.surface.renderer.addOverlay(this._overlay);
   }
 
@@ -490,16 +509,12 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
         `shape:${targetType}`
       ];
 
-    const stroke = ThemeObserver.getColorValue(
-      strokeColor,
-      DEFAULT_SHAPE_STROKE_COLOR,
-      true
-    );
-    const fill = ThemeObserver.getColorValue(
-      fillColor,
-      DEFAULT_SHAPE_FILL_COLOR,
-      true
-    );
+    const stroke = this.edgeless.std
+      .get(ThemeProvider)
+      .getColorValue(strokeColor, DEFAULT_SHAPE_STROKE_COLOR, true);
+    const fill = this.edgeless.std
+      .get(ThemeProvider)
+      .getColorValue(fillColor, DEFAULT_SHAPE_FILL_COLOR, true);
 
     const options = {
       seed: 666,
@@ -511,6 +526,7 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
     };
 
     this._overlay = new AutoCompleteShapeOverlay(
+      this.gfx,
       xywh,
       targetType,
       options,
@@ -527,7 +543,7 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
     )?.xywh;
     if (!xywh) return;
 
-    this._overlay = new AutoCompleteTextOverlay(xywh);
+    this._overlay = new AutoCompleteTextOverlay(this.gfx, xywh);
     this.edgeless.surface.renderer.addOverlay(this._overlay);
   }
 
@@ -630,6 +646,11 @@ export class EdgelessAutoCompletePanel extends WithDisposable(LitElement) {
 
   @property({ attribute: false })
   accessor position: [number, number];
+
+  @consume({
+    context: stdContext,
+  })
+  accessor std!: BlockStdScope;
 }
 
 declare global {

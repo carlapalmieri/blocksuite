@@ -7,8 +7,8 @@ import {
   focusTextModel,
   type RichText,
 } from '@blocksuite/affine-components/rich-text';
-import { toast } from '@blocksuite/affine-components/toast';
 import { BRACKET_PAIRS, NOTE_SELECTOR } from '@blocksuite/affine-shared/consts';
+import { NotificationProvider } from '@blocksuite/affine-shared/services';
 import { getViewportElement } from '@blocksuite/affine-shared/utils';
 import { getInlineRangeProvider } from '@blocksuite/block-std';
 import { IS_MAC } from '@blocksuite/global/env';
@@ -63,6 +63,10 @@ export class CodeBlockComponent extends CaptionedBlockComponent<
 
   get inlineManager() {
     return this.std.get(CodeBlockInlineManagerExtension.identifier);
+  }
+
+  get notificationService() {
+    return this.std.getOptional(NotificationProvider);
   }
 
   get readonly() {
@@ -355,10 +359,10 @@ export class CodeBlockComponent extends CaptionedBlockComponent<
     this.std.clipboard
       .copySlice(slice)
       .then(() => {
-        toast(this.host, 'Copiado al portapapeles');
+        this.notificationService?.toast('Copiado al portapapeles');
       })
       .catch(e => {
-        toast(this.host, 'Error al copiar, algo salió mal');
+        this.notificationService?.toast('Error al copiar, algo salió mal');
         console.error(e);
       });
   }

@@ -1,11 +1,16 @@
-import type { IVec, SerializedXYWH, XYWH } from '@blocksuite/global/utils';
+import type {
+  IBound,
+  IVec,
+  SerializedXYWH,
+  XYWH,
+} from '@blocksuite/global/utils';
 
 import {
   Bound,
   deserializeXYWH,
   DisposableGroup,
-  getBoundsWithRotation,
-  getPointsFromBoundsWithRotation,
+  getBoundWithRotation,
+  getPointsFromBoundWithRotation,
   linePolygonIntersects,
   PointLocation,
   polygonGetPointTangent,
@@ -20,6 +25,14 @@ import type { EditorHost } from '../../view/index.js';
 import type { GfxBlockElementModel, GfxModel } from '../gfx-block-model.js';
 import type { SurfaceBlockModel } from './surface-model.js';
 
+import {
+  descendantElementsImpl,
+  hasDescendantElementImpl,
+} from '../../utils/tree.js';
+import {
+  type GfxContainerElement,
+  gfxContainerSymbol,
+} from './container-element.js';
 import {
   convertProps,
   field,
@@ -84,22 +97,10 @@ export interface GfxElementGeometry {
   intersectsBound(bound: Bound): boolean;
 }
 
-export const gfxContainerSymbol = Symbol('GfxContainerElement');
-
-export const isGfxContainerElm = (elm: unknown): elm is GfxContainerElement => {
-  return (elm as GfxContainerElement)[gfxContainerSymbol] === true;
-};
-
-export interface GfxContainerElement extends GfxCompatibleProps {
-  [gfxContainerSymbol]: true;
-  childIds: string[];
-  childElements: GfxModel[];
-  hasDescendant(element: string | GfxModel): boolean;
-}
-
 export abstract class GfxPrimitiveElementModel<
-  Props extends BaseElementProps = BaseElementProps,
-> implements GfxElementGeometry
+    Props extends BaseElementProps = BaseElementProps,
+  >
+  implements GfxElementGeometry, IBound
 {
   private _lastXYWH!: SerializedXYWH;
 
@@ -134,6 +135,10 @@ export abstract class GfxPrimitiveElementModel<
     return true;
   }
 
+  get container() {
+    return this.surface.getContainer(this.id);
+  }
+
   get deserializedXYWH() {
     if (!this._lastXYWH || this.xywh !== this._lastXYWH) {
       const xywh = this.xywh;
@@ -150,7 +155,7 @@ export abstract class GfxPrimitiveElementModel<
    */
   get elementBound() {
     if (this.rotate) {
-      return Bound.from(getBoundsWithRotation(this));
+      return Bound.from(getBoundWithRotation(this));
     }
 
     return Bound.deserialize(this.xywh);
@@ -230,18 +235,18 @@ export abstract class GfxPrimitiveElementModel<
   }
 
   containsBound(bounds: Bound): boolean {
-    return getPointsFromBoundsWithRotation(this).some(point =>
+    return getPointsFromBoundWithRotation(this).some(point =>
       bounds.containsPoint(point)
     );
   }
 
   getLineIntersections(start: IVec, end: IVec) {
-    const points = getPointsFromBoundsWithRotation(this);
+    const points = getPointsFromBoundWithRotation(this);
     return linePolygonIntersects(start, end, points);
   }
 
   getNearestPoint(point: IVec) {
-    const points = getPointsFromBoundsWithRotation(this);
+    const points = getPointsFromBoundWithRotation(this);
     return polygonNearestPoint(points, point);
   }
 
@@ -336,16 +341,6 @@ export abstract class GfxPrimitiveElementModel<
           local: true,
         });
 
-        this.surface['hooks'].update.emit({
-          id: this.id,
-          props: {
-            [prop]: value,
-          },
-          oldValues: {
-            [prop]: oldValue,
-          },
-        });
-
         updateDerivedProps(
           derivedProps,
           this as unknown as GfxPrimitiveElementModel
@@ -419,6 +414,10 @@ export abstract class GfxGroupLikeElementModel<
     return this._childIds;
   }
 
+  get descendantElements(): GfxModel[] {
+    return descendantElementsImpl(this);
+  }
+
   get xywh() {
     if (
       !this._local.has('xywh') ||
@@ -466,52 +465,27 @@ export abstract class GfxGroupLikeElementModel<
     });
   }
 
-  /**
-   * @deprecated Use `getAllDescendantElements` instead.
-   * Get all descendants of this group
-   * @param withoutGroup if true, will not include group element
-   */
-  descendants(withoutGroup = true) {
-    return this.childElements.reduce((prev, child) => {
-      if (child instanceof GfxGroupLikeElementModel) {
-        prev = prev.concat(child.descendants());
-
-        !withoutGroup && prev.push(child as GfxPrimitiveElementModel);
-      } else {
-        prev.push(child);
-      }
-
-      return prev;
-    }, [] as GfxModel[]);
-  }
+  abstract addChild(element: GfxModel): void;
 
   /**
    * The actual field that stores the children of the group.
    * It should be a ymap decorated with `@field`.
    */
-  hasChild(element: string | GfxModel) {
-    return (
-      (typeof element === 'string'
-        ? this.children?.has(element)
-        : this.children?.has(element.id)) ?? false
-    );
+  hasChild(element: GfxModel) {
+    return this.childElements.includes(element);
   }
 
   /**
    * Check if the group has the given descendant.
    */
-  hasDescendant(element: string | GfxModel) {
-    const groups = this.surface.getGroups(
-      typeof element === 'string' ? element : element.id
-    );
-
-    return groups.some(group => group.id === this.id);
+  hasDescendant(element: GfxModel): boolean {
+    return hasDescendantElementImpl(this, element);
   }
 
   /**
    * Remove the child from the group
    */
-  abstract removeChild(id: string): void;
+  abstract removeChild(element: GfxModel): void;
 
   /**
    * Set the new value of the childIds
@@ -530,16 +504,6 @@ export abstract class GfxGroupLikeElementModel<
         childIds: oldChildIds,
       },
       local: fromLocal,
-    });
-
-    this.surface['hooks'].update.emit({
-      id: this.id,
-      props: {
-        childIds: value,
-      },
-      oldValues: {
-        childIds: oldChildIds,
-      },
     });
   }
 }

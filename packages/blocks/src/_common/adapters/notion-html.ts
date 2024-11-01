@@ -30,6 +30,7 @@ import { unified } from 'unified';
 
 import {
   hastGetElementChildren,
+  hastGetInlineOnlyElementAST,
   hastGetTextChildrenOnlyAst,
   hastGetTextContent,
   hastQuerySelector,
@@ -67,6 +68,10 @@ const ColumnClassMap: Record<string, string> = {
   typesTitle: 'title',
 };
 
+const NotionInlineEquationToken = 'notion-text-equation-token';
+const NotionUnderlineStyleToken = 'border-bottom:0.05em solid';
+const NotionCheckboxToken = '.checkbox';
+
 type BlocksuiteTableColumn = {
   type: string;
   name: string;
@@ -94,8 +99,9 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
     option: {
       trim?: boolean;
       pre?: boolean;
+      removeLastBr?: boolean;
       pageMap?: Map<string, string>;
-    } = { trim: true, pre: false }
+    } = { trim: true, pre: false, removeLastBr: true }
   ): DeltaInsert<object>[] => {
     return this._hastToDeltaSpreaded(ast, option).reduce((acc, cur) => {
       if (acc.length === 0) {
@@ -119,15 +125,16 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
     option: {
       trim?: boolean;
       pre?: boolean;
+      removeLastBr?: boolean;
       pageMap?: Map<string, string>;
-    } = { trim: true, pre: false }
+    } = { trim: true, pre: false, removeLastBr: true }
   ): DeltaInsert<object>[] => {
     if (option.trim === undefined) {
       option.trim = true;
     }
     switch (ast.type) {
       case 'text': {
-        if (option.pre) {
+        if (option.pre || ast.value === ' ') {
           return [{ insert: ast.value }];
         }
         if (option.trim) {
@@ -145,10 +152,34 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
       case 'element': {
         switch (ast.tagName) {
           case 'ol':
-          case 'ul': {
+          case 'ul':
+          case 'style': {
             return [];
           }
           case 'span': {
+            if (
+              Array.isArray(ast.properties?.className) &&
+              ast.properties?.className.includes(NotionInlineEquationToken)
+            ) {
+              const latex = hastGetTextContent(
+                hastQuerySelector(ast, 'annotation')
+              );
+              return [{ insert: ' ', attributes: { latex } }];
+            }
+
+            // Add underline style detection
+            if (
+              typeof ast.properties?.style === 'string' &&
+              ast.properties?.style?.includes(NotionUnderlineStyleToken)
+            ) {
+              return ast.children.flatMap(child =>
+                this._hastToDeltaSpreaded(child, option).map(delta => {
+                  delta.attributes = { ...delta.attributes, underline: true };
+                  return delta;
+                })
+              );
+            }
+
             return ast.children.flatMap(child =>
               this._hastToDeltaSpreaded(child, option)
             );
@@ -225,6 +256,9 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
               })
             );
           }
+          case 'br': {
+            return [{ insert: '\n' }];
+          }
           case 'mark': {
             // TODO: add support for highlight
             return ast.children.flatMap(child =>
@@ -234,12 +268,35 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
               })
             );
           }
+          case 'li': {
+            if (hastQuerySelector(ast, NotionCheckboxToken)) {
+              // Should ignore the children of to do list which is the checkbox and the space following it
+              const checkBox = hastQuerySelector(ast, NotionCheckboxToken);
+              const checkBoxIndex = ast.children.findIndex(
+                child => child === checkBox
+              );
+              return ast.children
+                .slice(checkBoxIndex + 2)
+                .flatMap(child => this._hastToDeltaSpreaded(child, option));
+            }
+          }
         }
       }
     }
-    return 'children' in ast
-      ? ast.children.flatMap(child => this._hastToDeltaSpreaded(child, option))
-      : [];
+    const result =
+      'children' in ast
+        ? ast.children.flatMap(child =>
+            this._hastToDeltaSpreaded(child, option)
+          )
+        : [];
+
+    if (option.removeLastBr && result.length > 0) {
+      const lastItem = result[result.length - 1];
+      if (lastItem.insert === '\n') {
+        result.pop();
+      }
+    }
+    return result;
   };
 
   private _traverseNotionHtml = async (
@@ -367,27 +424,25 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
         }
         case 'blockquote': {
           context.setGlobalContext('hast:blockquote', true);
-          context
-            .openNode(
-              {
-                type: 'block',
-                id: nanoid(),
-                flavour: 'affine:paragraph',
-                props: {
-                  type: 'quote',
-                  text: {
-                    '$blocksuite:internal:text$': true,
-                    delta: this._hastToDelta(
-                      hastGetTextChildrenOnlyAst(o.node),
-                      { pageMap }
-                    ),
-                  },
+          context.openNode(
+            {
+              type: 'block',
+              id: nanoid(),
+              flavour: 'affine:paragraph',
+              props: {
+                type: 'quote',
+                text: {
+                  '$blocksuite:internal:text$': true,
+                  delta: this._hastToDelta(
+                    hastGetInlineOnlyElementAST(o.node),
+                    { pageMap, removeLastBr: true }
+                  ),
                 },
-                children: [],
               },
-              'children'
-            )
-            .closeNode();
+              children: [],
+            },
+            'children'
+          );
           break;
         }
         case 'p': {
@@ -460,7 +515,9 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
         }
         case 'li': {
           const firstElementChild = hastGetElementChildren(o.node)[0];
-          const listType = context.getNodeContext('hast:list:type');
+          const notionListType = context.getNodeContext('hast:list:type');
+          const listType =
+            notionListType === 'toggle' ? 'bulleted' : notionListType;
           context.openNode(
             {
               type: 'block',
@@ -471,7 +528,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
                 text: {
                   '$blocksuite:internal:text$': true,
                   delta:
-                    listType !== 'toggle'
+                    notionListType !== 'toggle'
                       ? this._hastToDelta(o.node, { pageMap })
                       : this._hastToDelta(
                           hastQuerySelector(o.node, 'summary') ?? o.node,
@@ -479,7 +536,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
                         ),
                 },
                 checked:
-                  listType === 'todo'
+                  notionListType === 'todo'
                     ? firstElementChild &&
                       Array.isArray(firstElementChild.properties?.className) &&
                       firstElementChild.properties.className.includes(
@@ -487,7 +544,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
                       )
                     : false,
                 collapsed:
-                  listType === 'toggle'
+                  notionListType === 'toggle'
                     ? firstElementChild &&
                       firstElementChild.tagName === 'details' &&
                       firstElementChild.properties.open === undefined
@@ -538,8 +595,35 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
             context.skipAllChildren();
             break;
           }
+          // Notion equation
+          if (hastQuerySelector(o.node, '.equation-container')) {
+            const latex = hastGetTextContent(
+              hastQuerySelector(o.node, 'annotation')
+            );
+            context
+              .openNode(
+                {
+                  type: 'block',
+                  id: nanoid(),
+                  flavour: 'affine:latex',
+                  props: {
+                    latex,
+                  },
+                  children: [],
+                },
+                'children'
+              )
+              .closeNode();
+            context.skipAllChildren();
+            break;
+          }
           // Notion callout
           if (hastQuerySelector(o.node, '.callout')) {
+            const firstElementChild = hastGetElementChildren(o.node)[0];
+            const secondElementChild = hastGetElementChildren(o.node)[1];
+
+            const iconSpan = hastQuerySelector(firstElementChild, '.icon');
+            const iconText = iconSpan ? hastGetTextContent(iconSpan) : '';
             context
               .openNode(
                 {
@@ -547,10 +631,13 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
                   id: nanoid(),
                   flavour: 'affine:paragraph',
                   props: {
-                    type: 'text',
+                    type: 'quote',
                     text: {
                       '$blocksuite:internal:text$': true,
-                      delta: this._hastToDelta(o.node, { pageMap }),
+                      delta: [
+                        { insert: iconText + '\n' },
+                        ...this._hastToDelta(secondElementChild, { pageMap }),
+                      ],
                     },
                   },
                   children: [],
@@ -946,6 +1033,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
           break;
         }
         case 'blockquote': {
+          context.closeNode();
           context.setGlobalContext('hast:blockquote', false);
           break;
         }
@@ -1034,6 +1122,9 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
             context.openNode(child, 'children').closeNode();
           });
           context.closeNode();
+          context.cleanGlobalContextStack('hast:table:column');
+          context.cleanGlobalContextStack('hast:table:rows');
+          context.cleanGlobalContextStack('hast:table:children');
           break;
         }
         case 'th': {
@@ -1128,7 +1219,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
       type: 'page',
       meta: {
         id: payload.pageId ?? nanoid(),
-        title: hastGetTextContent(titleAst, 'Sin título'),
+        title: hastGetTextContent(titleAst, ''),
         createDate: Date.now(),
         tags: [],
       },
@@ -1142,7 +1233,7 @@ export class NotionHtmlAdapter extends BaseAdapter<NotionHtml> {
             delta: this._hastToDelta(
               titleAst ?? {
                 type: 'text',
-                value: 'Untitled',
+                value: '',
               }
             ),
           },

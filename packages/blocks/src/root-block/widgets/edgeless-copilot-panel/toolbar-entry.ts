@@ -1,15 +1,16 @@
 import type { EditorHost } from '@blocksuite/block-std';
 
 import { AIStarIcon } from '@blocksuite/affine-components/icons';
+import { isGfxContainerElm } from '@blocksuite/block-std/gfx';
 import { WithDisposable } from '@blocksuite/global/utils';
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import type { AIItemGroupConfig } from '../../../_common/components/ai-item/types.js';
 import type { EdgelessRootBlockComponent } from '../../edgeless/edgeless-root-block.js';
-import type { CopilotSelectionController } from '../../edgeless/tools/copilot-tool.js';
+import type { CopilotTool } from '../../edgeless/gfx-tool/copilot-tool.js';
 
-import { getAllDescendantElements } from '../../edgeless/utils/tree.js';
+import { sortEdgelessElements } from '../../edgeless/utils/clone-utils.js';
 
 export class EdgelessCopilotToolbarEntry extends WithDisposable(LitElement) {
   static override styles = css`
@@ -23,19 +24,27 @@ export class EdgelessCopilotToolbarEntry extends WithDisposable(LitElement) {
   `;
 
   private _showCopilotPanel() {
-    const selectedElements = this.edgeless.service.selection.selectedElements;
+    const selectedElements = sortEdgelessElements(
+      this.edgeless.service.selection.selectedElements
+    );
     const toBeSelected = new Set(selectedElements);
+
     selectedElements.forEach(element => {
-      getAllDescendantElements(element).forEach(descendant => {
-        toBeSelected.add(descendant);
-      });
+      // its descendants are already selected
+      if (toBeSelected.has(element)) return;
+
+      toBeSelected.add(element);
+
+      if (isGfxContainerElm(element)) {
+        element.descendantElements.forEach(descendant => {
+          toBeSelected.add(descendant);
+        });
+      }
     });
 
-    this.edgeless.service.tool.setEdgelessTool({
-      type: 'copilot',
-    });
+    this.edgeless.gfx.tool.setTool('copilot');
     (
-      this.edgeless.tools.controllers['copilot'] as CopilotSelectionController
+      this.edgeless.gfx.tool.currentTool$.peek() as CopilotTool
     ).updateSelectionWith(Array.from(toBeSelected), 10);
   }
 

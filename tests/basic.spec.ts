@@ -1,3 +1,5 @@
+import type { DeltaInsert } from '@inline/types.js';
+
 import { expect } from '@playwright/test';
 
 import {
@@ -39,7 +41,6 @@ import {
   assertText,
   assertTitle,
 } from './utils/asserts.js';
-import './utils/declare-test-window.js';
 import { scoped, test } from './utils/playwright.js';
 import { getFormatBar } from './utils/query.js';
 
@@ -78,7 +79,7 @@ test(scoped`basic init with external text`, async ({ page }) => {
     doc.addBlock(
       'affine:paragraph',
       {
-        text: doc.Text.fromDelta(delta),
+        text: new doc.Text(delta as DeltaInsert[]),
       },
       note
     );

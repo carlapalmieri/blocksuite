@@ -1,14 +1,17 @@
 import type {
   Constructor,
+  IBound,
   IVec,
   SerializedXYWH,
+  XYWH,
 } from '@blocksuite/global/utils';
 
 import { BlockSuiteError, ErrorCode } from '@blocksuite/global/exceptions';
 import {
   Bound,
-  getBoundsWithRotation,
-  getPointsFromBoundsWithRotation,
+  deserializeXYWH,
+  getBoundWithRotation,
+  getPointsFromBoundWithRotation,
   linePolygonIntersects,
   PointLocation,
   polygonGetPointTangent,
@@ -18,6 +21,7 @@ import {
 import { BlockModel } from '@blocksuite/store';
 
 import type { EditorHost } from '../view/index.js';
+import type { GfxContainerElement } from './surface/container-element.js';
 import type {
   GfxCompatibleProps,
   GfxElementGeometry,
@@ -25,24 +29,39 @@ import type {
   GfxPrimitiveElementModel,
   PointTestOptions,
 } from './surface/element-model.js';
-
-import { SurfaceBlockModel } from './surface/surface-model.js';
+import type { SurfaceBlockModel } from './surface/surface-model.js';
 
 export class GfxBlockElementModel<
     Props extends GfxCompatibleProps = GfxCompatibleProps,
   >
   extends BlockModel<Props>
-  implements GfxElementGeometry
+  implements GfxElementGeometry, IBound
 {
+  private _cacheDeserKey: string | null = null;
+
+  private _cacheDeserXYWH: XYWH | null = null;
+
   private _externalXYWH: SerializedXYWH | undefined = undefined;
 
   connectable = true;
 
   rotate = 0;
 
+  get container(): (GfxModel & GfxContainerElement) | null {
+    return this.surface?.getContainer(this.id) ?? null;
+  }
+
+  get deserializedXYWH() {
+    if (this._cacheDeserKey !== this.xywh || !this._cacheDeserXYWH) {
+      this._cacheDeserKey = this.xywh;
+      this._cacheDeserXYWH = deserializeXYWH(this.xywh);
+    }
+
+    return this._cacheDeserXYWH;
+  }
+
   get elementBound() {
-    const bound = Bound.deserialize(this.xywh);
-    return Bound.from(getBoundsWithRotation({ ...bound, rotate: this.rotate }));
+    return Bound.from(getBoundWithRotation(this));
   }
 
   get externalBound(): Bound | null {
@@ -58,28 +77,42 @@ export class GfxBlockElementModel<
   }
 
   get group(): GfxGroupLikeElementModel | null {
-    const surface = this.doc
-      .getBlocks()
-      .find(block => block instanceof SurfaceBlockModel);
+    if (!this.surface) return null;
 
-    if (!surface) return null;
-
-    return (surface as SurfaceBlockModel).getGroup(this.id) ?? null;
+    return this.surface.getGroup(this.id) ?? null;
   }
 
   get groups(): GfxGroupLikeElementModel[] {
-    const surface = this.doc
-      .getBlocks()
-      .find(block => block instanceof SurfaceBlockModel);
+    if (!this.surface) return [];
 
-    if (!surface) return [];
+    return this.surface.getGroups(this.id);
+  }
 
-    return (surface as SurfaceBlockModel).getGroups(this.id);
+  get h() {
+    return this.deserializedXYWH[3];
+  }
+
+  get surface(): SurfaceBlockModel | null {
+    const result = this.doc.getBlocksByFlavour('affine:surface');
+    if (result.length === 0) return null;
+    return result[0].model as SurfaceBlockModel;
+  }
+
+  get w() {
+    return this.deserializedXYWH[2];
+  }
+
+  get x() {
+    return this.deserializedXYWH[0];
+  }
+
+  get y() {
+    return this.deserializedXYWH[1];
   }
 
   containsBound(bounds: Bound): boolean {
     const bound = Bound.deserialize(this.xywh);
-    const points = getPointsFromBoundsWithRotation({
+    const points = getPointsFromBoundWithRotation({
       x: bound.x,
       y: bound.y,
       w: bound.w,

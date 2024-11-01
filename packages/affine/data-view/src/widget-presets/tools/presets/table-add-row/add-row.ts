@@ -1,5 +1,6 @@
 import type { InsertToPosition } from '@blocksuite/affine-shared/utils';
 
+import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
 import { PlusIcon } from '@blocksuite/icons/lit';
 import { css, html } from 'lit';
 import { state } from 'lit/decorators.js';
@@ -9,25 +10,14 @@ import { WidgetBase } from '../../../../core/widget/widget-base.js';
 import { NewRecordPreview } from './new-record-preview.js';
 
 const styles = css`
-  .affine-database-toolbar-item.new-record {
-    margin-left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    width: 120px;
-    height: 32px;
-    padding: 6px 8px;
-    border-radius: 8px;
-    font-size: 14px;
-    background: var(--affine-white);
-    box-shadow: 0px 0px 0px 0.5px rgba(0, 0, 0, 0.1);
+  .new-record {
     cursor: grab;
+    font-weight: 500;
   }
 
   .new-record svg {
-    width: 16px;
-    height: 16px;
-    fill: var(--affine-icon-color);
+    font-size: 20px;
+    color: ${unsafeCSSVarV2('icon/primary')};
   }
 `;
 
@@ -156,13 +146,14 @@ export class DataViewHeaderToolsAddRow extends WidgetBase {
     if (this.readonly) {
       return;
     }
-    return html` <div
+    return html` <data-view-component-button
       class="affine-database-toolbar-item new-record"
       draggable="true"
-      @click="${this._onAddNewRecord}"
+      .onClick="${this._onAddNewRecord}"
+      .icon="${PlusIcon()}"
+      .text="${html`<span style="font-weight: 500">New Record</span>`}"
     >
-      ${PlusIcon()}<span>Nueva fila</span>
-    </div>`;
+    </data-view-component-button>`;
   }
 
   @state()

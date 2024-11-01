@@ -1,27 +1,33 @@
 import {
   type MenuHandler,
   popMenu,
+  popupTargetFromElement,
 } from '@blocksuite/affine-components/context-menu';
 import {
   ArrowLeftSmallIcon,
   ArrowRightSmallIcon,
   MoreHorizontalIcon,
 } from '@blocksuite/affine-components/icons';
-import { ColorScheme } from '@blocksuite/affine-model';
-import { EditPropsStore } from '@blocksuite/affine-shared/services';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ColorScheme, type RootBlockModel } from '@blocksuite/affine-model';
+import {
+  darkToolbarStyles,
+  EditPropsStore,
+  lightToolbarStyles,
+  ThemeProvider,
+} from '@blocksuite/affine-shared/services';
 import { stopPropagation } from '@blocksuite/affine-shared/utils';
-import { debounce, WithDisposable } from '@blocksuite/global/utils';
+import { WidgetComponent } from '@blocksuite/block-std';
+import { GfxControllerIdentifier } from '@blocksuite/block-std/gfx';
+import { debounce } from '@blocksuite/global/utils';
 import { Slot } from '@blocksuite/store';
-import { offset } from '@floating-ui/dom';
+import { autoPlacement, offset } from '@floating-ui/dom';
 import { ContextProvider } from '@lit/context';
 import { baseTheme, cssVar } from '@toeverything/theme';
-import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
+import { css, html, nothing, unsafeCSS } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
 import type { EdgelessRootBlockComponent } from '../../edgeless-root-block.js';
-import type { EdgelessTool } from '../../types.js';
 import type { MenuPopper } from './common/create-popper.js';
 
 import {
@@ -44,7 +50,11 @@ const DIVIDER_WIDTH = 8;
 const DIVIDER_SPACE = 8;
 const SAFE_AREA_WIDTH = 64;
 
-export class EdgelessToolbar extends WithDisposable(LitElement) {
+export const EDGELESS_TOOLBAR_WIDGET = 'edgeless-toolbar-widget';
+export class EdgelessToolbarWidget extends WidgetComponent<
+  RootBlockModel,
+  EdgelessRootBlockComponent
+> {
   static override styles = css`
     :host {
       font-family: ${unsafeCSS(baseTheme.fontSansFamily)};
@@ -62,6 +72,12 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
       width: 100%;
       display: flex;
       justify-content: center;
+    }
+    .edgeless-toolbar-wrapper[data-app-theme='light'] {
+      ${unsafeCSS(lightToolbarStyles.join('\n'))}
+    }
+    .edgeless-toolbar-wrapper[data-app-theme='dark'] {
+      ${unsafeCSS(darkToolbarStyles.join('\n'))}
     }
     .edgeless-toolbar-toggle-control {
       pointer-events: auto;
@@ -208,7 +224,12 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
 
   private _moreQuickToolsMenuRef: HTMLElement | null = null;
 
+  @state()
+  accessor containerWidth = 1920;
+
   private _onContainerResize = debounce(({ w }: { w: number }) => {
+    if (!this.isConnected) return;
+
     this.slots.resize.emit({ w, h: TOOLBAR_HEIGHT });
     this.containerWidth = w;
 
@@ -256,21 +277,13 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
 
   activePopper: MenuPopper<HTMLElement> | null = null;
 
-  edgeless: EdgelessRootBlockComponent;
-
-  setEdgelessTool = (edgelessTool: EdgelessTool) => {
-    this.edgeless.tools.setEdgelessTool(edgelessTool);
-  };
-
   // calculate all the width manually
   private get _availableWidth() {
     return this.containerWidth - 2 * SAFE_AREA_WIDTH;
   }
 
   private get _cachedPresentHideToolbar() {
-    return !!this.edgeless.std
-      .get(EditPropsStore)
-      .getStorage('presentHideToolbar');
+    return !!this.std.get(EditPropsStore).getStorage('presentHideToolbar');
   }
 
   private get _denseQuickTools() {
@@ -311,7 +324,7 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
   }
 
   private get _quickTools() {
-    return getQuickTools({ edgeless: this.edgeless });
+    return getQuickTools({ edgeless: this.block });
   }
 
   private get _quickToolsWidthTotal() {
@@ -353,7 +366,7 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
 
   private get _seniorTools() {
     return getSeniorTools({
-      edgeless: this.edgeless,
+      edgeless: this.block,
       toolbarContainer: this.toolbarContainer,
     });
   }
@@ -385,8 +398,12 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
     );
   }
 
-  get host() {
-    return this.edgeless.host;
+  get edgelessTool() {
+    return this.gfx.tool.currentToolOption$.value;
+  }
+
+  get gfx() {
+    return this.std.get(GfxControllerIdentifier);
   }
 
   get isPresentMode() {
@@ -411,9 +428,8 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
     return this._slotsProvider.value;
   }
 
-  constructor(edgeless: EdgelessRootBlockComponent) {
+  constructor() {
     super();
-    this.edgeless = edgeless;
   }
 
   private _onSeniorNavNext() {
@@ -436,21 +452,26 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
     if (!this._hiddenQuickTools.length) return;
 
     this._moreQuickToolsMenuRef = e.currentTarget;
-    this._moreQuickToolsMenu = popMenu(e.currentTarget as HTMLElement, {
-      placement: 'top',
-      middleware: [
-        offset({
-          mainAxis: (TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8,
-        }),
-      ],
-      options: {
-        onClose: () => {
-          this._moreQuickToolsMenu = null;
-          this._moreQuickToolsMenuRef = null;
+    this._moreQuickToolsMenu = popMenu(
+      popupTargetFromElement(e.currentTarget as HTMLElement),
+      {
+        middleware: [
+          autoPlacement({
+            allowedPlacements: ['top'],
+          }),
+          offset({
+            mainAxis: (TOOLBAR_HEIGHT - QUICK_TOOL_MORE_SIZE) / 2 + 8,
+          }),
+        ],
+        options: {
+          onClose: () => {
+            this._moreQuickToolsMenu = null;
+            this._moreQuickToolsMenuRef = null;
+          },
+          items: this._hiddenQuickTools.map(tool => tool.menu!),
         },
-        items: this._hiddenQuickTools.map(tool => tool.menu!),
-      },
-    });
+      }
+    );
   }
 
   private _renderContent() {
@@ -536,19 +557,16 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
       }
     });
     this._resizeObserver.observe(this);
-    this._disposables.add(
-      ThemeObserver.subscribe(mode => this._themeProvider.setValue(mode))
+    this.disposables.add(
+      this.std
+        .get(ThemeProvider)
+        .theme$.subscribe(mode => this._themeProvider.setValue(mode))
     );
     this._disposables.add(
-      this.edgeless.slots.edgelessToolUpdated.on(tool => {
-        this.edgelessTool = tool;
-      })
-    );
-    this._disposables.add(
-      this.edgeless.bindHotKey(
+      this.block.bindHotKey(
         {
           Escape: () => {
-            if (this.edgeless.service.selection.editing) return;
+            if (this.gfx.selection.editing) return;
             if (this.edgelessTool.type === 'frameNavigator') return;
             if (this.edgelessTool.type === 'default') {
               if (this.activePopper) {
@@ -557,7 +575,7 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
               }
               return;
             }
-            this.setEdgelessTool({ type: 'default' });
+            this.gfx.tool.setTool('default');
           },
         },
         { global: true }
@@ -573,42 +591,41 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
   }
 
   override firstUpdated() {
-    const { _disposables, edgeless } = this;
+    const { _disposables, block, gfx } = this;
 
     _disposables.add(
-      edgeless.service.viewport.viewportUpdated.on(() => this.requestUpdate())
+      gfx.viewport.viewportUpdated.on(() => this.requestUpdate())
     );
     _disposables.add(
-      edgeless.slots.readonlyUpdated.on(() => {
+      block.slots.readonlyUpdated.on(() => {
         this.requestUpdate();
       })
     );
     _disposables.add(
-      edgeless.slots.toolbarLocked.on(disabled => {
+      block.slots.toolbarLocked.on(disabled => {
         this.toggleAttribute('disabled', disabled);
       })
     );
     // This state from `editPropsStore` is not reactive,
     // if the value is updated outside of this component, it will not be reflected.
     _disposables.add(
-      this.edgeless.std
-        .get(EditPropsStore)
-        .slots.storageUpdated.on(({ key }) => {
-          if (key === 'presentHideToolbar') {
-            this.requestUpdate();
-          }
-        })
+      this.std.get(EditPropsStore).slots.storageUpdated.on(({ key }) => {
+        if (key === 'presentHideToolbar') {
+          this.requestUpdate();
+        }
+      })
     );
   }
 
   override render() {
     const { type } = this.edgelessTool || {};
-    if (this.edgeless.doc.readonly && type !== 'frameNavigator') {
+    if (this.doc.readonly && type !== 'frameNavigator') {
       return nothing;
     }
 
+    const appTheme = this.std.get(ThemeProvider).app$.value;
     return html`
-      <div class="edgeless-toolbar-wrapper">
+      <div class="edgeless-toolbar-wrapper" data-app-theme=${appTheme}>
         <div
           class="edgeless-toolbar-toggle-control"
           data-enable=${this._enableAutoHide}
@@ -633,7 +650,7 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
             >
               <presentation-toolbar
                 .visible=${this.isPresentMode}
-                .edgeless=${this.edgeless}
+                .edgeless=${this.block}
                 .settingMenuShow=${this.presentSettingMenuShow}
                 .frameMenuShow=${this.presentFrameMenuShow}
                 .setSettingMenuShow=${(show: boolean) =>
@@ -651,14 +668,6 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
   }
 
   @state()
-  accessor containerWidth = 1920;
-
-  @state()
-  accessor edgelessTool: EdgelessTool = {
-    type: localStorage.defaultTool ?? 'default',
-  };
-
-  @state()
   accessor presentFrameMenuShow = false;
 
   @state()
@@ -673,6 +682,6 @@ export class EdgelessToolbar extends WithDisposable(LitElement) {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'edgeless-toolbar': EdgelessToolbar;
+    'edgeless-toolbar-widget': EdgelessToolbarWidget;
   }
 }

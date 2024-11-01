@@ -1,14 +1,14 @@
 import type { Y } from '@blocksuite/store';
 
 import { ColorScheme } from '@blocksuite/affine-model';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
+import { unsafeCSSVar } from '@blocksuite/affine-shared/theme';
 import { type BlockStdScope, ShadowlessElement } from '@blocksuite/block-std';
 import { noop, SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
 import { DoneIcon } from '@blocksuite/icons/lit';
 import { DocCollection } from '@blocksuite/store';
 import { effect, type Signal, signal } from '@preact/signals-core';
-import { cssVar } from '@toeverything/theme';
-import { css, html, unsafeCSS } from 'lit';
+import { css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { codeToTokensBase, type ThemedToken } from 'shiki';
 
@@ -35,8 +35,8 @@ export class LatexEditorMenu extends SignalWatcher(
 
       padding: 8px;
       border-radius: 8px;
-      border: 0.5px solid ${unsafeCSS(cssVar('borderColor'))};
-      background: ${unsafeCSS(cssVar('backgroundOverlayPanelColor'))};
+      border: 0.5px solid ${unsafeCSSVar('borderColor')};
+      background: ${unsafeCSSVar('backgroundOverlayPanelColor')};
 
       /* light/toolbarShadow */
       box-shadow: 0px 6px 16px 0px rgba(0, 0, 0, 0.14);
@@ -48,16 +48,16 @@ export class LatexEditorMenu extends SignalWatcher(
       padding: 4px 10px;
 
       border-radius: 4px;
-      background: ${unsafeCSS(cssVar('white10'))};
+      background: ${unsafeCSSVar('white10')};
 
       /* light/activeShadow */
       box-shadow: 0px 0px 0px 2px rgba(30, 150, 235, 0.3);
 
-      font-family: ${unsafeCSS(cssVar('fontCodeFamily'))};
+      font-family: ${unsafeCSSVar('fontCodeFamily')};
       border: 1px solid transparent;
     }
     .latex-editor:focus-within {
-      border: 1px solid ${unsafeCSS(cssVar('blue700'))};
+      border: 1px solid ${unsafeCSSVar('blue700')};
     }
 
     .latex-editor-confirm {
@@ -71,7 +71,7 @@ export class LatexEditorMenu extends SignalWatcher(
       grid-area: hint-box;
       padding-top: 6px;
 
-      color: ${unsafeCSS(cssVar('placeholderColor'))};
+      color: ${unsafeCSSVar('placeholderColor')};
 
       /* MobileTypeface/caption */
       font-family: 'SF Pro Text';
@@ -96,10 +96,8 @@ export class LatexEditorMenu extends SignalWatcher(
   }
 
   private _updateHighlightTokens(text: string) {
-    const theme =
-      ThemeObserver.instance.mode$.value === ColorScheme.Dark
-        ? 'dark-plus'
-        : 'light-plus';
+    const editorTheme = this.std.get(ThemeProvider).theme;
+    const theme = editorTheme === ColorScheme.Dark ? 'dark-plus' : 'light-plus';
 
     codeToTokensBase(text, {
       lang: 'latex',
@@ -137,7 +135,7 @@ export class LatexEditorMenu extends SignalWatcher(
     );
 
     this.disposables.add(
-      ThemeObserver.subscribe(() => {
+      this.std.get(ThemeProvider).theme$.subscribe(() => {
         this._updateHighlightTokens(this.yText.toString());
       })
     );
@@ -150,12 +148,20 @@ export class LatexEditorMenu extends SignalWatcher(
       }
     });
 
+    this.disposables.addFromEvent(this, 'pointerdown', e => {
+      e.stopPropagation();
+    });
+    this.disposables.addFromEvent(this, 'pointerup', e => {
+      e.stopPropagation();
+    });
+
     this.updateComplete
       .then(async () => {
         await this.richText?.updateComplete;
 
-        this.richText?.inlineEditorContainer.focus();
-        this.richText?.inlineEditor?.focusEnd();
+        setTimeout(() => {
+          this.richText?.inlineEditor?.focusEnd();
+        });
       })
       .catch(console.error);
   }

@@ -1,3 +1,4 @@
+import { menu } from '@blocksuite/affine-components/context-menu';
 import {
   LassoFreeHandIcon,
   LassoPolygonalIcon,
@@ -13,35 +14,32 @@ export const buildLassoDenseMenu: DenseMenuBuilder = edgeless => {
   //   edgeless.service.editPropsStore.getLastProps('lasso').mode ??
   //   LassoMode.FreeHand;
 
-  const isActive = edgeless.tools.edgelessTool.type === 'lasso';
+  const isActive = edgeless.gfx.tool.currentToolName$.peek() === 'lasso';
 
   const createSelect = (mode: LassoMode) => () => {
-    edgeless.tools.setEdgelessTool({ type: 'lasso', mode });
+    edgeless.gfx.tool.setTool('lasso', { mode });
   };
 
-  return {
+  return menu.subMenu({
     name: 'Lasso',
-    type: 'sub-menu',
-    icon: LassoFreeHandIcon,
+    prefix: LassoFreeHandIcon,
     select: createSelect(LassoMode.FreeHand),
     isSelected: isActive,
     options: {
       items: [
-        {
-          type: 'action',
-          icon: LassoFreeHandIcon,
+        menu.action({
+          prefix: LassoFreeHandIcon,
           name: 'Free',
           select: createSelect(LassoMode.FreeHand),
           // isSelected: isActive && prevMode === LassoMode.FreeHand,
-        },
-        {
-          type: 'action',
-          icon: LassoPolygonalIcon,
+        }),
+        menu.action({
+          prefix: LassoPolygonalIcon,
           name: 'Polygonal',
           select: createSelect(LassoMode.Polygonal),
           // isSelected: isActive && prevMode === LassoMode.Polygonal,
-        },
+        }),
       ],
     },
-  };
+  });
 };

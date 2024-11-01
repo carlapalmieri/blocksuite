@@ -8,12 +8,6 @@ import {
 
 export const BOOKMARK_MIN_WIDTH = 450;
 
-export const NOTE_MIN_WIDTH = BOOKMARK_MIN_WIDTH + 24 * 2;
-export const NOTE_MIN_HEIGHT = 78;
-export const NOTE_INIT_HEIGHT = 91;
-
-export const DEFAULT_NOTE_WIDTH = 448;
-export const DEFAULT_NOTE_HEIGHT = 72;
 export const DEFAULT_NOTE_OFFSET_X = 30;
 export const DEFAULT_NOTE_OFFSET_Y = 40;
 export const NOTE_OVERLAY_OFFSET_X = 6;

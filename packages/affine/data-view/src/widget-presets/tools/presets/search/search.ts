@@ -1,6 +1,7 @@
+import { IS_MOBILE } from '@blocksuite/global/env';
 import { CloseIcon, SearchIcon } from '@blocksuite/icons/lit';
 import { baseTheme } from '@toeverything/theme';
-import { css, html, unsafeCSS } from 'lit';
+import { css, html, nothing, unsafeCSS } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -20,7 +21,7 @@ const styles = css`
     width: 24px;
     height: 32px;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: width 0.3s ease;
     overflow: hidden;
   }
   .affine-database-search-container svg {
@@ -59,7 +60,6 @@ const styles = css`
     cursor: pointer;
     padding: 2px;
     border-radius: 4px;
-    height: max-content;
   }
   .affine-database-search-input-icon:hover {
     background: var(--affine-hover-color);
@@ -145,6 +145,8 @@ export class DataViewHeaderToolsSearch extends WidgetBase {
   }
 
   override render() {
+    if (IS_MOBILE) return nothing;
+
     const searchToolClassMap = classMap({
       'affine-database-search-container': true,
       'search-container-expand': this.showSearch,

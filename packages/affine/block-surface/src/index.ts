@@ -19,7 +19,7 @@ export {
   ConnectorEndpointLocationsOnTriangle,
   ConnectorPathGenerator,
 } from './managers/connector-manager.js';
-export { CanvasRenderer, Overlay } from './renderer/canvas-renderer.js';
+export { CanvasRenderer } from './renderer/canvas-renderer.js';
 export * from './renderer/elements/group/consts.js';
 export type { ElementRenderer } from './renderer/elements/index.js';
 export {
@@ -28,6 +28,7 @@ export {
 } from './renderer/elements/index.js';
 export { fitContent } from './renderer/elements/shape/utils.js';
 export * from './renderer/elements/type.js';
+export { Overlay, OverlayIdentifier } from './renderer/overlay.js';
 import {
   getCursorByCoord,
   getLineHeight,
@@ -52,18 +53,15 @@ export {
 } from './surface-spec.js';
 export { SurfaceBlockTransformer } from './surface-transformer.js';
 export { AStarRunner } from './utils/a-star.js';
+export { LayoutableMindmapElementModel } from './utils/mindmap/utils.js';
 export { RoughCanvas } from './utils/rough/canvas.js';
-export type { Options } from './utils/rough/core.js';
 
-export { sortIndex } from './utils/sort.js';
+export type { Options } from './utils/rough/core.js';
 
 import {
   almostEqual,
   clamp,
-  getBoundsWithRotation,
   getPointFromBoundsWithRotation,
-  getPointsFromBoundsWithRotation,
-  getQuadBoundsWithRotation,
   getStroke,
   getSvgPathFromStroke,
   intersects,
@@ -92,6 +90,8 @@ import {
   moveMindMapSubtree,
   showMergeIndicator,
 } from './utils/mindmap/utils.js';
+export { sortIndex } from './utils/sort.js';
+export { updateXYWH } from './utils/update-xywh.js';
 
 export const ConnectorUtils = {
   isConnectorAndBindingsAllSelected,
@@ -116,10 +116,7 @@ export const CommonUtils = {
   clamp,
   generateElementId,
   generateKeyBetween,
-  getBoundsWithRotation,
   getPointFromBoundsWithRotation,
-  getPointsFromBoundsWithRotation,
-  getQuadBoundsWithRotation,
   getStroke,
   getSvgPathFromStroke,
   intersects,

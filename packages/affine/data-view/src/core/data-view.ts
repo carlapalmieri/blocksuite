@@ -10,7 +10,7 @@ import { keyed } from 'lit/directives/keyed.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { html } from 'lit/static-html.js';
 
-import type { DataSource } from './common/data-source/base.js';
+import type { DataSource } from './data-source/base.js';
 import type { DataViewSelection, DataViewSelectionState } from './types.js';
 import type { DataViewExpose, DataViewProps } from './view/types.js';
 import type { SingleView } from './view-manager/single-view.js';
@@ -58,10 +58,20 @@ export class DataViewRenderer extends SignalWatcher(
     }
   `;
 
-  private _view = createRef<DataViewExpose>();
+  private _view = createRef<{ expose: DataViewExpose }>();
+
+  @property({ attribute: false })
+  accessor config!: DataViewRendererConfig;
 
   private currentViewId$ = computed(() => {
     return this.config.dataSource.viewManager.currentViewId$.value;
+  });
+
+  viewMap$ = computed(() => {
+    const manager = this.config.dataSource.viewManager;
+    return Object.fromEntries(
+      manager.views$.value.map(view => [view, manager.viewGet(view)])
+    );
   });
 
   currentViewConfig$ = computed<ViewProps | undefined>(() => {
@@ -101,7 +111,7 @@ export class DataViewRenderer extends SignalWatcher(
   });
 
   focusFirstCell = () => {
-    this._view.value?.focusFirstCell();
+    this.view?.expose.focusFirstCell();
   };
 
   openDetailPanel = (ops: {
@@ -120,14 +130,7 @@ export class DataViewRenderer extends SignalWatcher(
     }
   };
 
-  viewMap$ = computed(() => {
-    const manager = this.config.dataSource.viewManager;
-    return Object.fromEntries(
-      manager.views$.value.map(view => [view, manager.viewGet(view)])
-    );
-  });
-
-  get expose() {
+  get view() {
     return this._view.value;
   }
 
@@ -186,9 +189,6 @@ export class DataViewRenderer extends SignalWatcher(
     `;
   }
 
-  @property({ attribute: false })
-  accessor config!: DataViewRendererConfig;
-
   @state()
   accessor currentView: string | undefined = undefined;
 }
@@ -203,7 +203,7 @@ export class DataView {
   private _ref = createRef<DataViewRenderer>();
 
   get expose() {
-    return this._ref.value?.expose;
+    return this._ref.value?.view?.expose;
   }
 
   render(props: DataViewRendererConfig) {

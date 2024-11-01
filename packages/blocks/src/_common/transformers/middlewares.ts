@@ -218,6 +218,40 @@ export const titleMiddleware: JobMiddleware = ({
   });
 };
 
+export const docLinkBaseURLMiddlewareBuilder = (baseUrl: string) => {
+  let middleware: JobMiddleware = ({ slots, collection, adapterConfigs }) => {
+    slots.beforeExport.on(() => {
+      const docLinkBaseUrl = baseUrl
+        ? `${baseUrl}/workspace/${collection.id}/`
+        : '';
+      adapterConfigs.set('docLinkBaseUrl', docLinkBaseUrl);
+    });
+  };
+
+  return {
+    get: () => middleware,
+    set: (customBaseUrl: string) => {
+      middleware = ({ slots, collection, adapterConfigs }) => {
+        slots.beforeExport.on(() => {
+          const docLinkBaseUrl = customBaseUrl
+            ? `${customBaseUrl}/workspace/${collection.id}/`
+            : '';
+          adapterConfigs.set('docLinkBaseUrl', docLinkBaseUrl);
+        });
+      };
+    },
+  };
+};
+
+const defaultDocLinkBaseURLMiddlewareBuilder =
+  docLinkBaseURLMiddlewareBuilder('');
+
+export const setDocLinkBaseURLMiddleware =
+  defaultDocLinkBaseURLMiddlewareBuilder.set;
+
+export const docLinkBaseURLMiddleware =
+  defaultDocLinkBaseURLMiddlewareBuilder.get();
+
 const imageProxyMiddlewareBuilder = () => {
   let middleware = customImageProxyMiddleware(DEFAULT_IMAGE_PROXY_ENDPOINT);
   return {
@@ -239,4 +273,26 @@ export const embedSyncedDocMiddleware =
   (type: 'content'): JobMiddleware =>
   ({ adapterConfigs }) => {
     adapterConfigs.set('embedSyncedDocExportType', type);
+  };
+
+export const fileNameMiddleware =
+  (fileName?: string): JobMiddleware =>
+  ({ slots }) => {
+    slots.beforeImport.on(payload => {
+      if (payload.type !== 'page') {
+        return;
+      }
+      if (!fileName) {
+        return;
+      }
+      payload.snapshot.meta.title = fileName;
+      payload.snapshot.blocks.props.title = {
+        '$blocksuite:internal:text$': true,
+        delta: [
+          {
+            insert: fileName,
+          },
+        ],
+      };
+    });
   };

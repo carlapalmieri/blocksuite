@@ -3,6 +3,7 @@ import type { deleteTextCommand } from './format/delete-text.js';
 import type { formatBlockCommand } from './format/format-block.js';
 import type { formatNativeCommand } from './format/format-native.js';
 import type { formatTextCommand } from './format/format-text.js';
+import type { insertInlineLatex } from './format/insert-inline-latex.js';
 import type {
   getTextStyle,
   isTextStyleActive,
@@ -11,6 +12,7 @@ import type {
   toggleItalic,
   toggleLink,
   toggleStrike,
+  toggleTextStyleCommand,
   toggleUnderline,
 } from './format/text-style.js';
 
@@ -62,8 +64,10 @@ declare global {
       toggleStrike: typeof toggleStrike;
       toggleCode: typeof toggleCode;
       toggleLink: typeof toggleLink;
+      toggleTextStyle: typeof toggleTextStyleCommand;
       getTextStyle: typeof getTextStyle;
       isTextStyleActive: typeof isTextStyleActive;
+      insertInlineLatex: typeof insertInlineLatex;
     }
   }
 }

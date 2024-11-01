@@ -8,6 +8,7 @@ import { getSurfaceBlock } from '../../surface-ref-block/utils.js';
 import {
   EDGELESS_TEXT_BLOCK_MIN_HEIGHT,
   EDGELESS_TEXT_BLOCK_MIN_WIDTH,
+  EdgelessTextBlockComponent,
 } from '../edgeless-text-block.js';
 
 export const insertEdgelessTextCommand: Command<
@@ -49,6 +50,19 @@ export const insertEdgelessTextCommand: Command<
         elements: [textId],
         editing: true,
       });
+      const disposable = edgelessService.selection.slots.updated.on(() => {
+        const editing = edgelessService.selection.editing;
+        const id = edgelessService.selection.selectedIds[0];
+        if (!editing || id !== textId) {
+          const textBlock = host.view.getBlock(textId);
+          if (textBlock instanceof EdgelessTextBlockComponent) {
+            textBlock.model.hasMaxWidth = true;
+          }
+
+          disposable.dispose();
+        }
+      });
+
       focusTextModel(std, blockId);
       host.updateComplete
         .then(() => {
@@ -60,6 +74,7 @@ export const insertEdgelessTextCommand: Command<
           edgelessText.addEventListener(
             'focusout',
             e => {
+              if (edgelessText.model.children.length > 1) return;
               if (
                 !paragraph.model.text ||
                 (paragraph.model.text.length === 0 && e.relatedTarget !== null)
@@ -75,6 +90,15 @@ export const insertEdgelessTextCommand: Command<
           paragraph.model.deleted.once(() => {
             abortController.abort();
           });
+          edgelessText.addEventListener(
+            'beforeinput',
+            () => {
+              abortController.abort();
+            },
+            {
+              once: true,
+            }
+          );
         })
         .catch(console.error);
     })

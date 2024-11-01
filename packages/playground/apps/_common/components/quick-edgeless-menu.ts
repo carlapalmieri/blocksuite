@@ -1,15 +1,16 @@
-import type { SerializedXYWH } from '@blocksuite/global/utils';
 import type { DeltaInsert } from '@blocksuite/inline';
 import type { AffineEditorContainer } from '@blocksuite/presets';
 
 import { ShadowlessElement } from '@blocksuite/block-std';
 import {
   type AffineTextAttributes,
+  ColorScheme,
   type DocMode,
   DocModeProvider,
   ExportManager,
 } from '@blocksuite/blocks';
 import { EdgelessRootService, printToPdf } from '@blocksuite/blocks';
+import { type SerializedXYWH, SignalWatcher } from '@blocksuite/global/utils';
 import { type DocCollection, Text } from '@blocksuite/store';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -36,6 +37,7 @@ import type { DocsPanel } from './docs-panel.js';
 import type { LeftSidePanel } from './left-side-panel.js';
 
 import { notify } from '../../default/utils/notify.js';
+import { mockEdgelessTheme } from '../mock-services.js';
 import { generateRoomId } from '../sync/websocket/utils.js';
 
 const basePath =
@@ -43,7 +45,7 @@ const basePath =
 setBasePath(basePath);
 
 @customElement('quick-edgeless-menu')
-export class QuickEdgelessMenu extends ShadowlessElement {
+export class QuickEdgelessMenu extends SignalWatcher(ShadowlessElement) {
   static override styles = css`
     :root {
       --sl-font-size-medium: var(--affine-font-xs);
@@ -149,17 +151,10 @@ export class QuickEdgelessMenu extends ShadowlessElement {
   private async _exportSnapshot() {
     if (!this.rootService) return;
     const zipTransformer = this.rootService.transformers.zip;
-    const file = await zipTransformer.exportDocs(
+    await zipTransformer.exportDocs(
       this.collection,
       [...this.collection.docs.values()].map(collection => collection.getDoc())
     );
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `${this.doc.id}.bs.zip`);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   }
 
   private _importSnapshot() {
@@ -261,6 +256,9 @@ export class QuickEdgelessMenu extends ShadowlessElement {
       html.classList.remove('dark');
       html.classList.remove('sl-theme-dark');
     }
+
+    const theme = dark ? ColorScheme.Dark : ColorScheme.Light;
+    mockEdgelessTheme.setTheme(theme);
   }
 
   private _switchEditorMode() {
@@ -522,6 +520,27 @@ export class QuickEdgelessMenu extends ShadowlessElement {
           </div>
 
           <div style="display: flex; gap: 12px">
+            <!-- Edgeless Theme button -->
+            ${this._docMode === 'edgeless'
+              ? html`<sl-tooltip
+                  content="Edgeless Theme"
+                  placement="bottom"
+                  hoist
+                >
+                  <sl-button
+                    size="small"
+                    circle
+                    @click=${() => mockEdgelessTheme.toggleTheme()}
+                  >
+                    <sl-icon
+                      name="${mockEdgelessTheme.theme$.value === 'dark'
+                        ? 'moon'
+                        : 'brightness-high'}"
+                      label="Edgeless Theme"
+                    ></sl-icon>
+                  </sl-button>
+                </sl-tooltip>`
+              : nothing}
             <!-- Present button -->
             ${this._docMode === 'edgeless'
               ? html`<sl-tooltip content="Present" placement="bottom" hoist>
@@ -530,8 +549,8 @@ export class QuickEdgelessMenu extends ShadowlessElement {
                     circle
                     @click=${() => {
                       if (this.rootService instanceof EdgelessRootService) {
-                        this.rootService.tool.setEdgelessTool({
-                          type: 'frameNavigator',
+                        this.rootService.gfx.tool.setTool('frameNavigator', {
+                          mode: 'fit',
                         });
                       }
                     }}

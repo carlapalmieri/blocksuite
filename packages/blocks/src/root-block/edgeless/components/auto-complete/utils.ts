@@ -1,3 +1,4 @@
+import type { GfxController, GfxModel } from '@blocksuite/block-std/gfx';
 import type { XYWH } from '@blocksuite/global/utils';
 
 import {
@@ -16,7 +17,8 @@ import {
   type ShapeName,
   type ShapeStyle,
 } from '@blocksuite/affine-model';
-import { assertExists, Bound } from '@blocksuite/global/utils';
+import { BlockSuiteError, ErrorCode } from '@blocksuite/global/exceptions';
+import { assertType, Bound } from '@blocksuite/global/utils';
 import { DocCollection } from '@blocksuite/store';
 
 import type { EdgelessRootBlockComponent } from '../../edgeless-root-block.js';
@@ -49,8 +51,8 @@ export type AUTO_COMPLETE_TARGET_TYPE =
 class AutoCompleteTargetOverlay extends Overlay {
   xywh: XYWH;
 
-  constructor(xywh: XYWH) {
-    super();
+  constructor(gfx: GfxController, xywh: XYWH) {
+    super(gfx);
     this.xywh = xywh;
   }
 
@@ -58,8 +60,8 @@ class AutoCompleteTargetOverlay extends Overlay {
 }
 
 export class AutoCompleteTextOverlay extends AutoCompleteTargetOverlay {
-  constructor(xywh: XYWH) {
-    super(xywh);
+  constructor(gfx: GfxController, xywh: XYWH) {
+    super(gfx, xywh);
   }
 
   override render(ctx: CanvasRenderingContext2D, _rc: RoughCanvas) {
@@ -82,8 +84,8 @@ export class AutoCompleteTextOverlay extends AutoCompleteTargetOverlay {
 export class AutoCompleteNoteOverlay extends AutoCompleteTargetOverlay {
   private _background: string;
 
-  constructor(xywh: XYWH, background: string) {
-    super(xywh);
+  constructor(gfx: GfxController, xywh: XYWH, background: string) {
+    super(gfx, xywh);
     this._background = background;
   }
 
@@ -112,8 +114,8 @@ export class AutoCompleteNoteOverlay extends AutoCompleteTargetOverlay {
 export class AutoCompleteFrameOverlay extends AutoCompleteTargetOverlay {
   private _strokeColor;
 
-  constructor(xywh: XYWH, strokeColor: string) {
-    super(xywh);
+  constructor(gfx: GfxController, xywh: XYWH, strokeColor: string) {
+    super(gfx, xywh);
     this._strokeColor = strokeColor;
   }
 
@@ -154,12 +156,13 @@ export class AutoCompleteShapeOverlay extends Overlay {
   private _shape: Shape;
 
   constructor(
+    gfx: GfxController,
     xywh: XYWH,
     type: TARGET_SHAPE_TYPE,
     options: Options,
     shapeStyle: ShapeStyle
   ) {
-    super();
+    super(gfx);
     this._shape = ShapeFactory.createShape(xywh, type, options, shapeStyle);
   }
 
@@ -277,12 +280,15 @@ export function createEdgelessElement(
   let id;
   const { service } = edgeless;
 
+  let element: GfxModel | null = null;
+
   if (isShape(current)) {
     id = service.addElement(current.type, {
       ...current.serialize(),
       text: new DocCollection.Y.Text(),
       xywh: bound.serialize(),
     });
+    element = service.getElementById(id);
   } else {
     const { doc } = edgeless;
     id = doc.addBlock(
@@ -295,16 +301,32 @@ export function createEdgelessElement(
       },
       edgeless.model.id
     );
-    const note = doc.getBlockById(id) as NoteBlockModel;
-    assertExists(note);
+    const note = doc.getBlock(id)?.model;
+    if (!note) {
+      throw new BlockSuiteError(
+        ErrorCode.GfxBlockElementError,
+        'Note block is not found after creation'
+      );
+    }
+    assertType<NoteBlockModel>(note);
     doc.updateBlock(note, () => {
       note.edgeless.collapse = true;
     });
     doc.addBlock('affine:paragraph', {}, note.id);
+
+    element = note;
   }
+
+  if (!element) {
+    throw new BlockSuiteError(
+      ErrorCode.GfxBlockElementError,
+      'Element is not found after creation'
+    );
+  }
+
   const group = current.group;
   if (group instanceof GroupElementModel) {
-    group.addChild(id);
+    group.addChild(element);
   }
   return id;
 }
@@ -320,9 +342,10 @@ export function createShapeElement(
     radius: getShapeRadius(targetType),
     text: new DocCollection.Y.Text(),
   });
+  const element = service.getElementById(id);
   const group = current.group;
-  if (group instanceof GroupElementModel) {
-    group.addChild(id);
+  if (group instanceof GroupElementModel && element) {
+    group.addChild(element);
   }
   return id;
 }

@@ -4,12 +4,13 @@ import {
   AttachmentIcon16,
   getAttachmentFileIcons,
 } from '@blocksuite/affine-components/icons';
+import { Peekable } from '@blocksuite/affine-components/peek';
 import { toast } from '@blocksuite/affine-components/toast';
 import {
   type AttachmentBlockModel,
   AttachmentBlockStyles,
 } from '@blocksuite/affine-model';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
 import { humanFileSize } from '@blocksuite/affine-shared/utils';
 import { Slice } from '@blocksuite/store';
 import { flip, offset } from '@floating-ui/dom';
@@ -27,6 +28,7 @@ import { renderEmbedView } from './embed.js';
 import { styles } from './styles.js';
 import { checkAttachmentBlob, downloadAttachmentBlob } from './utils.js';
 
+@Peekable()
 export class AttachmentBlockComponent extends CaptionedBlockComponent<
   AttachmentBlockModel,
   AttachmentBlockService
@@ -143,7 +145,9 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
     });
 
     // Workaround for https://github.com/toeverything/blocksuite/issues/4724
-    this.disposables.add(ThemeObserver.subscribe(() => this.requestUpdate()));
+    this.disposables.add(
+      this.std.get(ThemeProvider).theme$.subscribe(() => this.requestUpdate())
+    );
 
     // this is required to prevent iframe from capturing pointer events
     this.disposables.add(
@@ -176,27 +180,26 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
     super.disconnectedCallback();
   }
 
+  override firstUpdated() {
+    // lazy bindings
+    this.disposables.addFromEvent(this, 'click', this.onClick);
+  }
+
   protected onClick(event: MouseEvent) {
+    // the peek view need handle shift + click
+    if (event.defaultPrevented) return;
+
     event.stopPropagation();
 
     this._selectBlock();
-  }
-
-  protected onDoubleClick(event: MouseEvent) {
-    event.stopPropagation();
-
-    if (this.allowEmbed) {
-      this.open();
-    } else {
-      this.download();
-    }
   }
 
   override renderBlock() {
     const { name, size, style } = this.model;
     const cardStyle = style ?? AttachmentBlockStyles[1];
 
-    const { LoadingIcon } = getEmbedCardIcons();
+    const theme = this.std.get(ThemeProvider).theme;
+    const { LoadingIcon } = getEmbedCardIcons(theme);
 
     const titleIcon = this.loading ? LoadingIcon : AttachmentIcon16;
     const titleText = this.loading ? 'Cargando...' : name;
@@ -216,11 +219,7 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
         style=${this.containerStyleMap}
       >
         ${embedView
-          ? html`<div
-              class="affine-attachment-embed-container"
-              @click=${this.onClick}
-              @dblclick=${this.onDoubleClick}
-            >
+          ? html`<div class="affine-attachment-embed-container">
               ${embedView}
 
               <div
@@ -238,8 +237,6 @@ export class AttachmentBlockComponent extends CaptionedBlockComponent<
                 error: this.error,
                 unsynced: false,
               })}
-              @click=${this.onClick}
-              @dblclick=${this.onDoubleClick}
             >
               <div class="affine-attachment-content">
                 <div class="affine-attachment-content-title">

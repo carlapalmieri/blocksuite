@@ -1,4 +1,8 @@
-import { popMenu } from '@blocksuite/affine-components/context-menu';
+import {
+  menu,
+  popMenu,
+  popupTargetFromElement,
+} from '@blocksuite/affine-components/context-menu';
 import {
   insertPositionToIndex,
   type InsertToPosition,
@@ -8,7 +12,7 @@ import { css } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { html } from 'lit/static-html.js';
 
-import type { GroupManager } from '../../core/common/group-by/helper.js';
+import type { GroupManager } from '../../core/group-by/manager.js';
 import type { DataViewExpose } from '../../core/index.js';
 import type { TableSingleView } from './table-view-manager.js';
 
@@ -165,6 +169,8 @@ export class DataViewTable extends DataViewBase<
 
   dragController = new TableDragController(this);
 
+  selectionController = new TableSelectionController(this);
+
   expose: DataViewExpose = {
     addRow: position => {
       this._addRow(this.props.view, position);
@@ -216,19 +222,20 @@ export class DataViewTable extends DataViewBase<
     }
     const add = (e: MouseEvent) => {
       const ele = e.currentTarget as HTMLElement;
-      popMenu(ele, {
+      popMenu(popupTargetFromElement(ele), {
         options: {
-          input: {
-            onComplete: text => {
-              const column = groupHelper.property$.value;
-              if (column) {
-                column.dataUpdate(
-                  () => addGroup(text, column.data$.value) as never
-                );
-              }
-            },
-          },
-          items: [],
+          items: [
+            menu.input({
+              onComplete: text => {
+                const column = groupHelper.property$.value;
+                if (column) {
+                  column.dataUpdate(
+                    () => addGroup(text, column.data$.value) as never
+                  );
+                }
+              },
+            }),
+          ],
         },
       });
     };
@@ -243,8 +250,6 @@ export class DataViewTable extends DataViewBase<
       </div>
     </div>`;
   };
-
-  selectionController = new TableSelectionController(this);
 
   private get readonly() {
     return this.props.view.readonly$.value;

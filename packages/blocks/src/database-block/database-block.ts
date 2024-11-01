@@ -1,7 +1,11 @@
 import type { DatabaseBlockModel } from '@blocksuite/affine-model';
 
 import { CaptionedBlockComponent } from '@blocksuite/affine-components/caption';
-import { popMenu } from '@blocksuite/affine-components/context-menu';
+import {
+  menu,
+  popMenu,
+  popupTargetFromElement,
+} from '@blocksuite/affine-components/context-menu';
 import { DragIndicator } from '@blocksuite/affine-components/drag-indicator';
 import { PeekViewProvider } from '@blocksuite/affine-components/peek';
 import { toast } from '@blocksuite/affine-components/toast';
@@ -21,6 +25,7 @@ import {
   type DataViewWidgetProps,
   defineUniComponent,
   renderUniLit,
+  type SingleView,
   uniMap,
 } from '@blocksuite/data-view';
 import { widgetPresets } from '@blocksuite/data-view/widget-presets';
@@ -48,7 +53,10 @@ import { popSideDetail } from './components/layout.js';
 import { HostContextKey } from './context/host-context.js';
 import { DatabaseBlockDataSource } from './data-source.js';
 import { BlockRenderer } from './detail-panel/block-renderer.js';
-import { NoteRenderer } from './detail-panel/note-renderer.js';
+import {
+  getDocIdsFromText,
+  NoteRenderer,
+} from './detail-panel/note-renderer.js';
 
 export class DatabaseBlockComponent extends CaptionedBlockComponent<
   DatabaseBlockModel,
@@ -100,17 +108,16 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
 
   private _clickDatabaseOps = (e: MouseEvent) => {
     const options = this.optionsConfig.configure(this.model, {
-      input: {
-        initValue: this.model.title.toString(),
-        placeholder: 'Sin título',
-        onComplete: text => {
-          this.model.title.replace(0, this.model.title.length, text);
-        },
-      },
       items: [
-        {
-          type: 'action',
-          icon: CopyIcon(),
+        menu.input({
+          initialValue: this.model.title.toString(),
+          placeholder: 'Sin título',
+          onComplete: text => {
+            this.model.title.replace(0, this.model.title.length, text);
+          },
+        }),
+        menu.action({
+          prefix: CopyIcon(),
           name: 'Copiar',
           select: () => {
             const slice = Slice.fromModels(this.doc, [this.model]);
@@ -121,14 +128,11 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
               })
               .catch(console.error);
           },
-        },
-        {
-          type: 'group',
-          name: '',
-          children: () => [
-            {
-              type: 'action',
-              icon: DeleteIcon(),
+        }),
+        menu.group({
+          items: [
+            menu.action({
+              prefix: DeleteIcon(),
               class: 'delete-item',
               name: 'Eliminar Base de datos',
               select: () => {
@@ -137,13 +141,15 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
                 });
                 this.doc.deleteBlock(this.model);
               },
-            },
+            }),
           ],
-        },
+        }),
       ],
     });
 
-    popMenu(e.currentTarget as HTMLElement, { options });
+    popMenu(popupTargetFromElement(e.currentTarget as HTMLElement), {
+      options,
+    });
   };
 
   private _dataSource?: DatabaseBlockDataSource;
@@ -176,6 +182,36 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
     };
   };
 
+  createTemplate = (
+    data: {
+      view: SingleView;
+      rowId: string;
+    },
+    openDoc: (docId: string) => void
+  ) => {
+    return createRecordDetail({
+      ...data,
+      openDoc,
+      detail: {
+        header: uniMap(
+          createUniComponentFromWebComponent(BlockRenderer),
+          props => ({
+            ...props,
+            host: this.host,
+          })
+        ),
+        note: uniMap(
+          createUniComponentFromWebComponent(NoteRenderer),
+          props => ({
+            ...props,
+            model: this.model,
+            host: this.host,
+          })
+        ),
+      },
+    });
+  };
+
   getRootService = () => {
     return this.std.getService<RootService>('affine:page');
   };
@@ -196,7 +232,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
             </div>
             ${renderUniLit(this.toolsWidget, props)}
           </div>
-          ${renderUniLit(widgetPresets.filterBar, props)}
+          ${renderUniLit(widgetPresets.quickSettingBar, props)}
         </div>
       `;
     }
@@ -258,12 +294,14 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
   toolsWidget: DataViewWidget = widgetPresets.createTools({
     table: [
       widgetPresets.tools.filter,
+      widgetPresets.tools.sort,
       widgetPresets.tools.search,
       widgetPresets.tools.viewOptions,
       widgetPresets.tools.tableAddRow,
     ],
     kanban: [
       widgetPresets.tools.filter,
+      widgetPresets.tools.sort,
       widgetPresets.tools.search,
       widgetPresets.tools.viewOptions,
     ],
@@ -362,30 +400,43 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
           std: this.std,
           detailPanelConfig: {
             openDetailPanel: (target, data) => {
-              const template = createRecordDetail({
-                ...data,
-                detail: {
-                  header: uniMap(
-                    createUniComponentFromWebComponent(BlockRenderer),
-                    props => ({
-                      ...props,
-                      host: this.host,
-                    })
-                  ),
-                  note: uniMap(
-                    createUniComponentFromWebComponent(NoteRenderer),
-                    props => ({
-                      ...props,
-                      model: this.model,
-                      host: this.host,
-                    })
-                  ),
-                },
-              });
               if (peekViewService) {
-                return peekViewService.peek(target, template);
+                const openDoc = (docId: string) => {
+                  return peekViewService.peek({
+                    docId,
+                    databaseId: this.blockId,
+                    databaseRowId: data.rowId,
+                    target: this,
+                  });
+                };
+                const docs = getDocIdsFromText(
+                  this.model.doc.getBlock(data.rowId)?.model?.text
+                );
+                if (docs.length === 1) {
+                  return openDoc(docs[0]);
+                }
+                const abort = new AbortController();
+                return new Promise<void>(focusBack => {
+                  peekViewService
+                    .peek(
+                      {
+                        target,
+                        template: this.createTemplate(data, docId => {
+                          // abort.abort();
+                          openDoc(docId).then(focusBack).catch(focusBack);
+                        }),
+                      },
+                      { abortSignal: abort.signal }
+                    )
+                    .then(focusBack)
+                    .catch(focusBack);
+                });
               } else {
-                return popSideDetail(template);
+                return popSideDetail(
+                  this.createTemplate(data, () => {
+                    //
+                  })
+                );
               }
             },
           },

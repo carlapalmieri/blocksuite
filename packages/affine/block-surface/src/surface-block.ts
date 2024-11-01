@@ -2,28 +2,27 @@ import type { Color } from '@blocksuite/affine-model';
 import type { EditorHost, SurfaceSelection } from '@blocksuite/block-std';
 import type { Slot } from '@blocksuite/global/utils';
 
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
 import { BlockComponent, RANGE_SYNC_EXCLUDE_ATTR } from '@blocksuite/block-std';
 import {
   GfxControllerIdentifier,
   type Viewport,
 } from '@blocksuite/block-std/gfx';
-import { Bound, values } from '@blocksuite/global/utils';
+import { Bound } from '@blocksuite/global/utils';
 import { css, html } from 'lit';
 import { query } from 'lit/decorators.js';
 
-import type { Overlay } from './renderer/canvas-renderer.js';
 import type { ElementRenderer } from './renderer/elements/index.js';
 import type { SurfaceBlockModel } from './surface-model.js';
 import type { SurfaceBlockService } from './surface-service.js';
 
 import { ConnectorElementModel } from './element-model/index.js';
 import { CanvasRenderer } from './renderer/canvas-renderer.js';
+import { OverlayIdentifier } from './renderer/overlay.js';
 
 export interface SurfaceContext {
   viewport: Viewport;
   host: EditorHost;
-  overlays: Record<string, Overlay>;
   elementRenderers: Record<string, ElementRenderer>;
   selection: {
     selectedIds: string[];
@@ -123,7 +122,8 @@ export class SurfaceBlockComponent extends BlockComponent<
   };
 
   private _initThemeObserver = () => {
-    this.disposables.add(ThemeObserver.subscribe(() => this.requestUpdate()));
+    const theme = this.std.get(ThemeProvider);
+    this.disposables.add(theme.theme$.subscribe(() => this.requestUpdate()));
   };
 
   private _lastTime = 0;
@@ -166,13 +166,20 @@ export class SurfaceBlockComponent extends BlockComponent<
   }
 
   private _initOverlays() {
-    values(this._edgelessService.overlays).forEach(overlay => {
+    this.std.provider.getAll(OverlayIdentifier).forEach(overlay => {
       this._renderer.addOverlay(overlay);
+    });
+
+    this._disposables.add(() => {
+      this.std.provider.getAll(OverlayIdentifier).forEach(overlay => {
+        this._renderer.removeOverlay(overlay);
+      });
     });
   }
 
   private _initRenderer() {
     const gfx = this._gfx;
+    const themeService = this.std.get(ThemeProvider);
 
     this._renderer = new CanvasRenderer({
       viewport: gfx.viewport,
@@ -181,12 +188,24 @@ export class SurfaceBlockComponent extends BlockComponent<
       enableStackingCanvas: true,
       provider: {
         generateColorProperty: (color: Color, fallback: string) =>
-          ThemeObserver.generateColorProperty(color, fallback),
+          themeService.generateColorProperty(
+            color,
+            fallback,
+            themeService.edgelessTheme
+          ),
         getColorValue: (color: Color, fallback?: string, real?: boolean) =>
-          ThemeObserver.getColorValue(color, fallback, real),
-        getColorScheme: () => ThemeObserver.mode,
+          themeService.getColorValue(
+            color,
+            fallback,
+            real,
+            themeService.edgelessTheme
+          ),
+        getColorScheme: () => themeService.edgelessTheme,
         getPropertyValue: (property: string) =>
-          ThemeObserver.getPropertyValue(property),
+          themeService.getCssVariableColor(
+            property,
+            themeService.edgelessTheme
+          ),
         selectedElements: () => this._edgelessService.selection.selectedIds,
       },
       onStackingCanvasCreated(canvas) {

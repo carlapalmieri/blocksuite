@@ -1,5 +1,9 @@
 import { CaptionedBlockComponent } from '@blocksuite/affine-components/caption';
-import { popMenu } from '@blocksuite/affine-components/context-menu';
+import {
+  menu,
+  popMenu,
+  popupTargetFromElement,
+} from '@blocksuite/affine-components/context-menu';
 import {
   CopyIcon,
   DeleteIcon,
@@ -85,39 +89,29 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
   `;
 
   private _clickDatabaseOps = (e: MouseEvent) => {
-    popMenu(e.currentTarget as HTMLElement, {
+    popMenu(popupTargetFromElement(e.currentTarget as HTMLElement), {
       options: {
-        input: {
-          initValue: this.model.title,
-          placeholder: 'Sin título',
-          onComplete: text => {
-            this.model.title = text;
-          },
-        },
         items: [
-          {
-            type: 'action',
-            icon: CopyIcon,
-            name: 'Copy',
+          menu.input({
+            initialValue: this.model.title,
+            placeholder: 'Sin título',
+            onComplete: text => {
+              this.model.title = text;
+            },
+          }),
+          menu.action({
+            prefix: CopyIcon,
+            name: 'Copiar',
             select: () => {
               const slice = Slice.fromModels(this.doc, [this.model]);
               this.std.clipboard.copySlice(slice).catch(console.error);
             },
-          },
-          // {
-          //   type: 'action',
-          //   icon: DuplicateIcon,
-          //   name: 'Duplicate',
-          //   select: () => {
-          //   },
-          // },
-          {
-            type: 'group',
+          }),
+          menu.group({
             name: '',
-            children: () => [
-              {
-                type: 'action',
-                icon: DeleteIcon,
+            items: [
+              menu.action({
+                prefix: DeleteIcon,
                 class: 'delete-item',
                 name: 'Eliminar base de datos',
                 select: () => {
@@ -126,9 +120,9 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
                   });
                   this.doc.deleteBlock(this.model);
                 },
-              },
+              }),
             ],
-          },
+          }),
         ],
       },
     });
@@ -175,7 +169,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
             </div>
             ${renderUniLit(this.toolsWidget, props)}
           </div>
-          ${renderUniLit(widgetPresets.filterBar, props)}
+          ${renderUniLit(widgetPresets.quickSettingBar, props)}
         </div>
       `;
     }
@@ -275,6 +269,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
               if (peekViewService) {
                 const template = createRecordDetail({
                   ...data,
+                  openDoc: () => {},
                   detail: {
                     header: uniMap(
                       createUniComponentFromWebComponent(BlockRenderer),
@@ -293,7 +288,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
                     ),
                   },
                 });
-                return peekViewService.peek(target, template);
+                return peekViewService.peek({ target, template });
               } else {
                 return Promise.resolve();
               }

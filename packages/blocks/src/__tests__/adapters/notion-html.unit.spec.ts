@@ -286,35 +286,33 @@ describe('notion html to snapshot', () => {
       <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="bulleted-list">
         <li style="list-style-type:disc">eee</li>
       </ul>
-      <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="to-do-list">
+      <ul id="12d088dd-6fdb-8036-bead-e3940734de95" class="to-do-list">
         <li>
           <div class="checkbox checkbox-off"></div> <span class="to-do-children-unchecked">aaa</span>
           <div class="indented">
-            <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="to-do-list">
+            <ul id="12d088dd-6fdb-8007-8f38-d3eaaca6975f" class="to-do-list">
               <li>
                 <div class="checkbox checkbox-on"></div> <span class="to-do-children-checked">bbb</span>
                 <div class="indented">
-                  <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="to-do-list">
+                  <ul id="12d088dd-6fdb-807e-8495-fca8f43a33bf" class="to-do-list">
                     <li>
-                      <div class="checkbox checkbox-off"></div> <span
-                        class="to-do-children-unchecked">ccc</span>
+                      <div class="checkbox checkbox-off"></div> <span class="to-do-children-unchecked">ccc</span>
                       <div class="indented"></div>
                     </li>
                   </ul>
                 </div>
               </li>
             </ul>
-            <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="to-do-list">
+            <ul id="12d088dd-6fdb-8023-813a-ff842af9299c" class="to-do-list">
               <li>
-                <div class="checkbox checkbox-off"></div> <span
-                  class="to-do-children-unchecked">ddd</span>
+                <div class="checkbox checkbox-off"></div> <span class="to-do-children-unchecked">ddd</span>
                 <div class="indented"></div>
               </li>
             </ul>
           </div>
         </li>
       </ul>
-      <ul id="ed3d2ae9-62f5-433a-9049-9ddbd1c81ac5" class="to-do-list">
+      <ul id="12d088dd-6fdb-8049-a520-c565437969b5" class="to-do-list">
         <li>
           <div class="checkbox checkbox-on"></div> <span class="to-do-children-checked">eee</span>
           <div class="indented"></div>
@@ -669,7 +667,7 @@ describe('notion html to snapshot', () => {
           id: 'matchesReplaceMap[16]',
           flavour: 'affine:list',
           props: {
-            type: 'toggle',
+            type: 'bulleted',
             text: {
               '$blocksuite:internal:text$': true,
               delta: [
@@ -687,7 +685,7 @@ describe('notion html to snapshot', () => {
               id: 'matchesReplaceMap[17]',
               flavour: 'affine:list',
               props: {
-                type: 'toggle',
+                type: 'bulleted',
                 text: {
                   '$blocksuite:internal:text$': true,
                   delta: [
@@ -705,7 +703,7 @@ describe('notion html to snapshot', () => {
                   id: 'matchesReplaceMap[18]',
                   flavour: 'affine:list',
                   props: {
-                    type: 'toggle',
+                    type: 'bulleted',
                     text: {
                       '$blocksuite:internal:text$': true,
                       delta: [
@@ -841,27 +839,10 @@ describe('notion html to snapshot', () => {
               ],
             },
           },
-          children: [],
-        },
-        {
-          type: 'block',
-          id: 'matchesReplaceMap[3]',
-          flavour: 'affine:paragraph',
-          props: {
-            type: 'quote',
-            text: {
-              '$blocksuite:internal:text$': true,
-              delta: [
-                {
-                  insert: 'ccc',
-                },
-              ],
-            },
-          },
           children: [
             {
               type: 'block',
-              id: 'matchesReplaceMap[4]',
+              id: 'matchesReplaceMap[3]',
               flavour: 'affine:paragraph',
               props: {
                 type: 'quote',
@@ -869,12 +850,30 @@ describe('notion html to snapshot', () => {
                   '$blocksuite:internal:text$': true,
                   delta: [
                     {
-                      insert: 'ddd',
+                      insert: 'ccc',
                     },
                   ],
                 },
               },
-              children: [],
+              children: [
+                {
+                  type: 'block',
+                  id: 'matchesReplaceMap[4]',
+                  flavour: 'affine:paragraph',
+                  props: {
+                    type: 'quote',
+                    text: {
+                      '$blocksuite:internal:text$': true,
+                      delta: [
+                        {
+                          insert: 'ddd',
+                        },
+                      ],
+                    },
+                  },
+                  children: [],
+                },
+              ],
             },
           ],
         },
@@ -914,12 +913,15 @@ describe('notion html to snapshot', () => {
           id: 'matchesReplaceMap[1]',
           flavour: 'affine:paragraph',
           props: {
-            type: 'text',
+            type: 'quote',
             text: {
               '$blocksuite:internal:text$': true,
               delta: [
                 {
-                  insert: '💡aaa',
+                  insert: '💡\n',
+                },
+                {
+                  insert: 'aaa',
                 },
               ],
             },
@@ -1720,6 +1722,186 @@ describe('notion html to snapshot', () => {
               children: [],
             },
           ],
+        },
+      ],
+    };
+
+    const adapter = new NotionHtmlAdapter(createJob());
+    const rawBlockSnapshot = await adapter.toBlockSnapshot({
+      file: html,
+    });
+    expect(nanoidReplacement(rawBlockSnapshot)).toEqual(blockSnapshot);
+  });
+
+  test('block equation', async () => {
+    const html = `<div class="page-body">
+      <figure id="11b088dd-6fdb-804f-8299-cc84de0b4909" class="equation">
+        <div class="equation-container">
+          <annotation encoding="application/x-tex">E = mc^2</annotation>
+        </div>
+      </figure>
+  </div>`;
+
+    const blockSnapshot: BlockSnapshot = {
+      type: 'block',
+      id: 'matchesReplaceMap[0]',
+      flavour: 'affine:note',
+      props: {
+        xywh: '[0,0,800,95]',
+        background: DEFAULT_NOTE_BACKGROUND_COLOR,
+        index: 'a0',
+        hidden: false,
+        displayMode: NoteDisplayMode.DocAndEdgeless,
+      },
+      children: [
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[1]',
+          flavour: 'affine:latex',
+          props: {
+            latex: 'E = mc^2',
+          },
+          children: [],
+        },
+      ],
+    };
+
+    const adapter = new NotionHtmlAdapter(createJob());
+    const rawBlockSnapshot = await adapter.toBlockSnapshot({
+      file: html,
+    });
+    expect(nanoidReplacement(rawBlockSnapshot)).toEqual(blockSnapshot);
+  });
+
+  test('inline equation', async () => {
+    const html = `<div class="page-body">
+      <p id="121088dd-6fdb-803c-8d6e-f80b56c2eb4f" class="">inline equation
+        <style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style>
+        <span data-token-index="0" contenteditable="false" class="notion-text-equation-token">
+          <annotation encoding="application/x-tex">E = mc^2</annotation>
+        </span>
+      </p>
+    </div>`;
+
+    const blockSnapshot: BlockSnapshot = {
+      type: 'block',
+      id: 'matchesReplaceMap[0]',
+      flavour: 'affine:note',
+      props: {
+        xywh: '[0,0,800,95]',
+        background: DEFAULT_NOTE_BACKGROUND_COLOR,
+        index: 'a0',
+        hidden: false,
+        displayMode: NoteDisplayMode.DocAndEdgeless,
+      },
+      children: [
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[1]',
+          flavour: 'affine:paragraph',
+          props: {
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'inline equation',
+                },
+                {
+                  insert: ' ',
+                  attributes: {
+                    latex: 'E = mc^2',
+                  },
+                },
+              ],
+            },
+            type: 'text',
+          },
+          children: [],
+        },
+      ],
+    };
+
+    const adapter = new NotionHtmlAdapter(createJob());
+    const rawBlockSnapshot = await adapter.toBlockSnapshot({
+      file: html,
+    });
+    expect(nanoidReplacement(rawBlockSnapshot)).toEqual(blockSnapshot);
+  });
+
+  test('inline style', async () => {
+    const html = `<div class="page-body">
+      <p id="12d088dd-6fdb-80e5-97be-ebd049a327f5" class="">
+        <strong>strong</strong> <em>italic</em> <span style="border-bottom:0.05em solid">underline</span> <del>strikethrough</del> <code>code</code> 
+      </p>
+    </div>`;
+
+    const blockSnapshot: BlockSnapshot = {
+      type: 'block',
+      id: 'matchesReplaceMap[0]',
+      flavour: 'affine:note',
+      props: {
+        xywh: '[0,0,800,95]',
+        background: DEFAULT_NOTE_BACKGROUND_COLOR,
+        index: 'a0',
+        hidden: false,
+        displayMode: NoteDisplayMode.DocAndEdgeless,
+      },
+      children: [
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[1]',
+          flavour: 'affine:paragraph',
+          props: {
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'strong',
+                  attributes: {
+                    bold: true,
+                  },
+                },
+                {
+                  insert: ' ',
+                },
+                {
+                  insert: 'italic',
+                  attributes: {
+                    italic: true,
+                  },
+                },
+                {
+                  insert: ' ',
+                },
+                {
+                  insert: 'underline',
+                  attributes: {
+                    underline: true,
+                  },
+                },
+                {
+                  insert: ' ',
+                },
+                {
+                  insert: 'strikethrough',
+                  attributes: {
+                    strike: true,
+                  },
+                },
+                {
+                  insert: ' ',
+                },
+                {
+                  insert: 'code',
+                  attributes: {
+                    code: true,
+                  },
+                },
+              ],
+            },
+            type: 'text',
+          },
+          children: [],
         },
       ],
     };

@@ -1,6 +1,8 @@
 import {
-  type Menu,
+  menu,
+  type MenuConfig,
   popFilterableSimpleMenu,
+  popupTargetFromElement,
 } from '@blocksuite/affine-components/context-menu';
 import { ShadowlessElement } from '@blocksuite/block-std';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
@@ -11,12 +13,12 @@ import { css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import type { GroupData } from '../../../core/common/group-by/helper.js';
-import type { StatsFunction } from '../../../core/common/stats/type.js';
+import type { GroupData } from '../../../core/group-by/manager.js';
+import type { StatsFunction } from '../../../core/statistics/types.js';
 import type { TableColumn } from '../table-view-manager.js';
 
-import { statsFunctions } from '../../../core/common/stats/index.js';
 import { typesystem } from '../../../core/logical/typesystem.js';
+import { statsFunctions } from '../../../core/statistics/index.js';
 import { DEFAULT_COLUMN_MIN_WIDTH } from '../consts.js';
 
 const styles = css`
@@ -69,6 +71,9 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
 ) {
   static override styles = styles;
 
+  @property({ attribute: false })
+  accessor column!: TableColumn;
+
   cellValues$ = computed(() => {
     if (this.group) {
       return this.group.rows.map(id => {
@@ -101,36 +106,32 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
   });
 
   openMenu = (ev: MouseEvent) => {
-    const menus: Menu[] = Object.entries(this.groups$.value).map(
+    const menus: MenuConfig[] = Object.entries(this.groups$.value).map(
       ([group, funcs]) => {
-        return {
-          type: 'sub-menu',
+        return menu.subMenu({
           name: group,
           options: {
-            input: { search: true },
             items: Object.values(funcs).map(func => {
-              return {
-                type: 'action',
+              return menu.action({
                 isSelected: func.type === this.column.statCalcOp$.value,
                 name: func.menuName ?? func.type,
                 select: () => {
                   this.column.updateStatCalcOp(func.type);
                 },
-              };
+              });
             }),
           },
-        };
+        });
       }
     );
-    popFilterableSimpleMenu(ev.target as HTMLElement, [
-      {
-        type: 'action',
+    popFilterableSimpleMenu(popupTargetFromElement(ev.target as HTMLElement), [
+      menu.action({
         isSelected: !this.column.statCalcOp$.value,
         name: 'Ninguno',
         select: () => {
           this.column.updateStatCalcOp();
         },
-      },
+      }),
       ...menus,
     ]);
   };
@@ -140,6 +141,8 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
       .flatMap(group => Object.values(group))
       .find(func => func.type === this.column.statCalcOp$.value);
   });
+
+  values$ = signal<unknown[]>([]);
 
   statsResult$ = computed(() => {
     const meta = this.column.view.propertyMetaGet(this.column.type$.value);
@@ -157,8 +160,6 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
   });
 
   subscriptionMap = new Map<unknown, () => void>();
-
-  values$ = signal<unknown[]>([]);
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -216,9 +217,6 @@ export class DatabaseColumnStatsCell extends SignalWatcher(
       </div>
     </div>`;
   }
-
-  @property({ attribute: false })
-  accessor column!: TableColumn;
 
   @property({ attribute: false })
   accessor group: GroupData | undefined = undefined;

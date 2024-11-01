@@ -9,7 +9,7 @@ import {
   StrokeStyle,
 } from '@blocksuite/affine-model';
 import { EDGELESS_BLOCK_CHILD_PADDING } from '@blocksuite/affine-shared/consts';
-import { ThemeObserver } from '@blocksuite/affine-shared/theme';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
 import {
   getClosestBlockComponentByPoint,
   handleNativeRangeAtPoint,
@@ -50,6 +50,7 @@ export class EdgelessNoteMask extends WithDisposable(ShadowlessElement) {
           bound.h = height;
           this.model.stash('xywh');
           this.model.xywh = bound.serialize();
+          this.model.pop('xywh');
         }
       }
     });
@@ -57,10 +58,6 @@ export class EdgelessNoteMask extends WithDisposable(ShadowlessElement) {
     observer.observe(maskDOM!);
 
     this._disposables.add(() => {
-      // check if model still exist
-      if (this.model.doc.getBlockById(this.model.id)) {
-        this.model.pop('xywh');
-      }
       observer.disconnect();
     });
   }
@@ -407,10 +404,9 @@ export class EdgelessNoteBlockComponent extends toGfxBlockComponent(
     };
 
     const extra = this._editing ? ACTIVE_NOTE_EXTRA_PADDING : 0;
-    const backgroundColor = ThemeObserver.generateColorProperty(
-      model.background,
-      DEFAULT_NOTE_BACKGROUND_COLOR
-    );
+    const backgroundColor = this.std
+      .get(ThemeProvider)
+      .generateColorProperty(model.background, DEFAULT_NOTE_BACKGROUND_COLOR);
 
     const backgroundStyle = {
       position: 'absolute',
