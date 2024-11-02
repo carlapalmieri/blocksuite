@@ -16,7 +16,8 @@ export const renderSortBar = (props: DataViewWidgetProps) => {
   if (count === 0) {
     return;
   }
-  const text = count === 1 ? html`1 Sort` : html`${count} Sorts`;
+  const text =
+    count === 1 ? html`1 Ordenamiento` : html`${count} Ordenamientos`;
   const click = (event: MouseEvent) => {
     popSortRoot(popupTargetFromElement(event.currentTarget as HTMLElement), {
       view: view,

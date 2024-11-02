@@ -241,7 +241,7 @@ export const popPropertiesSetting = (
   popMenu(target, {
     options: {
       title: {
-        text: 'Properties',
+        text: 'Propiedades',
         onBack: props.onBack,
         postfix: () => {
           const items = props.view.propertiesWithoutFilter$.value.map(id =>
@@ -259,7 +259,7 @@ export const popPropertiesSetting = (
             class="properties-group-op"
             @click="${clickChangeAll}"
           >
-            ${isAllShowed ? 'Hide All' : 'Show All'}
+            ${isAllShowed ? 'Ocultar todo' : 'Mostrar todo'}
           </div>`;
         },
       },

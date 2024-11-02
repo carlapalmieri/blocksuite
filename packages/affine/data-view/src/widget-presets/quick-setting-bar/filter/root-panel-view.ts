@@ -268,7 +268,7 @@ export class FilterRootView extends SignalWatcher(ShadowlessElement) {
                     >
                       <div class="filter-group-title">
                         <div class="filter-root-grabber"></div>
-                        Filter group
+                        Grupo de filtros
                       </div>
                       ${ops}
                     </div>

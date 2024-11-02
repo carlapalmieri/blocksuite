@@ -112,7 +112,7 @@ export const textConversionConfigs: TextConversionConfig[] = [
   },
   {
     flavour: 'affine:code',
-    type: undefined,
+    type: 'code',
     name: 'Código', // 'Code Block'
     description: 'Fragmento de código.', // 'Code snippet with formatting.'
     hotkey: [`Mod-Alt-c`],

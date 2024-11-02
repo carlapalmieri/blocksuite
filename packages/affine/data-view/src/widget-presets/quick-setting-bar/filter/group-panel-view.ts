@@ -36,7 +36,7 @@ export const popAddNewFilter = (
 ) => {
   popFilterableSimpleMenu(target, [
     menu.action({
-      name: 'Add filter',
+      name: 'Agregar filtro',
       select: () => {
         props.onChange({
           ...props.value,
@@ -45,7 +45,7 @@ export const popAddNewFilter = (
       },
     }),
     menu.action({
-      name: 'Add filter group',
+      name: 'Agregar grupo de filtros',
       select: () => {
         props.onChange({
           ...props.value,
@@ -292,7 +292,7 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
         name: '',
         items: [
           menu.action({
-            name: 'Duplicar',
+            name: 'Eliminar',
             prefix: DeleteIcon(),
             class: 'delete-item',
             onHover: hover => {
@@ -428,7 +428,7 @@ export const popFilterGroup = (
   popMenu(target, {
     options: {
       title: {
-        text: 'Filter group',
+        text: 'Grupo de filtros',
         onBack: props.onBack,
       },
       items: [
@@ -446,7 +446,7 @@ export const popFilterGroup = (
         menu.group({
           items: [
             menu.action({
-              name: 'Delete',
+              name: 'Eliminar',
               class: 'delete-item',
               prefix: DeleteIcon(),
               select: () => {

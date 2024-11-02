@@ -151,7 +151,7 @@ export class DataViewHeaderToolsAddRow extends WidgetBase {
       draggable="true"
       .onClick="${this._onAddNewRecord}"
       .icon="${PlusIcon()}"
-      .text="${html`<span style="font-weight: 500">New Record</span>`}"
+      .text="${html`<span style="font-weight: 500">Nuevo registro</span>`}"
     >
     </data-view-component-button>`;
   }

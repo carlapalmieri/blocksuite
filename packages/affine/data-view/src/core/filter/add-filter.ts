@@ -27,7 +27,7 @@ export const popCreateFilter = (
       onClose: props.onClose,
       title: {
         onBack: props.onBack,
-        text: 'New filter',
+        text: 'Nuevo filtro',
       },
       items: [
         ...props.vars.value.map(v =>
@@ -48,7 +48,7 @@ export const popCreateFilter = (
           name: '',
           items: [
             menu.action({
-              name: 'Add filter group',
+              name: 'Agregar grupo de filtros',
               prefix: AddCursorIcon(),
               select: () => {
                 props.onSelect(firstFilterInGroup(props.vars.value));

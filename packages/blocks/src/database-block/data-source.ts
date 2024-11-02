@@ -120,11 +120,11 @@ export class DatabaseBlockDataSource extends DataSourceBase {
   private newPropertyName() {
     let i = 1;
     while (
-      this._model.columns$.value.some(column => column.name === `Column ${i}`)
+      this._model.columns$.value.some(column => column.name === `Columna ${i}`)
     ) {
       i++;
     }
-    return `Column ${i}`;
+    return `Columna ${i}`;
   }
 
   cellValueChange(rowId: string, propertyId: string, value: unknown): void {
@@ -416,7 +416,7 @@ export const databaseViewInitTemplate = (
   const statusId = addProperty(
     model,
     'end',
-    propertyPresets.selectPropertyConfig.create('Status', {
+    propertyPresets.selectPropertyConfig.create('Estado', {
       options: [
         {
           id: ids[0],

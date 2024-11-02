@@ -18,9 +18,12 @@ export function isFuzzyMatch(name: string, query: string) {
   const pureName = name
     .trim()
     .toLowerCase()
+    .replace(/ó/g, 'o')
     .split('')
     .filter(char => char !== ' ')
     .join('');
+
+  query = query.replace(/ó/g, 'o');
 
   const regex = new RegExp(
     query

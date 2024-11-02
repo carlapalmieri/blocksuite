@@ -117,10 +117,10 @@ const createSettingMenus = (
   const settingItems: MenuConfig[] = [];
   settingItems.push(
     menu.action({
-      name: 'Properties',
+      name: 'Propiedades',
       prefix: InfoIcon(),
       postfix: html` <div style="font-size: 14px;">
-          ${view.properties$.value.length} shown
+          ${view.properties$.value.length} mostradas
         </div>
         ${ArrowRightSmallIcon()}`,
       select: () => {
@@ -134,14 +134,14 @@ const createSettingMenus = (
   const filterCount = view.filter$.value.conditions.length;
   settingItems.push(
     menu.action({
-      name: 'Filter',
+      name: 'Filtrar',
       prefix: FilterIcon(),
       postfix: html` <div style="font-size: 14px;">
           ${filterCount === 0
             ? ''
             : filterCount === 1
-              ? '1 filter'
-              : `${filterCount} filters`}
+              ? '1 filtro'
+              : `${filterCount} filtros`}
         </div>
         ${ArrowRightSmallIcon()}`,
       select: () => {
@@ -174,14 +174,14 @@ const createSettingMenus = (
     const sortCount = sortManager.sortList$.value.length;
     settingItems.push(
       menu.action({
-        name: 'Sort',
+        name: 'Ordenar',
         prefix: SortIcon(),
         postfix: html` <div style="font-size: 14px;">
             ${sortCount === 0
               ? ''
               : sortCount === 1
-                ? '1 sort'
-                : `${sortCount} sorts`}
+                ? '1 ordenamiento'
+                : `${sortCount} ordenamientos`}
           </div>
           ${ArrowRightSmallIcon()}`,
         select: () => {
@@ -196,7 +196,7 @@ const createSettingMenus = (
                 popSortRoot(target, {
                   view: view,
                   title: {
-                    text: 'Sort',
+                    text: 'Ordenar',
                     onBack: reopen,
                   },
                 });
@@ -206,7 +206,7 @@ const createSettingMenus = (
             popSortRoot(target, {
               view: view,
               title: {
-                text: 'Sort',
+                text: 'Ordenar',
                 onBack: reopen,
               },
             });
@@ -217,7 +217,7 @@ const createSettingMenus = (
   }
   settingItems.push(
     menu.action({
-      name: 'Group',
+      name: 'Agrupar',
       prefix: GroupingIcon(),
       postfix: html` <div style="font-size: 14px;">
           ${view instanceof TableSingleView || view instanceof KanbanSingleView
@@ -261,7 +261,7 @@ export const popViewOptions = (
     menu.action({
       name: 'Diseño',
       postfix: html` <div style="font-size: 14px;text-transform: capitalize;">
-          ${view.type}
+          ${view.type === 'table' ? 'Tabla' : 'Kanban'}
         </div>
         ${ArrowRightSmallIcon()}`,
       select: () => {
@@ -318,7 +318,7 @@ export const popViewOptions = (
           options: {
             title: {
               onBack: reopen,
-              text: 'Layout',
+              text: 'Diseño',
             },
             items: [
               menu => {
@@ -379,7 +379,7 @@ export const popViewOptions = (
   popMenu(target, {
     options: {
       title: {
-        text: 'View settings',
+        text: 'Opciones de vista',
       },
       items,
       onClose: onClose,
