@@ -5,7 +5,7 @@ import {
 import { computed, type ReadonlySignal } from '@preact/signals-core';
 
 import type { GroupBy, GroupProperty } from '../common/types.js';
-import type { TType } from '../logical/typesystem.js';
+import type { TypeInstance } from '../logical/type.js';
 import type { Property } from '../view-manager/property.js';
 import type { SingleView } from '../view-manager/single-view.js';
 
@@ -16,12 +16,14 @@ export type GroupData = {
   property: Property;
   key: string;
   name: string;
-  type: TType;
+  type: TypeInstance;
   value: unknown;
   rows: string[];
 };
 
 export class GroupManager {
+  private preDataList: GroupData[] | undefined;
+
   config$ = computed(() => {
     const groupBy = this.groupBy$.value;
     if (!groupBy) {
@@ -99,7 +101,7 @@ export class GroupManager {
     return groupMap;
   });
 
-  groupsDataList$ = computed(() => {
+  private _groupsDataList$ = computed(() => {
     const groupMap = this.groupDataMap$.value;
     if (!groupMap) {
       return;
@@ -108,7 +110,14 @@ export class GroupManager {
     sortedGroup.forEach(key => {
       groupMap[key].rows = this.ops.sortRow(key, groupMap[key].rows);
     });
-    return sortedGroup.map(key => groupMap[key]);
+    return (this.preDataList = sortedGroup.map(key => groupMap[key]));
+  });
+
+  groupsDataList$ = computed(() => {
+    if (this.viewManager.isLocked$.value) {
+      return this.preDataList;
+    }
+    return (this.preDataList = this._groupsDataList$.value);
   });
 
   updateData = (data: NonNullable<unknown>) => {

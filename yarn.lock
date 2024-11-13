@@ -1587,9 +1587,12 @@ __metadata:
     "@preact/signals-core": "npm:^1.8.0"
     "@toeverything/theme": "npm:^1.0.15"
     "@types/katex": "npm:^0.16.7"
+    "@types/lodash.clonedeep": "npm:^4.5.9"
     date-fns: "npm:^4.0.0"
     katex: "npm:^0.16.11"
     lit: "npm:^3.2.0"
+    lit-html: "npm:^3.2.1"
+    lodash.clonedeep: "npm:^4.5.0"
     shiki: "npm:^1.12.0"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -1705,7 +1708,6 @@ __metadata:
     "@types/hast": "npm:^3.0.4"
     "@types/katex": "npm:^0.16.7"
     "@types/mdast": "npm:^4.0.4"
-    "@types/sortablejs": "npm:^1.15.8"
     collapse-white-space: "npm:^2.1.0"
     date-fns: "npm:^4.0.0"
     dompurify: "npm:^3.1.6"
@@ -1734,7 +1736,6 @@ __metadata:
     remark-stringify: "npm:^11.0.0"
     shiki: "npm:^1.14.1"
     simple-xml-to-json: "npm:^1.2.2"
-    sortablejs: "npm:^1.15.2"
     unified: "npm:^11.0.5"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -1750,14 +1751,13 @@ __metadata:
     "@blocksuite/global": "workspace:*"
     "@blocksuite/icons": "npm:^2.1.68"
     "@blocksuite/store": "workspace:*"
+    "@emotion/hash": "npm:^0.9.2"
     "@floating-ui/dom": "npm:^1.6.10"
     "@lit/context": "npm:^1.1.2"
     "@preact/signals-core": "npm:^1.8.0"
     "@toeverything/theme": "npm:^1.0.15"
-    "@types/sortablejs": "npm:^1.15.8"
     date-fns: "npm:^4.0.0"
     lit: "npm:^3.2.0"
-    sortablejs: "npm:^1.15.2"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -1849,6 +1849,7 @@ __metadata:
     "@blocksuite/sync": "workspace:*"
     "@preact/signals-core": "npm:^1.8.0"
     "@shoelace-style/shoelace": "npm:2.18.0"
+    "@toeverything/pdf-viewer": "npm:^0.1.0"
     "@toeverything/y-indexeddb": "npm:0.10.0-canary.9"
     "@tweakpane/core": "npm:^2.0.4"
     "@types/katex": "npm:^0.16.7"
@@ -2626,6 +2627,13 @@ __metadata:
   dependencies:
     tslib: "npm:^2.4.0"
   checksum: 10/949f8bdcb11153d530652516b11d4b11d8c6ed48a692b4a59cbaa4305327aed59a61f0d87c366085c20ad0b0336c3b50eaddbddeeb3e8c55e7e82b583b9d98fb
+  languageName: node
+  linkType: hard
+
+"@emotion/hash@npm:^0.9.2":
+  version: 0.9.2
+  resolution: "@emotion/hash@npm:0.9.2"
+  checksum: 10/379bde2830ccb0328c2617ec009642321c0e009a46aa383dfbe75b679c6aea977ca698c832d225a893901f29d7b3eef0e38cf341f560f6b2b56f1ff23c172387
   languageName: node
   linkType: hard
 
@@ -4495,6 +4503,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@toeverything/pdf-viewer-types@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@toeverything/pdf-viewer-types@npm:0.1.0"
+  checksum: 10/aed8a2e9375e121a663e96147d6a726d4dd7b4917cfa35bac5c422c820125b2bc3e129281cad8c3983d1da12191ba4c6e0e45231123fce5d89091ce18dbc9560
+  languageName: node
+  linkType: hard
+
+"@toeverything/pdf-viewer@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@toeverything/pdf-viewer@npm:0.1.0"
+  dependencies:
+    "@toeverything/pdf-viewer-types": "npm:0.1.0"
+    "@toeverything/pdfium": "npm:0.1.0"
+  checksum: 10/75e1df49ecce97e667ac9ec1a630ba4492f1b712d4380a9c999f05535e305e4fd2a069d004449477520ea308ec5928f02b51268659f75788ae4715a7b6e14da7
+  languageName: node
+  linkType: hard
+
+"@toeverything/pdfium@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@toeverything/pdfium@npm:0.1.0"
+  checksum: 10/5fee0f76608d27d747b9266096cdd153027e8f3e8774571524f86afd88757833a61472400df5dcf2a6ea2e16bcfe9864b090ef7e483c260998ba3fad418a9ba8
+  languageName: node
+  linkType: hard
+
 "@toeverything/theme@npm:^1.0.15":
   version: 1.0.15
   resolution: "@toeverything/theme@npm:1.0.15"
@@ -4990,13 +5022,6 @@ __metadata:
     "@types/node": "npm:*"
     "@types/send": "npm:*"
   checksum: 10/c5a7171d5647f9fbd096ed1a26105759f3153ccf683824d99fee4c7eb9cde2953509621c56a070dd9fb1159e799e86d300cbe4e42245ebc5b0c1767e8ca94a67
-  languageName: node
-  linkType: hard
-
-"@types/sortablejs@npm:^1.15.8":
-  version: 1.15.8
-  resolution: "@types/sortablejs@npm:1.15.8"
-  checksum: 10/aea58b08cf45f5e9633707a8df0df1212595c731bbdfd29805487138fdd0d8c51fa5c741999738a645c1e801d43a92ba0d3fb5b45625b52e247c56588aef6c55
   languageName: node
   linkType: hard
 
@@ -8860,13 +8885,13 @@ __metadata:
   linkType: hard
 
 "happy-dom@npm:^15.0.0":
-  version: 15.7.4
-  resolution: "happy-dom@npm:15.7.4"
+  version: 15.10.8
+  resolution: "happy-dom@npm:15.10.8"
   dependencies:
     entities: "npm:^4.5.0"
     webidl-conversions: "npm:^7.0.0"
     whatwg-mimetype: "npm:^3.0.0"
-  checksum: 10/fd5026e8a2d9437f161e4c6d9725ffe68f6d31cd09ac7d729b3cd5dd2207a3833272607171da1caf4b1247839ead8bd01a4381a0e31909589af29d27fa24a0f5
+  checksum: 10/60bc10e04e717a47bdd834a16ae45797364d2a21476397fa49e2c9517622e11389dbd58f785bc2e93c2c2a672d5813d3313d684d4ed66e11aa6d2fef3c367f09
   languageName: node
   linkType: hard
 
@@ -10157,7 +10182,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lit-html@npm:^3.2.0":
+"lit-html@npm:^3.2.0, lit-html@npm:^3.2.1":
   version: 3.2.1
   resolution: "lit-html@npm:3.2.1"
   dependencies:
@@ -13330,13 +13355,6 @@ __metadata:
     ip-address: "npm:^9.0.5"
     smart-buffer: "npm:^4.2.0"
   checksum: 10/ffcb622c22481dfcd7589aae71fbfd71ca34334064d181df64bf8b7feaeee19706aba4cffd1de35cc7bbaeeaa0af96be2d7f40fcbc7bc0ab69533a7ae9ffc4fb
-  languageName: node
-  linkType: hard
-
-"sortablejs@npm:^1.15.2":
-  version: 1.15.3
-  resolution: "sortablejs@npm:1.15.3"
-  checksum: 10/85d39a172ef47adedf273afa65daa8aefcbaafd43a5b5c480d8637add93033f5784da697d0d3545d9bb6e11fd71f1847f307ee26be452942f3785a683fd44bb5
   languageName: node
   linkType: hard
 

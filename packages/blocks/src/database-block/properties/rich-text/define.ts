@@ -1,4 +1,4 @@
-import { propertyType, tRichText } from '@blocksuite/data-view';
+import { propertyType, t } from '@blocksuite/data-view';
 import { Text } from '@blocksuite/store';
 
 import { type RichTextCellType, toYText } from '../utils.js';
@@ -8,16 +8,16 @@ export const richTextColumnType = propertyType('rich-text');
 export const richTextColumnModelConfig =
   richTextColumnType.modelConfig<RichTextCellType>({
     name: 'Texto',
-    type: () => tRichText.create(),
+    type: () => t.richText.instance(),
     defaultData: () => ({}),
-    cellToString: data => data?.toString() ?? '',
-    cellFromString: data => {
+    cellToString: ({ value }) => value?.toString() ?? '',
+    cellFromString: ({ value }) => {
       return {
-        value: new Text(data),
+        value: new Text(value),
       };
     },
-    cellToJson: data => data?.toString() ?? null,
-    onUpdate: (value, _data, callback) => {
+    cellToJson: ({ value }) => value?.toString() ?? null,
+    onUpdate: ({ value, callback }) => {
       const yText = toYText(value);
       yText.observe(callback);
       callback();
@@ -27,6 +27,6 @@ export const richTextColumnModelConfig =
         },
       };
     },
-    isEmpty: data => data == null || data.length === 0,
-    values: data => (data?.toString() ? [data.toString()] : []),
+    isEmpty: ({ value }) => value == null || value.length === 0,
+    values: ({ value }) => (value?.toString() ? [value.toString()] : []),
   });

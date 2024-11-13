@@ -1,4 +1,4 @@
-import { tNumber } from '../../core/logical/data-type.js';
+import { t } from '../../core/logical/type-presets.js';
 import { propertyType } from '../../core/property/property-config.js';
 
 export const progressPropertyType = propertyType('progress');
@@ -6,15 +6,15 @@ export const progressPropertyType = propertyType('progress');
 export const progressPropertyModelConfig =
   progressPropertyType.modelConfig<number>({
     name: 'Progreso',
-    type: () => tNumber.create(),
+    type: () => t.number.instance(),
     defaultData: () => ({}),
-    cellToString: data => data?.toString() ?? '',
-    cellFromString: data => {
-      const num = data ? Number(data) : NaN;
+    cellToString: ({ value }) => value?.toString() ?? '',
+    cellFromString: ({ value }) => {
+      const num = value ? Number(value) : NaN;
       return {
         value: isNaN(num) ? null : num,
       };
     },
-    cellToJson: data => data ?? null,
+    cellToJson: ({ value }) => value ?? null,
     isEmpty: () => false,
   });

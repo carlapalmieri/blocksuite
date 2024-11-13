@@ -1199,7 +1199,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
       type: 'page',
       meta: {
         id: nanoid(),
-        title: 'Untitled',
+        title: '',
         createDate: Date.now(),
         tags: [],
       },
@@ -1212,7 +1212,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
             '$blocksuite:internal:text$': true,
             delta: [
               {
-                insert: 'Untitled',
+                insert: '',
               },
             ],
           },
@@ -1313,10 +1313,10 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
         displayMode: NoteDisplayMode.DocAndEdgeless,
       },
       children: [],
-    };
+    } as BlockSnapshot;
     const contentSlice = (await this._traverseMarkdown(
       markdownAst,
-      blockSnapshotRoot as BlockSnapshot,
+      blockSnapshotRoot,
       payload.assets
     )) as BlockSnapshot;
     if (contentSlice.children.length === 0) {

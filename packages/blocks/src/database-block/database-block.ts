@@ -10,7 +10,12 @@ import { DragIndicator } from '@blocksuite/affine-components/drag-indicator';
 import { PeekViewProvider } from '@blocksuite/affine-components/peek';
 import { toast } from '@blocksuite/affine-components/toast';
 import { NOTE_SELECTOR } from '@blocksuite/affine-shared/consts';
-import { DocModeProvider } from '@blocksuite/affine-shared/services';
+import {
+  DocModeProvider,
+  NotificationProvider,
+  type TelemetryEventMap,
+  TelemetryProvider,
+} from '@blocksuite/affine-shared/services';
 import { RANGE_SYNC_EXCLUDE_ATTR } from '@blocksuite/block-std';
 import {
   createRecordDetail,
@@ -18,7 +23,7 @@ import {
   DatabaseSelection,
   DataView,
   dataViewCommonStyle,
-  type DataViewExpose,
+  type DataViewInstance,
   type DataViewProps,
   type DataViewSelection,
   type DataViewWidget,
@@ -44,19 +49,14 @@ import type { NoteBlockComponent } from '../note-block/index.js';
 import type { DatabaseOptionsConfig } from './config.js';
 import type { DatabaseBlockService } from './database-service.js';
 
-import {
-  EdgelessRootBlockComponent,
-  type RootService,
-} from '../root-block/index.js';
+import { EdgelessRootBlockComponent } from '../root-block/index.js';
 import { getDropResult } from '../root-block/widgets/drag-handle/utils.js';
 import { popSideDetail } from './components/layout.js';
 import { HostContextKey } from './context/host-context.js';
 import { DatabaseBlockDataSource } from './data-source.js';
 import { BlockRenderer } from './detail-panel/block-renderer.js';
-import {
-  getDocIdsFromText,
-  NoteRenderer,
-} from './detail-panel/note-renderer.js';
+import { NoteRenderer } from './detail-panel/note-renderer.js';
+import { getSingleDocIdFromText } from './utils/title-doc.js';
 
 export class DatabaseBlockComponent extends CaptionedBlockComponent<
   DatabaseBlockModel,
@@ -78,11 +78,12 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
     }
 
     .database-ops {
-      margin-top: 4px;
       padding: 2px;
       border-radius: 4px;
       display: flex;
       cursor: pointer;
+      align-items: center;
+      height: max-content;
     }
 
     .database-ops svg {
@@ -112,7 +113,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
         menu.input({
           initialValue: this.model.title.toString(),
           placeholder: 'Sin título',
-          onComplete: text => {
+          onChange: text => {
             this.model.title.replace(0, this.model.title.length, text);
           },
         }),
@@ -133,7 +134,9 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
           items: [
             menu.action({
               prefix: DeleteIcon(),
-              class: 'delete-item',
+              class: {
+                'delete-item': true,
+              },
               name: 'Eliminar Base de datos',
               select: () => {
                 this.model.children.slice().forEach(block => {
@@ -156,7 +159,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
 
   private dataView = new DataView();
 
-  private renderTitle = (dataViewMethod: DataViewExpose) => {
+  private renderTitle = (dataViewMethod: DataViewInstance) => {
     const addRow = () => dataViewMethod.addRow?.('start');
     return html` <affine-database-title
       style="overflow: hidden"
@@ -212,16 +215,15 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
     });
   };
 
-  getRootService = () => {
-    return this.std.getService<RootService>('affine:page');
-  };
-
   headerWidget: DataViewWidget = defineUniComponent(
     (props: DataViewWidgetProps) => {
       return html`
         <div style="margin-bottom: 16px;display:flex;flex-direction: column">
-          <div style="display:flex;gap:8px;padding: 0 6px;margin-bottom: 8px;">
-            ${this.renderTitle(props.viewMethods)} ${this.renderDatabaseOps()}
+          <div
+            style="display:flex;gap:12px;margin-bottom: 8px;align-items: center"
+          >
+            ${this.renderTitle(props.dataViewInstance)}
+            ${this.renderDatabaseOps()}
           </div>
           <div
             style="display:flex;align-items:center;justify-content: space-between;gap: 12px"
@@ -278,6 +280,9 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
   };
 
   setSelection = (selection: DataViewSelection | undefined) => {
+    if (selection) {
+      getSelection()?.removeAllRanges();
+    }
     this.selection.setGroup(
       'note',
       selection
@@ -383,6 +388,7 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
 
   override renderBlock() {
     const peekViewService = this.std.getOptional(PeekViewProvider);
+    const telemetryService = this.std.getOptional(TelemetryProvider);
     return html`
       <div
         contenteditable="false"
@@ -397,7 +403,23 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
           dataSource: this.dataSource,
           headerWidget: this.headerWidget,
           onDrag: this.onDrag,
-          std: this.std,
+          clipboard: this.std.clipboard,
+          notification: {
+            toast: message => {
+              const notification = this.std.getOptional(NotificationProvider);
+              if (notification) {
+                notification.toast(message);
+              } else {
+                toast(this.host, message);
+              }
+            },
+          },
+          eventTrace: (key, params) => {
+            telemetryService?.track(key, {
+              ...(params as TelemetryEventMap[typeof key]),
+              blockId: this.blockId,
+            });
+          },
           detailPanelConfig: {
             openDetailPanel: (target, data) => {
               if (peekViewService) {
@@ -409,11 +431,11 @@ export class DatabaseBlockComponent extends CaptionedBlockComponent<
                     target: this,
                   });
                 };
-                const docs = getDocIdsFromText(
+                const doc = getSingleDocIdFromText(
                   this.model.doc.getBlock(data.rowId)?.model?.text
                 );
-                if (docs.length === 1) {
-                  return openDoc(docs[0]);
+                if (doc) {
+                  return openDoc(doc);
                 }
                 const abort = new AbortController();
                 return new Promise<void>(focusBack => {

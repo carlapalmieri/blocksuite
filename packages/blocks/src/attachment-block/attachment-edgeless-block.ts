@@ -17,10 +17,6 @@ export class AttachmentEdgelessBlockComponent extends toGfxBlockComponent(
 ) {
   protected override _whenHover: HoverController | null = null;
 
-  protected override get embedView() {
-    return undefined;
-  }
-
   get rootService() {
     return this.std.getService('affine:page') as EdgelessRootService;
   }
@@ -64,6 +60,7 @@ export class AttachmentEdgelessBlockComponent extends toGfxBlockComponent(
       height: `${height}px`,
       transform: `scale(${scaleX}, ${scaleY})`,
       transformOrigin: '0 0',
+      overflow: 'hidden',
     });
 
     return this.renderPageContent();

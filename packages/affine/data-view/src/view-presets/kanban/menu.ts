@@ -100,7 +100,9 @@ export const popCardMenu = (
       items: [
         menu.action({
           name: 'Eliminar tarjeta',
-          class: 'delete-item',
+          class: {
+            'delete-item': true,
+          },
           prefix: DeleteIcon(),
           select: () => {
             selection.deleteCard();

@@ -38,7 +38,7 @@ export class DateCell extends BaseCellRenderer<number> {
   `;
 
   override render() {
-    const value = this.value ? format(this.value, 'yyyy/MM/dd') : '';
+    const value = this.value ? format(this.value, 'dd/MM/yyyy') : '';
     if (!value) {
       return '';
     }
@@ -88,6 +88,7 @@ export class DateCellEditing extends BaseCellRenderer<number> {
       template: () => {
         const datePicker = new DatePicker();
         datePicker.value = this.value ?? Date.now();
+        datePicker.popup = true;
         datePicker.onChange = (date: Date) => {
           this.tempValue = date;
         };
@@ -117,7 +118,7 @@ export class DateCellEditing extends BaseCellRenderer<number> {
 
   get dateString() {
     const value = this.tempValue ?? this.value;
-    return value ? format(value, 'yyyy/MM/dd') : '';
+    return value ? format(value, 'dd/MM/yyyy') : '';
   }
 
   override firstUpdated() {

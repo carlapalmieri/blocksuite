@@ -24,6 +24,7 @@ import {
 import { assertExists } from '@blocksuite/global/utils';
 import { AffineEditorContainer, CommentPanel } from '@blocksuite/presets';
 
+import { AttachmentViewerPanel } from '../../_common/components/attachment-viewer-panel.js';
 import { CustomFramePanel } from '../../_common/components/custom-frame-panel.js';
 import { CustomOutlinePanel } from '../../_common/components/custom-outline-panel.js';
 import { CustomOutlineViewer } from '../../_common/components/custom-outline-viewer.js';
@@ -35,6 +36,7 @@ import {
   mockDocModeService,
   mockNotificationService,
   mockParseDocUrlService,
+  mockPeekViewExtension,
   themeExtension,
 } from '../../_common/mock-services';
 
@@ -63,6 +65,8 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
 
   const app = document.getElementById('app');
   if (!app) return;
+
+  const attachmentViewerPanel = new AttachmentViewerPanel();
 
   const editor = new AffineEditorContainer();
 
@@ -97,6 +101,7 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
         );
       },
     },
+    mockPeekViewExtension(attachmentViewerPanel),
   ];
 
   const pageSpecs = SpecProvider.getInstance().getSpec('page');
@@ -108,6 +113,10 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
   const edgelessSpecs = SpecProvider.getInstance().getSpec('edgeless');
   edgelessSpecs.extend([...extensions]);
   editor.edgelessSpecs = edgelessSpecs.value;
+
+  SpecProvider.getInstance().extendSpec('edgeless:preview', [
+    OverrideThemeExtension(themeExtension),
+  ]);
 
   editor.mode = 'page';
   editor.doc = doc;
@@ -164,6 +173,7 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
   debugMenu.docsPanel = docsPanel;
   debugMenu.commentPanel = commentPanel;
 
+  document.body.append(attachmentViewerPanel);
   document.body.append(outlinePanel);
   document.body.append(outlineViewer);
   document.body.append(framePanel);

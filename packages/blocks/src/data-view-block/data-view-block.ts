@@ -10,6 +10,12 @@ import {
   MoreHorizontalIcon,
 } from '@blocksuite/affine-components/icons';
 import { PeekViewProvider } from '@blocksuite/affine-components/peek';
+import { toast } from '@blocksuite/affine-components/toast';
+import {
+  NotificationProvider,
+  type TelemetryEventMap,
+  TelemetryProvider,
+} from '@blocksuite/affine-shared/services';
 import { RANGE_SYNC_EXCLUDE_ATTR } from '@blocksuite/block-std';
 import {
   createRecordDetail,
@@ -60,7 +66,6 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
     }
 
     .database-ops {
-      margin-top: 4px;
       padding: 2px;
       border-radius: 4px;
       display: flex;
@@ -95,7 +100,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
           menu.input({
             initialValue: this.model.title,
             placeholder: 'Sin título',
-            onComplete: text => {
+            onChange: text => {
               this.model.title = text;
             },
           }),
@@ -112,7 +117,9 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
             items: [
               menu.action({
                 prefix: DeleteIcon,
-                class: 'delete-item',
+                class: {
+                  'delete-item': true,
+                },
                 name: 'Eliminar base de datos',
                 select: () => {
                   this.model.children.slice().forEach(block => {
@@ -253,6 +260,7 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
 
   override renderBlock() {
     const peekViewService = this.std.getOptional(PeekViewProvider);
+    const telemetryService = this.std.getOptional(TelemetryProvider);
     return html`
       <div contenteditable="false" style="position: relative">
         ${this.dataView.render({
@@ -263,7 +271,23 @@ export class DataViewBlockComponent extends CaptionedBlockComponent<DataViewBloc
           setSelection: this.setSelection,
           dataSource: this.dataSource,
           headerWidget: this.headerWidget,
-          std: this.std,
+          clipboard: this.std.clipboard,
+          notification: {
+            toast: message => {
+              const notification = this.std.getOptional(NotificationProvider);
+              if (notification) {
+                notification.toast(message);
+              } else {
+                toast(this.host, message);
+              }
+            },
+          },
+          eventTrace: (key, params) => {
+            telemetryService?.track(key, {
+              ...(params as TelemetryEventMap[typeof key]),
+              blockId: this.blockId,
+            });
+          },
           detailPanelConfig: {
             openDetailPanel: (target, data) => {
               if (peekViewService) {

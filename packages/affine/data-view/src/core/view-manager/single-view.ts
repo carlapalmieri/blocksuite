@@ -5,7 +5,7 @@ import { computed, type ReadonlySignal, signal } from '@preact/signals-core';
 import type { DataViewContextKey } from '../data-source/context.js';
 import type { Variable } from '../expression/types.js';
 import type { FilterGroup } from '../filter/types.js';
-import type { TType } from '../logical/typesystem.js';
+import type { TypeInstance } from '../logical/type.js';
 import type { PropertyMetaConfig } from '../property/property-config.js';
 import type { DatabaseFlags } from '../types.js';
 import type { UniComponent } from '../utils/uni-component/index.js';
@@ -123,7 +123,7 @@ export interface SingleView<
 
   propertyDataSet(propertyId: string, data: Record<string, unknown>): void;
 
-  propertyDataTypeGet(propertyId: string): TType | undefined;
+  propertyDataTypeGet(propertyId: string): TypeInstance | undefined;
 
   propertyIndexGet(propertyId: string): number;
 
@@ -140,6 +140,8 @@ export interface SingleView<
   mainProperties$: ReadonlySignal<MainProperties>;
 
   lockRows(lock: boolean): void;
+
+  isLocked$: ReadonlySignal<boolean>;
 }
 
 export abstract class SingleViewBase<
@@ -157,6 +159,10 @@ export abstract class SingleViewBase<
   abstract filter$: ReadonlySignal<FilterGroup>;
 
   protected lockRows$ = signal(false);
+
+  isLocked$ = computed(() => {
+    return this.lockRows$.value;
+  });
 
   abstract mainProperties$: ReadonlySignal<MainProperties>;
 
@@ -192,8 +198,12 @@ export abstract class SingleViewBase<
       return {
         id: v.id,
         name: v.name$.value,
-        type: propertyMeta.config.type(v.data$.value),
+        type: propertyMeta.config.type({
+          data: v.data$.value,
+          dataSource: this.dataSource,
+        }),
         icon: v.icon,
+        propertyType: v.type$.value,
       };
     });
   });
@@ -204,6 +214,10 @@ export abstract class SingleViewBase<
 
   get featureFlags$() {
     return this.dataSource.featureFlags$;
+  }
+
+  get isLocked() {
+    return this.lockRows$.value;
   }
 
   get meta() {
@@ -248,12 +262,11 @@ export abstract class SingleViewBase<
     if (!type) {
       return;
     }
-    return this.dataSource
-      .propertyMetaGet(type)
-      .config.cellToJson(
-        this.dataSource.cellValueGet(rowId, propertyId),
-        this.propertyDataGet(propertyId)
-      );
+    return this.dataSource.propertyMetaGet(type).config.cellToJson({
+      value: this.dataSource.cellValueGet(rowId, propertyId),
+      data: this.propertyDataGet(propertyId),
+      dataSource: this.dataSource,
+    });
   }
 
   cellRenderValueSet(rowId: string, propertyId: string, value: unknown): void {
@@ -266,12 +279,11 @@ export abstract class SingleViewBase<
       return;
     }
     return (
-      this.dataSource
-        .propertyMetaGet(type)
-        .config.cellToString(
-          this.dataSource.cellValueGet(rowId, propertyId),
-          this.propertyDataGet(propertyId)
-        ) ?? ''
+      this.dataSource.propertyMetaGet(type).config.cellToString({
+        value: this.dataSource.cellValueGet(rowId, propertyId),
+        data: this.propertyDataGet(propertyId),
+        dataSource: this.dataSource,
+      }) ?? ''
     );
   }
 
@@ -282,10 +294,11 @@ export abstract class SingleViewBase<
     }
     const cellValue = this.dataSource.cellValueGet(rowId, propertyId);
     return (
-      this.dataSource
-        .propertyMetaGet(type)
-        .config.formatValue?.(cellValue, this.propertyDataGet(propertyId)) ??
-      cellValue
+      this.dataSource.propertyMetaGet(type).config.formatValue?.({
+        value: cellValue,
+        data: this.propertyDataGet(propertyId),
+        dataSource: this.dataSource,
+      }) ?? cellValue
     );
   }
 
@@ -343,14 +356,15 @@ export abstract class SingleViewBase<
     this.dataSource.propertyDataSet(propertyId, data);
   }
 
-  propertyDataTypeGet(propertyId: string): TType | undefined {
+  propertyDataTypeGet(propertyId: string): TypeInstance | undefined {
     const type = this.propertyTypeGet(propertyId);
     if (!type) {
       return;
     }
-    return this.dataSource
-      .propertyMetaGet(type)
-      .config.type(this.propertyDataGet(propertyId));
+    return this.dataSource.propertyMetaGet(type).config.type({
+      data: this.propertyDataGet(propertyId),
+      dataSource: this.dataSource,
+    });
   }
 
   propertyDelete(propertyId: string): void {
@@ -405,9 +419,11 @@ export abstract class SingleViewBase<
       return;
     }
     return (
-      this.dataSource
-        .propertyMetaGet(type)
-        .config.cellFromString(cellData, this.propertyDataGet(propertyId)) ?? ''
+      this.dataSource.propertyMetaGet(type).config.cellFromString({
+        value: cellData,
+        data: this.propertyDataGet(propertyId),
+        dataSource: this.dataSource,
+      }) ?? ''
     );
   }
 

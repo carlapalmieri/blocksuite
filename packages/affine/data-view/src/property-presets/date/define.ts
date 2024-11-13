@@ -1,19 +1,19 @@
-import { tDate } from '../../core/logical/data-type.js';
+import { t } from '../../core/logical/type-presets.js';
 import { propertyType } from '../../core/property/property-config.js';
 
 export const datePropertyType = propertyType('date');
 export const datePropertyModelConfig = datePropertyType.modelConfig<number>({
   name: 'Fecha',
-  type: () => tDate.create(),
+  type: () => t.date.instance(),
   defaultData: () => ({}),
-  cellToString: data => data?.toString() ?? '',
-  cellFromString: data => {
-    const isDateFormat = !isNaN(Date.parse(data));
+  cellToString: ({ value }) => value?.toString() ?? '',
+  cellFromString: ({ value }) => {
+    const isDateFormat = !isNaN(Date.parse(value));
 
     return {
-      value: isDateFormat ? +new Date(data) : null,
+      value: isDateFormat ? +new Date(value) : null,
     };
   },
-  cellToJson: data => data ?? null,
-  isEmpty: data => data == null,
+  cellToJson: ({ value }) => value ?? null,
+  isEmpty: ({ value }) => value == null,
 });

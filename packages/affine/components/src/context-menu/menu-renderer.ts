@@ -1,4 +1,4 @@
-import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
+import { unsafeCSSVar, unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
 import { ShadowlessElement } from '@blocksuite/block-std';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/utils';
 import { ArrowLeftBigIcon, CloseIcon, SearchIcon } from '@blocksuite/icons/lit';
@@ -28,14 +28,15 @@ export class MenuComponent extends SignalWatcher(
       flex-direction: column;
       user-select: none;
       min-width: 276px;
-      box-shadow: var(--affine-shadow-2);
+      box-shadow: ${unsafeCSSVar('overlayPanelShadow')};
       border-radius: 4px;
-      background-color: var(--affine-background-overlay-panel-color);
+      background-color: ${unsafeCSSVarV2('layer/background/overlayPanel')};
       padding: 8px;
       position: absolute;
       z-index: 999;
       gap: 8px;
       border: 0.5px solid ${unsafeCSSVarV2('layer/insideBorder/border')};
+      color: ${unsafeCSSVarV2('text/primary')};
     }
 
     .affine-menu-search-container {
@@ -132,13 +133,14 @@ export class MenuComponent extends SignalWatcher(
   }
 
   override render() {
+    const result = this.menu.renderItems(this.menu.options.items);
     return html`
       ${this.renderTitle()} ${this.renderSearch()}
       <div class="affine-menu-body">
-        ${this.menu.searchResult$.value.length === 0 && this.menu.enableSearch
+        ${result.length === 0 && this.menu.enableSearch
           ? html` <div class="no-results">No Results</div>`
           : ''}
-        ${this.menu.searchResult$.value}
+        ${result}
       </div>
     `;
   }
@@ -292,6 +294,12 @@ export const createPopup = (
   });
   modal.append(content);
 
+  modal.onpointerdown = ev => {
+    if (ev.target === modal) {
+      close();
+    }
+  };
+
   modal.onmousedown = ev => {
     if (ev.target === modal) {
       close();
@@ -310,6 +318,7 @@ export const createPopup = (
 
 export type MenuHandler = {
   close: () => void;
+  reopen: () => void;
 };
 
 export const popMenu = (
@@ -354,6 +363,9 @@ export const popMenu = (
   });
   return {
     close: closePopup,
+    reopen: () => {
+      popMenu(target, props);
+    },
   };
 };
 export const popFilterableSimpleMenu = (

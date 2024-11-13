@@ -39,7 +39,7 @@ import { html, type TemplateResult } from 'lit';
 import type { AffineFormatBarWidget } from './format-bar.js';
 
 import { convertToDatabase } from '../../../database-block/data-source.js';
-import { DATABASE_CONVERT_WHITE_LIST } from '../../../database-block/utils.js';
+import { DATABASE_CONVERT_WHITE_LIST } from '../../../database-block/utils/block-utils.js';
 import { FormatBarContext } from './context.js';
 
 export type DividerConfigItem = {

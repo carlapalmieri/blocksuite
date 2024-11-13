@@ -7,9 +7,9 @@ import { css, html } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import type { SelectTag } from '../../utils/tags/multi-tag-select.js';
+import type { SelectTag } from '../../logical/index.js';
 
-import { selectOptionColors } from '../../utils/tags/colors.js';
+import { selectOptionColors } from '../../component/tags/colors.js';
 import { BaseGroup } from './base.js';
 
 export class SelectGroupView extends BaseGroup<
@@ -43,16 +43,17 @@ export class SelectGroupView extends BaseGroup<
     }
   `;
 
-  private _click = () => {
+  private _click = (e: MouseEvent) => {
     if (this.readonly) {
       return;
     }
+    e.stopPropagation();
     popMenu(popupTargetFromElement(this), {
       options: {
         items: [
           menu.input({
             initialValue: this.tag?.value ?? '',
-            onComplete: text => {
+            onChange: text => {
               this.updateTag({ value: text });
             },
           }),

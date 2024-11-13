@@ -218,22 +218,9 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         );
         if (!linkedDocWidget) return false;
 
-        const hasLinkedDocSchema = model.doc.schema.flavourSchemaMap.has(
-          'affine:embed-linked-doc'
-        );
-        if (!hasLinkedDocSchema) return false;
-
-        if (!('showLinkedDocPopover' in linkedDocWidget)) {
-          console.warn(
-            'Puede que no hayas implementado correctamente el widget de documento vinculado! Método "showLinkedDoc(model)" no encontrado en el widget'
-          );
-          return false;
-        }
-        return true;
+        return model.doc.schema.flavourSchemaMap.has('affine:embed-linked-doc');
       },
       action: ({ model, rootComponent }) => {
-        const triggerKey = '@';
-        insertContent(rootComponent.host, model, triggerKey);
         const { std } = rootComponent;
 
         const linkedDocWidget = std.view.getWidget(
@@ -243,10 +230,14 @@ export const defaultSlashMenuConfig: SlashMenuConfig = {
         if (!linkedDocWidget) return;
         assertType<AffineLinkedDocWidget>(linkedDocWidget);
 
+        const triggerKey = linkedDocWidget.config.triggerKeys[0];
+
+        insertContent(rootComponent.host, model, triggerKey);
+
         const inlineEditor = getInlineEditorByModel(rootComponent.host, model);
         // Wait for range to be updated
         inlineEditor?.slots.inlineRangeSync.once(() => {
-          linkedDocWidget.showLinkedDocPopover(inlineEditor, triggerKey);
+          linkedDocWidget.show();
         });
       },
     },

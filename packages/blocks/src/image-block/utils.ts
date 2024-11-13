@@ -21,7 +21,7 @@ import { readImageSize } from '../root-block/edgeless/components/utils.js';
 import { transformModel } from '../root-block/utils/operations/model.js';
 
 const MAX_RETRY_COUNT = 3;
-const DEFAULT_ATTACHMENT_NAME = 'affine-attachment';
+const DEFAULT_ATTACHMENT_NAME = 'adjunto';
 
 const imageUploads = new Set<string>();
 export function setImageUploading(blockId: string) {

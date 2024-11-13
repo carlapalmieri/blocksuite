@@ -19,10 +19,12 @@ import lz from 'lz-string';
 import '../declare-test-window.js';
 import { currentEditorIndex, multiEditor } from '../multiple-editor.js';
 import {
+  pressArrowRight,
   pressEnter,
   pressEscape,
   pressSpace,
   pressTab,
+  selectAllBlocksByKeyboard,
   SHORT_KEY,
   type,
 } from './keyboard.js';
@@ -687,14 +689,16 @@ export async function focusDatabaseTitle(page: Page) {
 
   await page.evaluate(() => {
     const dbTitle = document.querySelector(
-      'affine-database-title rich-text'
-    ) as RichText | null;
+      'affine-database-title textarea'
+    ) as HTMLTextAreaElement | null;
     if (!dbTitle) {
       throw new Error('Cannot find database title');
     }
 
-    dbTitle.inlineEditor!.focusEnd();
+    dbTitle.focus();
   });
+  await selectAllBlocksByKeyboard(page);
+  await pressArrowRight(page);
   await waitNextFrame(page);
 }
 
@@ -1249,14 +1253,7 @@ export function inlineEditorInnerTextToString(innerText: string): string {
 }
 
 export async function focusTitle(page: Page) {
-  // click to ensure editor is active
-  await page.mouse.move(0, 0);
-  const editor = getEditorHostLocator(page);
-  const locator = editor.locator('affine-page-root').first();
-  // need to set `force` to true when clicking on `affine-selected-blocks`
-  await locator.click({ force: true });
-  // avoid trigger double click
-  await page.waitForTimeout(500);
+  await page.locator('doc-title rich-text').click();
   await page.evaluate(i => {
     const docTitle = document.querySelectorAll('doc-title')[i];
     if (!docTitle) {
@@ -1271,7 +1268,7 @@ export async function focusTitle(page: Page) {
     }
     docTitleRichText.inlineEditor.focusEnd();
   }, currentEditorIndex);
-  await waitNextFrame(page);
+  await waitNextFrame(page, 200);
 }
 
 /**

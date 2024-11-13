@@ -1,40 +1,44 @@
-import type { StatsFunction } from './types.js';
+import type { StatisticsConfig } from './types.js';
 
-import { tNumber } from '../logical/data-type.js';
+import { t } from '../logical/index.js';
+import { createStatisticConfig } from './create.js';
 
-export const numberStatsFunctions: StatsFunction[] = [
-  {
+export const numberStatsFunctions: StatisticsConfig[] = [
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Suma',
     type: 'sum',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    displayName: 'Sum',
+    dataType: t.number.instance(),
+    impl: data => {
       const numbers = withoutNull(data);
       if (numbers.length === 0) {
         return 'Ninguno';
       }
       return numbers.reduce((a, b) => a + b, 0).toString();
     },
-  },
-  {
+  }),
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Promedio',
+    displayName: 'Promedio',
     type: 'average',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    dataType: t.number.instance(),
+    impl: data => {
       const numbers = withoutNull(data);
       if (numbers.length === 0) {
         return 'Ninguno';
       }
       return (numbers.reduce((a, b) => a + b, 0) / numbers.length).toString();
     },
-  },
-  {
+  }),
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Mediana',
+    displayName: 'Mediana',
     type: 'median',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    dataType: t.number.instance(),
+    impl: data => {
       const arr = withoutNull(data).sort((a, b) => a - b);
       let result = 0;
       if (arr.length % 2 === 1) {
@@ -45,13 +49,14 @@ export const numberStatsFunctions: StatsFunction[] = [
       }
       return result?.toString() ?? 'Ninguno';
     },
-  },
-  {
+  }),
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Mínimo',
+    displayName: 'Mínimo',
     type: 'min',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    dataType: t.number.instance(),
+    impl: data => {
       let min: number | null = null;
       for (const num of data) {
         if (num != null) {
@@ -64,13 +69,14 @@ export const numberStatsFunctions: StatsFunction[] = [
       }
       return min?.toString() ?? 'Ninguno';
     },
-  },
-  {
+  }),
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Máximo',
+    displayName: 'Máximo',
     type: 'max',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    dataType: t.number.instance(),
+    impl: data => {
       let max: number | null = null;
       for (const num of data) {
         if (num != null) {
@@ -83,13 +89,14 @@ export const numberStatsFunctions: StatsFunction[] = [
       }
       return max?.toString() ?? 'Ninguno';
     },
-  },
-  {
+  }),
+  createStatisticConfig({
     group: 'Más opciones',
     menuName: 'Rango',
+    displayName: 'Rango',
     type: 'range',
-    dataType: tNumber.create(),
-    impl: (data: number[]) => {
+    dataType: t.number.instance(),
+    impl: data => {
       let min: number | null = null;
       let max: number | null = null;
       for (const num of data) {
@@ -111,6 +118,7 @@ export const numberStatsFunctions: StatsFunction[] = [
       }
       return (max - min).toString();
     },
-  },
+  }),
 ];
-const withoutNull = (arr: number[]) => arr.filter(v => v != null);
+const withoutNull = (arr: readonly (number | null | undefined)[]): number[] =>
+  arr.filter(v => v != null);

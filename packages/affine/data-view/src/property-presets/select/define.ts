@@ -1,10 +1,8 @@
 import { nanoid } from '@blocksuite/store';
 
-import type { SelectTag } from '../../core/utils/tags/multi-tag-select.js';
-
-import { tTag } from '../../core/logical/data-type.js';
+import { getTagColor } from '../../core/component/tags/colors.js';
+import { type SelectTag, t } from '../../core/index.js';
 import { propertyType } from '../../core/property/property-config.js';
-import { getTagColor } from '../../core/utils/tags/colors.js';
 
 export const selectPropertyType = propertyType('select');
 
@@ -16,11 +14,11 @@ export const selectPropertyModelConfig = selectPropertyType.modelConfig<
   SelectPropertyData
 >({
   name: 'Selección',
-  type: data => tTag.create({ tags: data.options }),
+  type: ({ data }) => t.tag.instance(data.options),
   defaultData: () => ({
     options: [],
   }),
-  addGroup: (text, oldData) => {
+  addGroup: ({ text, oldData }) => {
     return {
       options: [
         ...(oldData.options ?? []),
@@ -28,21 +26,19 @@ export const selectPropertyModelConfig = selectPropertyType.modelConfig<
       ],
     };
   },
-  cellToString: (data, colData) =>
-    colData.options.find(v => v.id === data)?.value ?? '',
-  cellFromString: (data, colData) => {
-    if (!data) {
-      return { value: null, data: colData };
+  cellToString: ({ value, data }) =>
+    data.options.find(v => v.id === value)?.value ?? '',
+  cellFromString: ({ value: oldValue, data }) => {
+    if (!oldValue) {
+      return { value: null, data: data };
     }
-    const optionMap = Object.fromEntries(
-      colData.options.map(v => [v.value, v])
-    );
-    const name = data
+    const optionMap = Object.fromEntries(data.options.map(v => [v.value, v]));
+    const name = oldValue
       .split(',')
       .map(v => v.trim())
       .filter(v => v)[0];
 
-    let value = null;
+    let value: string | undefined;
     const option = optionMap[name];
     if (!option) {
       const newOption: SelectTag = {
@@ -50,7 +46,7 @@ export const selectPropertyModelConfig = selectPropertyType.modelConfig<
         value: name,
         color: getTagColor(),
       };
-      colData.options.push(newOption);
+      data.options.push(newOption);
       value = newOption.id;
     } else {
       value = option.id;
@@ -58,9 +54,9 @@ export const selectPropertyModelConfig = selectPropertyType.modelConfig<
 
     return {
       value,
-      data: colData,
+      data: data,
     };
   },
-  cellToJson: data => data ?? null,
-  isEmpty: data => data == null,
+  cellToJson: ({ value }) => value ?? null,
+  isEmpty: ({ value }) => value == null,
 });

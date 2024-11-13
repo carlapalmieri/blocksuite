@@ -243,6 +243,20 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
     or: 'O',
   };
 
+  @property({ attribute: false })
+  accessor filterGroup!: ReadonlySignal<FilterGroup>;
+
+  conditions$ = computed(() => {
+    return this.filterGroup.value.conditions;
+  });
+
+  setConditions = (conditions: Filter[]) => {
+    this.onChange({
+      ...this.filterGroup.value,
+      conditions: conditions,
+    });
+  };
+
   private get isMaxDepth() {
     return this.depth === 3;
   }
@@ -294,7 +308,7 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
           menu.action({
             name: 'Eliminar',
             prefix: DeleteIcon(),
-            class: 'delete-item',
+            class: { 'delete-item': true },
             onHover: hover => {
               this.containerClass = hover
                 ? { index: i, class: 'delete-style' }
@@ -355,9 +369,10 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
               ${filter.type === 'filter'
                 ? html`
                     <filter-condition-view
-                      .setData="${(v: Filter) => this._setFilter(i, v)}"
-                      .vars="${this.vars.value}"
-                      .data="${filter}"
+                      .vars="${this.vars}"
+                      .index="${i}"
+                      .value="${this.conditions$}"
+                      .onChange="${this.setConditions}"
                     ></filter-condition-view>
                   `
                 : html`
@@ -394,9 +409,6 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
 
   @property({ attribute: false })
   accessor depth = 1;
-
-  @property({ attribute: false })
-  accessor filterGroup!: ReadonlySignal<FilterGroup>;
 
   @property({ attribute: false })
   accessor onChange!: (filter: FilterGroup) => void;
@@ -447,7 +459,7 @@ export const popFilterGroup = (
           items: [
             menu.action({
               name: 'Eliminar',
-              class: 'delete-item',
+              class: { 'delete-item': true },
               prefix: DeleteIcon(),
               select: () => {
                 props.onChange();

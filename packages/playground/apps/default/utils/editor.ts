@@ -1,7 +1,6 @@
 import type { EditorHost, ExtensionType } from '@blocksuite/block-std';
 import type { BlockCollection, DocCollection } from '@blocksuite/store';
 
-import { PeekViewExtension } from '@blocksuite/affine-components/peek';
 import {
   CommunityCanvasTextFonts,
   DocModeExtension,
@@ -12,10 +11,12 @@ import {
   ParseDocUrlExtension,
   RefNodeSlotsExtension,
   RefNodeSlotsProvider,
+  SpecProvider,
 } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
 import { AffineEditorContainer } from '@blocksuite/presets';
 
+import { AttachmentViewerPanel } from '../../_common/components/attachment-viewer-panel.js';
 import { DocsPanel } from '../../_common/components/docs-panel.js';
 import { LeftSidePanel } from '../../_common/components/left-side-panel.js';
 import { QuickEdgelessMenu } from '../../_common/components/quick-edgeless-menu.js';
@@ -23,6 +24,7 @@ import {
   mockDocModeService,
   mockNotificationService,
   mockParseDocUrlService,
+  mockPeekViewExtension,
   themeExtension,
 } from '../../_common/mock-services.js';
 import { getExampleSpecs } from '../specs-examples/index.js';
@@ -49,6 +51,8 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
   const app = document.getElementById('app');
   if (!app) return;
 
+  const attachmentViewerPanel = new AttachmentViewerPanel();
+
   const editor = new AffineEditorContainer();
   const specs = getExampleSpecs();
   const refNodeSlotsExtension = RefNodeSlotsExtension();
@@ -59,6 +63,9 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
   editor.edgelessSpecs = patchPageRootSpec([
     refNodeSlotsExtension,
     ...specs.edgelessModeSpecs,
+  ]);
+  SpecProvider.getInstance().extendSpec('edgeless:preview', [
+    OverrideThemeExtension(themeExtension),
   ]);
   editor.doc = doc;
   editor.mode = 'page';
@@ -93,6 +100,7 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
   quickEdgelessMenu.leftSidePanel = leftSidePanel;
   quickEdgelessMenu.docsPanel = docsPanel;
 
+  document.body.append(attachmentViewerPanel);
   document.body.append(leftSidePanel);
   document.body.append(quickEdgelessMenu);
 
@@ -124,15 +132,8 @@ export async function mountDefaultDocEditor(collection: DocCollection) {
       ParseDocUrlExtension(mockParseDocUrlService(collection)),
       NotificationExtension(mockNotificationService(editor)),
       FontConfigExtension(CommunityCanvasTextFonts),
-      PeekViewExtension({
-        peek(target: unknown) {
-          alert('Peek view not implemented in playground');
-          console.log('peek', target);
-          return Promise.resolve();
-        },
-      }),
+      mockPeekViewExtension(attachmentViewerPanel),
     ];
-
     return newSpec;
   }
 }

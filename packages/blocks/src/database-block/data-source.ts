@@ -11,7 +11,7 @@ import {
   type DataViewDataType,
   getTagColor,
   type PropertyMetaConfig,
-  type TType,
+  type TypeInstance,
   type ViewManager,
   ViewManagerBase,
   type ViewMeta,
@@ -44,7 +44,7 @@ import {
   updateCells,
   updateProperty,
   updateView,
-} from './utils.js';
+} from './utils/block-utils.js';
 import {
   databaseBlockViewConverts,
   databaseBlockViewMap,
@@ -135,7 +135,12 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     let newValue = value;
     if (update) {
       const old = this.cellValueGet(rowId, propertyId);
-      newValue = update(old, this.propertyDataGet(propertyId), value);
+      newValue = update({
+        value: old,
+        data: this.propertyDataGet(propertyId),
+        dataSource: this,
+        newValue: value,
+      });
     }
     if (type === 'title' && newValue instanceof Text) {
       this._model.doc.transact(() => {
@@ -195,13 +200,16 @@ export class DatabaseBlockDataSource extends DataSourceBase {
     applyPropertyUpdate(this._model);
   }
 
-  propertyDataTypeGet(propertyId: string): TType | undefined {
+  propertyDataTypeGet(propertyId: string): TypeInstance | undefined {
     const data = this._model.columns$.value.find(v => v.id === propertyId);
     if (!data) {
       return;
     }
     const meta = this.propertyMetaGet(data.type);
-    return meta.config.type(data);
+    return meta.config.type({
+      data: data.data,
+      dataSource: this,
+    });
   }
 
   propertyDelete(id: string): void {

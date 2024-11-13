@@ -185,7 +185,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
         </editor-icon-button>
       `,
 
-      this._viewMenuButton(),
+      this._viewToggleMenu(),
 
       html`
         <editor-menu-button
@@ -442,7 +442,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
     this.confirmButton.requestUpdate();
   }
 
-  private _viewMenuButton() {
+  private _viewToggleMenu() {
     if (!this._isBookmarkAllowed) return nothing;
 
     const buttons = [];
@@ -489,6 +489,7 @@ export class LinkPopup extends WithDisposable(LitElement) {
               <editor-menu-action
                 data-testid=${`link-to-${type}`}
                 ?data-selected=${type === 'inline'}
+                ?disabled=${type === 'inline'}
                 @click=${action}
               >
                 ${label}

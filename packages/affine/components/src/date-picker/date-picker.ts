@@ -15,20 +15,20 @@ import { arrowLeftIcon } from './icons.js';
 import { datePickerStyle } from './style.js';
 import { clamp, getMonthMatrix, toDate } from './utils.js';
 
-const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sáb'];
 const months = [
-  'Jan',
+  'En',
   'Feb',
   'Mar',
-  'Apr',
+  'Abr',
   'May',
   'Jun',
   'Jul',
-  'Aug',
+  'Ago',
   'Sep',
   'Oct',
   'Nov',
-  'Dec',
+  'Dic',
 ];
 
 export interface DateCell {
@@ -92,7 +92,7 @@ export class DatePicker extends WithDisposable(LitElement) {
   }
 
   get minHeight() {
-    const rowNum = 8;
+    const rowNum = this._matrix.length;
     return this.size * rowNum + this.padding * 2 + this.gapV * (rowNum - 1) - 2;
   }
 
@@ -164,7 +164,7 @@ export class DatePicker extends WithDisposable(LitElement) {
               this._onChange(new Date());
             }}
           >
-            <span>TODAY</span>
+            <span>HOY</span>
           </button>`
         )}
       </div>
@@ -514,6 +514,7 @@ export class DatePicker extends WithDisposable(LitElement) {
     const classes = classMap({
       'date-picker': true,
       [`date-picker--mode-${this._mode}`]: true,
+      popup: this.popup,
     });
     const wrapperStyle = styleMap({
       'min-height': `${this.minHeight}px`,
@@ -584,6 +585,9 @@ export class DatePicker extends WithDisposable(LitElement) {
   /** card padding in px */
   @property({ type: Number })
   accessor padding = 20;
+
+  @property({ type: Boolean })
+  accessor popup: boolean = false;
 
   /** cell size in px */
   @property({ type: Number })

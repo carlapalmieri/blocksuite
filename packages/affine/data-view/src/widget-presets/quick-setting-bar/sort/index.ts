@@ -4,11 +4,11 @@ import { html } from 'lit';
 
 import type { DataViewWidgetProps } from '../../../core/widget/types.js';
 
-import { canSort } from '../../../core/sort/utils.js';
+import { canSort, createSortUtils } from '../../../core/sort/utils.js';
 import { popSortRoot } from './root-panel.js';
 
 export const renderSortBar = (props: DataViewWidgetProps) => {
-  const view = props.view;
+  const view = props.dataViewInstance.view;
   if (!canSort(view)) {
     return;
   }
@@ -20,7 +20,7 @@ export const renderSortBar = (props: DataViewWidgetProps) => {
     count === 1 ? html`1 Ordenamiento` : html`${count} Ordenamientos`;
   const click = (event: MouseEvent) => {
     popSortRoot(popupTargetFromElement(event.currentTarget as HTMLElement), {
-      view: view,
+      sortUtils: createSortUtils(view, props.dataViewInstance.eventTrace),
     });
   };
   return html` <data-view-component-button

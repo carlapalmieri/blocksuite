@@ -1,17 +1,18 @@
-import type { TType } from '../logical/typesystem.js';
+import type { DataSource } from '../data-source/index.js';
+import type { TypeInstance, ValueTypeOf } from '../logical/type.js';
 import type { PropertyMetaConfig } from '../property/property-config.js';
 
-export type StatsFunction = {
+export type StatisticsConfig<T extends TypeInstance = TypeInstance> = {
   group: string;
   type: string;
-  dataType: TType;
+  dataType: T;
   menuName?: string;
   displayName?: string;
   impl?: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any[],
+    data: ReadonlyArray<ValueTypeOf<T> | undefined>,
     info: {
       meta: PropertyMetaConfig;
+      dataSource: DataSource;
     }
   ) => string;
 };

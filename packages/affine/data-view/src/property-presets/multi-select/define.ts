@@ -1,22 +1,20 @@
 import { nanoid } from '@blocksuite/store';
 
-import type { SelectTag } from '../../core/utils/tags/multi-tag-select.js';
 import type { SelectPropertyData } from '../select/define.js';
 
-import { tTag } from '../../core/logical/data-type.js';
-import { tArray } from '../../core/logical/typesystem.js';
+import { getTagColor } from '../../core/component/tags/colors.js';
+import { type SelectTag, t } from '../../core/index.js';
 import { propertyType } from '../../core/property/property-config.js';
-import { getTagColor } from '../../core/utils/tags/colors.js';
 
 export const multiSelectPropertyType = propertyType('multi-select');
 export const multiSelectPropertyModelConfig =
   multiSelectPropertyType.modelConfig<string[], SelectPropertyData>({
     name: 'Selección múltiple',
-    type: data => tArray(tTag.create({ tags: data.options })),
+    type: ({ data }) => t.array.instance(t.tag.instance(data.options)),
     defaultData: () => ({
       options: [],
     }),
-    addGroup: (text, oldData) => {
+    addGroup: ({ text, oldData }) => {
       return {
         options: [
           ...(oldData.options ?? []),
@@ -28,19 +26,17 @@ export const multiSelectPropertyModelConfig =
         ],
       };
     },
-    formatValue: v => {
-      if (Array.isArray(v)) {
-        return v.filter(v => v != null);
+    formatValue: ({ value }) => {
+      if (Array.isArray(value)) {
+        return value.filter(v => v != null);
       }
       return [];
     },
-    cellToString: (data, colData) =>
-      data?.map(id => colData.options.find(v => v.id === id)?.value).join(','),
-    cellFromString: (data, colData) => {
-      const optionMap = Object.fromEntries(
-        colData.options.map(v => [v.value, v])
-      );
-      const optionNames = data
+    cellToString: ({ value, data }) =>
+      value?.map(id => data.options.find(v => v.id === id)?.value).join(','),
+    cellFromString: ({ value: oldValue, data }) => {
+      const optionMap = Object.fromEntries(data.options.map(v => [v.value, v]));
+      const optionNames = oldValue
         .split(',')
         .map(v => v.trim())
         .filter(v => v);
@@ -53,7 +49,7 @@ export const multiSelectPropertyModelConfig =
             value: name,
             color: getTagColor(),
           };
-          colData.options.push(newOption);
+          data.options.push(newOption);
           value.push(newOption.id);
         } else {
           value.push(optionMap[name].id);
@@ -62,9 +58,9 @@ export const multiSelectPropertyModelConfig =
 
       return {
         value,
-        data: colData,
+        data: data,
       };
     },
-    cellToJson: data => data ?? null,
-    isEmpty: data => data == null || data.length === 0,
+    cellToJson: ({ value }) => value ?? null,
+    isEmpty: ({ value }) => value == null || value.length === 0,
   });
