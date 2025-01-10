@@ -9,6 +9,7 @@ import {
   GroupElementModel,
   type LocalConnectorElementModel,
 } from '@blocksuite/affine-model';
+import { ThemeProvider } from '@blocksuite/affine-shared/services';
 import {
   almostEqual,
   assertEquals,
@@ -31,6 +32,7 @@ import {
   toRadian,
   Vec,
 } from '@blocksuite/global/utils';
+import { effect } from '@preact/signals-core';
 
 import { Overlay } from '../renderer/overlay.js';
 import { AStarRunner } from '../utils/a-star.js';
@@ -822,6 +824,10 @@ function renderRect(
 export class ConnectionOverlay extends Overlay {
   static override overlayName = 'connection';
 
+  private _emphasisColor: string;
+
+  private _themeDisposer: (() => void) | null = null;
+
   highlightPoint: IVec | null = null;
 
   points: IVec[] = [];
@@ -832,12 +838,28 @@ export class ConnectionOverlay extends Overlay {
 
   constructor(gfx: GfxController) {
     super(gfx);
+    this._emphasisColor = this._getEmphasisColor();
+    this._setupThemeListener();
   }
 
   private _findConnectablesInViews() {
     const gfx = this.gfx;
     const bound = gfx.viewport.viewportBounds;
     return gfx.getElementsByBound(bound).filter(ele => ele.connectable);
+  }
+
+  private _getEmphasisColor(): string {
+    return getComputedStyle(this.gfx.std.host).getPropertyValue(
+      '--affine-text-emphasis-color'
+    );
+  }
+
+  private _setupThemeListener(): void {
+    const themeService = this.gfx.std.get(ThemeProvider);
+    this._themeDisposer = effect(() => {
+      themeService.theme$;
+      this._emphasisColor = this._getEmphasisColor();
+    });
   }
 
   _clearRect() {
@@ -852,13 +874,17 @@ export class ConnectionOverlay extends Overlay {
     this._clearRect();
   }
 
+  override dispose() {
+    this._themeDisposer?.();
+    if (!this._renderer) return;
+    this._renderer.removeOverlay(this);
+    this._renderer = null;
+  }
+
   override render(ctx: CanvasRenderingContext2D): void {
     const zoom = this.gfx.viewport.zoom;
     const radius = 5 / zoom;
-    const color = getComputedStyle(this.gfx.std.host).getPropertyValue(
-      '--affine-text-emphasis-color'
-    );
-
+    const color = this._emphasisColor;
     ctx.globalAlpha = 0.6;
     let lineWidth = 1 / zoom;
     if (this.sourceBounds) {
@@ -1009,246 +1035,10 @@ export class ConnectionOverlay extends Overlay {
   }
 }
 
-export class ConnectorPathGenerator {
+export class PathGenerator {
   protected _aStarRunner: AStarRunner | null = null;
 
-  constructor(
-    private options: {
-      getElementById: (id: string) => GfxModel | null;
-    }
-  ) {}
-
-  static updatePath(
-    connector: ConnectorElementModel | LocalConnectorElementModel,
-    path: PointLocation[] | null | null,
-    elementGetter?: (id: string) => GfxModel | null
-  ) {
-    const instance = new ConnectorPathGenerator({
-      getElementById: elementGetter ?? (() => null),
-    });
-    const points = path ?? instance._generateConnectorPath(connector) ?? [];
-    const bound =
-      connector.mode === ConnectorMode.Curve
-        ? getBezierCurveBoundingBox(getBezierParameters(points))
-        : getBoundFromPoints(points);
-    const relativePoints = points.map((p: PointLocation) => {
-      return p.setVec(Vec.sub(p, [bound.x, bound.y]));
-    });
-
-    connector.updatingPath = true;
-    // the property assignment order matters
-    connector.xywh = bound.serialize();
-    connector.path = relativePoints;
-
-    // Updates Connector's Label position.
-    if (isConnectorWithLabel(connector)) {
-      const model = connector as ConnectorElementModel;
-      const [cx, cy] = model.getPointByOffsetDistance(
-        model.labelOffset.distance
-      );
-      const [, , w, h] = model.labelXYWH!;
-      model.labelXYWH = [cx - w / 2, cy - h / 2, w, h];
-    }
-
-    connector.updatingPath = false;
-  }
-
-  private _computeStartEndPoint(
-    connector: ConnectorElementModel | LocalConnectorElementModel
-  ) {
-    const { source, target } = connector;
-    const start = this._getConnectorEndElement(connector, 'source');
-    const end = this._getConnectorEndElement(connector, 'target');
-
-    let startPoint: PointLocation, endPoint: PointLocation;
-    if (source.id && !source.position && target.id && !target.position) {
-      assertExists(start);
-      assertExists(end);
-      const startAnchors = getAnchors(start);
-      const endAnchors = getAnchors(end);
-      let minDist = Infinity;
-      let minStartAnchor = new PointLocation();
-      let minEndAnchor = new PointLocation();
-      for (const sa of startAnchors) {
-        for (const ea of endAnchors) {
-          const dist = Vec.dist(sa.point, ea.point);
-          if (dist + 0.1 < minDist) {
-            minDist = dist;
-            minStartAnchor = sa.point;
-            minEndAnchor = ea.point;
-          }
-        }
-      }
-      startPoint = minStartAnchor;
-      endPoint = minEndAnchor;
-    } else {
-      startPoint = this._getConnectionPoint(connector, 'source');
-      endPoint = this._getConnectionPoint(connector, 'target');
-    }
-    return [startPoint, endPoint];
-  }
-
-  private _generateConnectorPath(
-    connector: ConnectorElementModel | LocalConnectorElementModel
-  ) {
-    const { mode } = connector;
-    if (mode === ConnectorMode.Straight) {
-      return this._generateStraightConnectorPath(connector);
-    } else if (mode === ConnectorMode.Orthogonal) {
-      const start = this._getConnectorEndElement(connector, 'source');
-      const end = this._getConnectorEndElement(connector, 'target');
-
-      const [startPoint, endPoint] = this._computeStartEndPoint(connector);
-
-      const startBound = start
-        ? Bound.from(getBoundWithRotation(rBound(start)))
-        : null;
-      const endBound = end
-        ? Bound.from(getBoundWithRotation(rBound(end)))
-        : null;
-      const path = this.generateOrthogonalConnectorPath({
-        startPoint,
-        endPoint,
-        startBound,
-        endBound,
-      });
-      return path.map(p => new PointLocation(p));
-    } else if (mode === ConnectorMode.Curve) {
-      return this._generateCurveConnectorPath(connector);
-    }
-    throw new Error('unknown connector mode');
-  }
-
-  private _generateCurveConnectorPath(
-    connector: ConnectorElementModel | LocalConnectorElementModel
-  ) {
-    const { source, target } = connector;
-
-    if (source.id || target.id) {
-      let startPoint: PointLocation;
-      let endPoint: PointLocation;
-      if (!source.position && !target.position) {
-        const start = this._getConnectorEndElement(
-          connector,
-          'source'
-        ) as Connectable;
-        const end = this._getConnectorEndElement(
-          connector,
-          'target'
-        ) as Connectable;
-        const sb = Bound.deserialize(start.xywh);
-        const eb = Bound.deserialize(end.xywh);
-        startPoint = getNearestConnectableAnchor(start, eb.center);
-        endPoint = getNearestConnectableAnchor(end, sb.center);
-      } else {
-        startPoint = this._getConnectionPoint(connector, 'source');
-        endPoint = this._getConnectionPoint(connector, 'target');
-      }
-
-      if (source.id) {
-        const startTangentVertical = Vec.rot(startPoint.tangent, -Math.PI / 2);
-        startPoint.out = Vec.mul(
-          startTangentVertical,
-          Math.max(
-            100,
-            Math.abs(
-              Vec.pry(Vec.sub(endPoint, startPoint), startTangentVertical)
-            ) / 3
-          )
-        );
-      }
-      if (target.id) {
-        const endTangentVertical = Vec.rot(endPoint.tangent, -Math.PI / 2);
-        endPoint.in = Vec.mul(
-          endTangentVertical,
-          Math.max(
-            100,
-            Math.abs(
-              Vec.pry(Vec.sub(startPoint, endPoint), endTangentVertical)
-            ) / 3
-          )
-        );
-      }
-      return [startPoint, endPoint];
-    } else {
-      const endPoint = this._getConnectionPoint(connector, 'target');
-      const startPoint = this._getConnectionPoint(connector, 'source');
-      if (
-        Math.abs(endPoint[0] - startPoint[0]) >
-        Math.abs(endPoint[1] - startPoint[1])
-      ) {
-        startPoint.out = [Vec.mul(Vec.sub(endPoint, startPoint), 2 / 3)[0], 0];
-        endPoint.in = [Vec.mul(Vec.sub(startPoint, endPoint), 2 / 3)[0], 0];
-      } else {
-        startPoint.out = [0, Vec.mul(Vec.sub(endPoint, startPoint), 2 / 3)[1]];
-        endPoint.in = [0, Vec.mul(Vec.sub(startPoint, endPoint), 2 / 3)[1]];
-      }
-      return [startPoint, endPoint];
-    }
-  }
-
-  private _generateStraightConnectorPath(
-    connector: ConnectorElementModel | LocalConnectorElementModel
-  ) {
-    const { source, target } = connector;
-    if (source.id && !source.position && target.id && !target.position) {
-      const start = this._getConnectorEndElement(
-        connector,
-        'source'
-      ) as Connectable;
-      const end = this._getConnectorEndElement(
-        connector,
-        'target'
-      ) as Connectable;
-      const sb = Bound.deserialize(start.xywh);
-      const eb = Bound.deserialize(end.xywh);
-      const startPoint = getNearestConnectableAnchor(start, eb.center);
-      const endPoint = getNearestConnectableAnchor(end, sb.center);
-      return [startPoint, endPoint];
-    } else {
-      const endPoint = this._getConnectionPoint(connector, 'target');
-      const startPoint = this._getConnectionPoint(connector, 'source');
-      return (startPoint && endPoint && [startPoint, endPoint]) ?? [];
-    }
-  }
-
-  private _getConnectionPoint(
-    connector: ConnectorElementModel | LocalConnectorElementModel,
-    type: 'source' | 'target'
-  ): PointLocation {
-    const connection = connector[type];
-    const anotherType = type === 'source' ? 'target' : 'source';
-
-    if (connection.id) {
-      const connectable = this._getConnectorEndElement(connector, type);
-      assertExists(connectable);
-
-      if (!connection.position) {
-        const otherPoint = this._getConnectionPoint(connector, anotherType);
-        return getNearestConnectableAnchor(connectable, otherPoint);
-      } else {
-        return getConnectableRelativePosition(connectable, connection.position);
-      }
-    } else {
-      assertExists(connection.position);
-      return PointLocation.fromVec(connection.position);
-    }
-  }
-
-  private _getConnectorEndElement(
-    connector: ConnectorElementModel | LocalConnectorElementModel,
-    type: 'source' | 'target'
-  ): Connectable | null {
-    const id = connector[type].id;
-
-    if (id) {
-      return this.options.getElementById(id) as Connectable;
-    }
-
-    return null;
-  }
-
-  private _prepareOrthogonalConnectorInfo(
+  protected _prepareOrthogonalConnectorInfo(
     connectorInfo: OrthogonalConnectorInput
   ): [
     IVec,
@@ -1354,6 +1144,263 @@ export class ConnectorPathGenerator {
     if (!startBound) path.shift();
 
     return mergePath(path);
+  }
+}
+
+export class ConnectorPathGenerator extends PathGenerator {
+  constructor(
+    private options: {
+      getElementById: (id: string) => GfxModel | null;
+    }
+  ) {
+    super();
+  }
+
+  static updatePath(
+    connector: ConnectorElementModel | LocalConnectorElementModel,
+    path: PointLocation[] | null,
+    elementGetter?: (id: string) => GfxModel | null
+  ) {
+    const instance = new ConnectorPathGenerator({
+      getElementById: elementGetter ?? (() => null),
+    });
+    const points = path ?? instance._generateConnectorPath(connector) ?? [];
+    const bound =
+      connector.mode === ConnectorMode.Curve
+        ? getBezierCurveBoundingBox(getBezierParameters(points))
+        : getBoundFromPoints(points);
+    const relativePoints = points.map((p: PointLocation) => {
+      return p.setVec(Vec.sub(p, [bound.x, bound.y]));
+    });
+
+    connector.updatingPath = true;
+    // the property assignment order matters
+    connector.xywh = bound.serialize();
+    connector.path = relativePoints;
+
+    // Updates Connector's Label position.
+    if (isConnectorWithLabel(connector)) {
+      const model = connector as ConnectorElementModel;
+      const [cx, cy] = model.getPointByOffsetDistance(
+        model.labelOffset.distance
+      );
+      const [, , w, h] = model.labelXYWH!;
+      model.labelXYWH = [cx - w / 2, cy - h / 2, w, h];
+    }
+
+    connector.updatingPath = false;
+  }
+
+  private _computeStartEndPoint(
+    connector: ConnectorElementModel | LocalConnectorElementModel
+  ) {
+    const { source, target } = connector;
+    const start = this._getConnectorEndElement(connector, 'source');
+    const end = this._getConnectorEndElement(connector, 'target');
+
+    let startPoint: PointLocation | null = null;
+    let endPoint: PointLocation | null = null;
+    if (source.id && !source.position && target.id && !target.position) {
+      assertExists(start);
+      assertExists(end);
+      const startAnchors = getAnchors(start);
+      const endAnchors = getAnchors(end);
+      let minDist = Infinity;
+      let minStartAnchor = new PointLocation();
+      let minEndAnchor = new PointLocation();
+      for (const sa of startAnchors) {
+        for (const ea of endAnchors) {
+          const dist = Vec.dist(sa.point, ea.point);
+          if (dist + 0.1 < minDist) {
+            minDist = dist;
+            minStartAnchor = sa.point;
+            minEndAnchor = ea.point;
+          }
+        }
+      }
+      startPoint = minStartAnchor;
+      endPoint = minEndAnchor;
+    } else {
+      startPoint = this._getConnectionPoint(connector, 'source');
+      endPoint = this._getConnectionPoint(connector, 'target');
+    }
+
+    if (!startPoint || !endPoint) return [];
+
+    return [startPoint, endPoint];
+  }
+
+  private _generateConnectorPath(
+    connector: ConnectorElementModel | LocalConnectorElementModel
+  ) {
+    const { mode } = connector;
+    if (mode === ConnectorMode.Straight) {
+      return this._generateStraightConnectorPath(connector);
+    } else if (mode === ConnectorMode.Orthogonal) {
+      const start = this._getConnectorEndElement(connector, 'source');
+      const end = this._getConnectorEndElement(connector, 'target');
+
+      const [startPoint, endPoint] = this._computeStartEndPoint(connector);
+
+      const startBound = start
+        ? Bound.from(getBoundWithRotation(rBound(start)))
+        : null;
+      const endBound = end
+        ? Bound.from(getBoundWithRotation(rBound(end)))
+        : null;
+      const path = this.generateOrthogonalConnectorPath({
+        startPoint,
+        endPoint,
+        startBound,
+        endBound,
+      });
+      return path.map(p => new PointLocation(p));
+    } else if (mode === ConnectorMode.Curve) {
+      return this._generateCurveConnectorPath(connector);
+    }
+    throw new Error('unknown connector mode');
+  }
+
+  private _generateCurveConnectorPath(
+    connector: ConnectorElementModel | LocalConnectorElementModel
+  ) {
+    const { source, target } = connector;
+    let startPoint: PointLocation | null = null;
+    let endPoint: PointLocation | null = null;
+
+    if (source.id || target.id) {
+      if (!source.position && !target.position) {
+        const start = this._getConnectorEndElement(
+          connector,
+          'source'
+        ) as Connectable;
+        const end = this._getConnectorEndElement(
+          connector,
+          'target'
+        ) as Connectable;
+        const sb = Bound.deserialize(start.xywh);
+        const eb = Bound.deserialize(end.xywh);
+        startPoint = getNearestConnectableAnchor(start, eb.center);
+        endPoint = getNearestConnectableAnchor(end, sb.center);
+      } else {
+        startPoint = this._getConnectionPoint(connector, 'source');
+        endPoint = this._getConnectionPoint(connector, 'target');
+      }
+
+      if (!startPoint || !endPoint) return [];
+
+      if (source.id) {
+        const startTangentVertical = Vec.rot(startPoint.tangent, -Math.PI / 2);
+        startPoint.out = Vec.mul(
+          startTangentVertical,
+          Math.max(
+            100,
+            Math.abs(
+              Vec.pry(Vec.sub(endPoint, startPoint), startTangentVertical)
+            ) / 3
+          )
+        );
+      }
+      if (target.id) {
+        const endTangentVertical = Vec.rot(endPoint.tangent, -Math.PI / 2);
+        endPoint.in = Vec.mul(
+          endTangentVertical,
+          Math.max(
+            100,
+            Math.abs(
+              Vec.pry(Vec.sub(startPoint, endPoint), endTangentVertical)
+            ) / 3
+          )
+        );
+      }
+      return [startPoint, endPoint];
+    } else {
+      startPoint = this._getConnectionPoint(connector, 'source');
+      endPoint = this._getConnectionPoint(connector, 'target');
+
+      if (!startPoint || !endPoint) return [];
+
+      if (
+        Math.abs(endPoint[0] - startPoint[0]) >
+        Math.abs(endPoint[1] - startPoint[1])
+      ) {
+        startPoint.out = [Vec.mul(Vec.sub(endPoint, startPoint), 2 / 3)[0], 0];
+        endPoint.in = [Vec.mul(Vec.sub(startPoint, endPoint), 2 / 3)[0], 0];
+      } else {
+        startPoint.out = [0, Vec.mul(Vec.sub(endPoint, startPoint), 2 / 3)[1]];
+        endPoint.in = [0, Vec.mul(Vec.sub(startPoint, endPoint), 2 / 3)[1]];
+      }
+      return [startPoint, endPoint];
+    }
+  }
+
+  private _generateStraightConnectorPath(
+    connector: ConnectorElementModel | LocalConnectorElementModel
+  ) {
+    const { source, target } = connector;
+    if (source.id && !source.position && target.id && !target.position) {
+      const start = this._getConnectorEndElement(
+        connector,
+        'source'
+      ) as Connectable;
+      const end = this._getConnectorEndElement(
+        connector,
+        'target'
+      ) as Connectable;
+      const sb = Bound.deserialize(start.xywh);
+      const eb = Bound.deserialize(end.xywh);
+      const startPoint = getNearestConnectableAnchor(start, eb.center);
+      const endPoint = getNearestConnectableAnchor(end, sb.center);
+      return [startPoint, endPoint];
+    } else {
+      const endPoint = this._getConnectionPoint(connector, 'target');
+      const startPoint = this._getConnectionPoint(connector, 'source');
+      return (startPoint && endPoint && [startPoint, endPoint]) ?? [];
+    }
+  }
+
+  private _getConnectionPoint(
+    connector: ConnectorElementModel | LocalConnectorElementModel,
+    type: 'source' | 'target'
+  ): PointLocation | null {
+    const connection = connector[type];
+
+    if (!connection) return null;
+
+    const connectable = this._getConnectorEndElement(connector, type);
+
+    if (!connectable && connection.position) {
+      return PointLocation.fromVec(connection.position);
+    }
+
+    if (!connectable) return null;
+
+    let point: PointLocation | null = null;
+
+    if (connection.position) {
+      point = getConnectableRelativePosition(connectable, connection.position);
+    } else {
+      const anotherType = type === 'source' ? 'target' : 'source';
+      const otherPoint = this._getConnectionPoint(connector, anotherType);
+      if (otherPoint) {
+        point = getNearestConnectableAnchor(connectable, otherPoint);
+      }
+    }
+
+    return point;
+  }
+
+  private _getConnectorEndElement(
+    connector: ConnectorElementModel | LocalConnectorElementModel,
+    type: 'source' | 'target'
+  ): Connectable | null {
+    const id = connector[type].id;
+
+    if (id) {
+      return this.options.getElementById(id) as Connectable;
+    }
+
+    return null;
   }
 
   hasRelatedElement(

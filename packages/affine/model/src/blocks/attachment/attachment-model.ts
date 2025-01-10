@@ -1,9 +1,13 @@
-import type { GfxElementGeometry } from '@blocksuite/block-std/gfx';
-import type { SerializedXYWH } from '@blocksuite/global/utils';
+import type {
+  GfxCommonBlockProps,
+  GfxElementGeometry,
+} from '@blocksuite/block-std/gfx';
 
+import { GfxCompatible } from '@blocksuite/block-std/gfx';
 import { BlockModel, defineBlockSchema } from '@blocksuite/store';
 
-import { type EmbedCardStyle, GfxCompatible } from '../../utils/index.js';
+import type { EmbedCardStyle } from '../../utils/index.js';
+
 import { AttachmentBlockTransformer } from './attachment-transformer.js';
 
 /**
@@ -27,13 +31,8 @@ type BackwardCompatibleUndefined = undefined;
 export const AttachmentBlockStyles: EmbedCardStyle[] = [
   'cubeThick',
   'horizontalThin',
+  'pdf',
 ] as const;
-
-export interface AttachmentBlockEdgelessProps {
-  index: string;
-  xywh: SerializedXYWH;
-  rotate: number;
-}
 
 export type AttachmentBlockProps = {
   name: string;
@@ -54,7 +53,7 @@ export type AttachmentBlockProps = {
   embed: boolean | BackwardCompatibleUndefined;
 
   style?: (typeof AttachmentBlockStyles)[number];
-} & AttachmentBlockEdgelessProps;
+} & Omit<GfxCommonBlockProps, 'scale'>;
 
 export const defaultAttachmentProps: AttachmentBlockProps = {
   name: '',
@@ -66,6 +65,7 @@ export const defaultAttachmentProps: AttachmentBlockProps = {
   style: AttachmentBlockStyles[1],
   index: 'a0',
   xywh: '[0,0,0,0]',
+  lockedBySelf: false,
   rotate: 0,
 };
 

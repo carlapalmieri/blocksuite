@@ -1,6 +1,6 @@
 import {
   menu,
-  popFilterableSimpleMenu,
+  popMenu,
   popupTargetFromElement,
 } from '@blocksuite/affine-components/context-menu';
 import { ShadowlessElement } from '@blocksuite/block-std';
@@ -51,6 +51,7 @@ const styles = css`
     border-radius: 8px;
     height: 100%;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .add-property {
@@ -112,18 +113,26 @@ export class RecordDetail extends SignalWatcher(
   static override styles = styles;
 
   _clickAddProperty = () => {
-    popFilterableSimpleMenu(
-      popupTargetFromElement(this.addPropertyButton),
-      this.view.propertyMetas.map(meta => {
-        return menu.action({
-          name: meta.config.name,
-          prefix: renderUniLit(this.view.IconGet(meta.type)),
-          select: () => {
-            this.view.propertyAdd('end', meta.type);
-          },
-        });
-      })
-    );
+    popMenu(popupTargetFromElement(this.addPropertyButton), {
+      options: {
+        title: {
+          text: 'Add property',
+        },
+        items: [
+          menu.group({
+            items: this.view.propertyMetas.map(meta => {
+              return menu.action({
+                name: meta.config.name,
+                prefix: renderUniLit(this.view.propertyIconGet(meta.type)),
+                select: () => {
+                  this.view.propertyAdd('end', meta.type);
+                },
+              });
+            }),
+          }),
+        ],
+      },
+    });
   };
 
   @property({ attribute: false })
@@ -226,7 +235,7 @@ export class RecordDetail extends SignalWatcher(
         </div>
       </div>
       <div
-        style="max-width: var(--affine-editor-width);display: flex;flex-direction: column;margin: 0 auto"
+        style="width: 100%;max-width: var(--affine-editor-width);display: flex;flex-direction: column;margin: 0 auto;box-sizing: border-box;"
       >
         ${keyed(this.rowId, this.renderHeader())}
         ${repeat(
@@ -250,7 +259,6 @@ export class RecordDetail extends SignalWatcher(
               Add Property
             </div>`
           : nothing}
-        <div style="width: var(--affine-editor-width)"></div>
       </div>
       ${keyed(this.rowId, this.renderNote())}
     `;

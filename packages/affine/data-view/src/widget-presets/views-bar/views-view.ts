@@ -6,7 +6,6 @@ import {
   popupTargetFromElement,
 } from '@blocksuite/affine-components/context-menu';
 import {
-  AddCursorIcon,
   DeleteIcon,
   DuplicateIcon,
   InfoIcon,
@@ -16,6 +15,7 @@ import {
   PlusIcon,
 } from '@blocksuite/icons/lit';
 import { css, html } from 'lit';
+import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import { WidgetBase } from '../../core/widget/widget-base.js';
@@ -44,6 +44,7 @@ export class DataViewHeaderViews extends WidgetBase {
       color: var(--affine-text-secondary-color);
       white-space: nowrap;
       max-width: 200px;
+      min-width: 28px;
     }
 
     .database-view-button .name {
@@ -67,7 +68,7 @@ export class DataViewHeaderViews extends WidgetBase {
       height: 16px;
     }
 
-    .database-view-button.active {
+    .database-view-button.selected {
       color: var(--affine-text-primary-color);
       background-color: var(--affine-hover-color-filled);
     }
@@ -94,31 +95,35 @@ export class DataViewHeaderViews extends WidgetBase {
     popFilterableSimpleMenu(
       popupTargetFromElement(event.currentTarget as HTMLElement),
       [
-        ...views.map(id => {
-          const openViewOption = (event: MouseEvent) => {
-            event.stopPropagation();
-            this.openViewOption(
-              popupTargetFromElement(event.currentTarget as HTMLElement),
-              id
-            );
-          };
-          const view = this.viewManager.viewGet(id);
-          return menu.action({
-            prefix: html`<uni-lit .uni=${this.getRenderer(id).icon}></uni-lit>`,
-            name: view.data$.value?.name ?? '',
-            label: () => html`${view.data$.value?.name}`,
-            isSelected: this.viewManager.currentViewId$.value === id,
-            select: () => {
-              this.viewManager.setCurrentView(id);
-            },
-            postfix: html`<div
-              class="dv-hover dv-round-4"
-              @click="${openViewOption}"
-              style="display:flex;align-items:center;"
-            >
-              ${MoreHorizontalIcon()}
-            </div>`,
-          });
+        menu.group({
+          items: views.map(id => {
+            const openViewOption = (event: MouseEvent) => {
+              event.stopPropagation();
+              this.openViewOption(
+                popupTargetFromElement(event.currentTarget as HTMLElement),
+                id
+              );
+            };
+            const view = this.viewManager.viewGet(id);
+            return menu.action({
+              prefix: html`<uni-lit
+                .uni=${this.getRenderer(id).icon}
+              ></uni-lit>`,
+              name: view.name$.value ?? '',
+              label: () => html`${view.name$.value}`,
+              isSelected: this.viewManager.currentViewId$.value === id,
+              select: () => {
+                this.viewManager.setCurrentView(id);
+              },
+              postfix: html`<div
+                class="dv-hover dv-round-4"
+                @click="${openViewOption}"
+                style="display:flex;align-items:center;"
+              >
+                ${MoreHorizontalIcon()}
+              </div>`,
+            });
+          }),
         }),
         menu.group({
           items: this.dataSource.viewMetas.map(v => {
@@ -151,45 +156,47 @@ export class DataViewHeaderViews extends WidgetBase {
       options: {
         items: [
           menu.input({
-            initialValue: view.data$.value?.name,
+            initialValue: view.name$.value,
             onChange: text => {
-              view.dataUpdate(_data => ({
-                name: text,
-              }));
+              view.nameSet(text);
             },
           }),
-          menu.action({
-            name: 'Editar vista',
-            prefix: InfoIcon(),
-            select: () => {
-              this.closest('affine-data-view-renderer')
-                ?.querySelector('data-view-header-tools-view-options')
-                ?.openMoreAction(target);
-            },
-          }),
-          menu.action({
-            name: 'Mover a la izquierda',
-            hide: () => index === 0,
-            prefix: MoveLeftIcon(),
-            select: () => {
-              const targetId = views[index - 1];
-              this.viewManager.moveTo(
-                id,
-                targetId ? { before: true, id: targetId } : 'start'
-              );
-            },
-          }),
-          menu.action({
-            name: 'Mover a la derecha',
-            prefix: MoveRightIcon(),
-            hide: () => index === views.length - 1,
-            select: () => {
-              const targetId = views[index + 1];
-              this.viewManager.moveTo(
-                id,
-                targetId ? { before: false, id: targetId } : 'end'
-              );
-            },
+          menu.group({
+            items: [
+              menu.action({
+                name: 'Editar vista',
+                prefix: InfoIcon(),
+                select: () => {
+                  this.closest('affine-data-view-renderer')
+                    ?.querySelector('data-view-header-tools-view-options')
+                    ?.openMoreAction(target);
+                },
+              }),
+              menu.action({
+                name: 'Mover a la izquierda',
+                hide: () => index === 0,
+                prefix: MoveLeftIcon(),
+                select: () => {
+                  const targetId = views[index - 1];
+                  this.viewManager.moveTo(
+                    id,
+                    targetId ? { before: true, id: targetId } : 'start'
+                  );
+                },
+              }),
+              menu.action({
+                name: 'Mover a la derecha',
+                prefix: MoveRightIcon(),
+                hide: () => index === views.length - 1,
+                select: () => {
+                  const targetId = views[index + 1];
+                  this.viewManager.moveTo(
+                    id,
+                    targetId ? { before: false, id: targetId } : 'end'
+                  );
+                },
+              }),
+            ],
           }),
           menu.group({
             items: [
@@ -226,7 +233,7 @@ export class DataViewHeaderViews extends WidgetBase {
         data-testid="database-add-view-button"
         @click="${this._addViewMenu}"
       >
-        ${AddCursorIcon()}
+        ${PlusIcon()}
       </div>`;
     }
     return html`
@@ -242,7 +249,7 @@ export class DataViewHeaderViews extends WidgetBase {
       const classList = classMap({
         'database-view-button': true,
         'dv-hover': true,
-        active: this.viewManager.currentViewId$.value === id,
+        selected: this.viewManager.currentViewId$.value === id,
       });
       const view = this.viewManager.viewDataGet(id);
       return html`
@@ -269,6 +276,7 @@ export class DataViewHeaderViews extends WidgetBase {
   _clickView(event: MouseEvent, id: string) {
     if (this.viewManager.currentViewId$.value !== id) {
       this.viewManager.setCurrentView(id);
+      this.onChangeView?.(id);
       return;
     }
     this.openViewOption(
@@ -285,6 +293,9 @@ export class DataViewHeaderViews extends WidgetBase {
       ></component-overflow>
     `;
   }
+
+  @property({ attribute: false })
+  accessor onChangeView: ((id: string) => void) | undefined;
 }
 
 declare global {

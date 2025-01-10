@@ -16,12 +16,6 @@ export class EmbedSyncedDocCard extends WithDisposable(ShadowlessElement) {
 
   private _dragging = false;
 
-  cleanUpSurfaceRefRenderer = () => {
-    if (this.surfaceRefRenderer) {
-      this.surfaceRefService.removeRenderer(this.surfaceRefRenderer.id);
-    }
-  };
-
   get blockState() {
     return this.block.blockState;
   }
@@ -125,11 +119,6 @@ export class EmbedSyncedDocCard extends WithDisposable(ShadowlessElement) {
     }
   }
 
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.cleanUpSurfaceRefRenderer();
-  }
-
   override render() {
     const { isLoading, isDeleted, isError, isCycle } = this.blockState;
     const error = this.isError || isError;
@@ -150,30 +139,19 @@ export class EmbedSyncedDocCard extends WithDisposable(ShadowlessElement) {
     const theme = this.std.get(ThemeProvider).theme;
     const {
       LoadingIcon,
-      SyncedDocIcon,
       SyncedDocErrorIcon,
-      SyncedDocDeletedIcon,
       ReloadIcon,
       SyncedDocEmptyBanner,
       SyncedDocErrorBanner,
       SyncedDocDeletedBanner,
     } = getSyncedDocIcons(theme, this.editorMode);
 
-    const titleIcon = error
+    const icon = error
       ? SyncedDocErrorIcon
       : isLoading
         ? LoadingIcon
-        : isDeleted
-          ? SyncedDocDeletedIcon
-          : SyncedDocIcon;
-
-    const titleText = error
-      ? this.block.docTitle
-      : isLoading
-        ? 'Loading...'
-        : isDeleted
-          ? `Deleted doc`
-          : this.block.docTitle;
+        : this.block.icon$.value;
+    const title = isLoading ? 'Loading...' : this.block.title$;
 
     const showDefaultNoteContent = isLoading || error || isDeleted || isEmpty;
     const defaultNoteContent = error
@@ -206,11 +184,11 @@ export class EmbedSyncedDocCard extends WithDisposable(ShadowlessElement) {
         <div class="affine-embed-synced-doc-card-content">
           <div class="affine-embed-synced-doc-card-content-title">
             <div class="affine-embed-synced-doc-card-content-title-icon">
-              ${titleIcon}
+              ${icon}
             </div>
 
             <div class="affine-embed-synced-doc-card-content-title-text">
-              ${titleText}
+              ${title}
             </div>
           </div>
 
@@ -271,14 +249,4 @@ export class EmbedSyncedDocCard extends WithDisposable(ShadowlessElement) {
 
   @queryAsync('.affine-embed-synced-doc-content-note.render')
   accessor noteContainer!: Promise<HTMLDivElement>;
-
-  @property({ attribute: false })
-  // TODO: remove any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accessor surfaceRefRenderer: any | null = null;
-
-  @property({ attribute: false })
-  // TODO: remove any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accessor surfaceRefService!: any;
 }

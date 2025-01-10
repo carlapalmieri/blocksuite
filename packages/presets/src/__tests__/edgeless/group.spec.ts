@@ -191,6 +191,29 @@ describe('group', () => {
     expect(group.w).toBe(0);
     expect(group.h).toBe(0);
   });
+
+  test('descendant of group should not contain itself', () => {
+    const groupIds = [1, 2, 3].map(_ => {
+      return service.addElement('group', {
+        children: new DocCollection.Y.Map<boolean>(),
+      });
+    });
+    const groups = groupIds.map(
+      id => service.getElementById(id) as GroupElementModel
+    );
+
+    groups.forEach(group => {
+      expect(group.descendantElements).toHaveLength(0);
+    });
+
+    groups[0].addChild(groups[1]);
+    groups[1].addChild(groups[2]);
+    groups[2].addChild(groups[0]);
+
+    expect(groups[0].descendantElements).toHaveLength(2);
+    expect(groups[1].descendantElements).toHaveLength(1);
+    expect(groups[2].descendantElements).toHaveLength(0);
+  });
 });
 
 describe('mindmap', () => {
@@ -292,5 +315,54 @@ describe('mindmap', () => {
     expect(children[2].y).greaterThan(children[1].y + children[1].h);
 
     expect(leaf4.x).greaterThan(children[2].x + children[2].w);
+  });
+
+  test('deliberately creating a circular reference should be resolved correctly', async () => {
+    const tree = {
+      text: 'root',
+      children: [
+        {
+          text: 'leaf1',
+        },
+        {
+          text: 'leaf2',
+        },
+        {
+          text: 'leaf3',
+          children: [
+            {
+              text: 'leaf4',
+            },
+          ],
+        },
+      ],
+    };
+    const mindmapId = service.addElement('mindmap', {
+      type: LayoutType.RIGHT,
+      children: tree,
+    });
+    const mindmap = () =>
+      service.getElementById(mindmapId) as MindmapElementModel;
+
+    doc.captureSync();
+    await wait();
+
+    // create a circular reference
+    doc.transact(() => {
+      const root = mindmap().tree;
+      const leaf3 = root.children[2];
+      const leaf4 = root.children[2].children[0];
+
+      mindmap().children.set(leaf3.id, {
+        index: leaf3.detail.index,
+        parent: leaf4.id,
+      });
+    });
+    doc.captureSync();
+
+    await wait();
+
+    // the circular referenced node should be removed
+    expect(mindmap().nodeMap.size).toBe(3);
   });
 });

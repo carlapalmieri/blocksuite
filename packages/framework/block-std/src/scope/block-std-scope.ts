@@ -12,6 +12,7 @@ import { UIEventDispatcher } from '../event/index.js';
 import { GfxController } from '../gfx/controller.js';
 import { GfxSelectionManager } from '../gfx/selection.js';
 import { SurfaceMiddlewareExtension } from '../gfx/surface-middleware.js';
+import { ViewManager } from '../gfx/view/view-manager.js';
 import {
   BlockServiceIdentifier,
   BlockViewIdentifier,
@@ -51,6 +52,7 @@ const internalExtensions = [
   CursorSelectionExtension,
   GfxSelectionManager,
   SurfaceMiddlewareExtension,
+  ViewManager,
 ];
 
 export class BlockStdScope {
@@ -190,6 +192,7 @@ export class BlockStdScope {
     this._lifeCycleWatchers.forEach(watcher => {
       watcher.unmounted.call(watcher);
     });
+    this._getHost = () => null as unknown as EditorHost;
   }
 }
 

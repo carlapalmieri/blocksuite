@@ -6,7 +6,6 @@ import type {
   PointTestOptions,
   ReorderingDirection,
 } from '@blocksuite/block-std/gfx';
-import type { IBound } from '@blocksuite/global/utils';
 
 import {
   type ElementRenderer,
@@ -26,7 +25,7 @@ import { clamp } from '@blocksuite/affine-shared/utils';
 import {
   GfxControllerIdentifier,
   GfxExtensionIdentifier,
-  isGfxContainerElm,
+  isGfxGroupCompatibleModel,
 } from '@blocksuite/block-std/gfx';
 import { BlockSuiteError, ErrorCode } from '@blocksuite/global/exceptions';
 import { Bound, getCommonBound } from '@blocksuite/global/utils';
@@ -65,7 +64,6 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
 
   slots = {
     pressShiftKeyUpdated: new Slot<boolean>(),
-    cursorUpdated: new Slot<string>(),
     copyAsPng: new Slot<{
       blocks: BlockSuite.EdgelessBlockModelType[];
       shapes: BlockSuite.SurfaceModel[];
@@ -138,10 +136,13 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
     ) as EdgelessFrameManager;
   }
 
+  /**
+   * Get all sorted frames by presentation orderer,
+   * the legacy frame that uses `index` as presentation order
+   * will be put at the beginning of the array.
+   */
   get frames() {
-    return this.layer.blocks.filter(
-      block => block.flavour === 'affine:frame'
-    ) as FrameBlockModel[];
+    return this.frame.frames;
   }
 
   get gfx(): GfxController {
@@ -207,12 +208,12 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
   }
 
   private _initSlotEffects() {
-    const { disposables, slots } = this;
+    const { disposables } = this;
 
     disposables.add(
       effect(() => {
         const value = this.gfx.tool.currentToolOption$.value;
-        slots.cursorUpdated.emit(getCursorMode(value));
+        this.gfx.cursor$.value = getCursorMode(value);
       })
     );
   }
@@ -269,6 +270,10 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
     return groupId;
   }
 
+  /**
+   * Create a group from selected elements, if the selected elements are in the same group
+   * @returns the id of the created group
+   */
   createGroupFromSelected() {
     const { selection } = this;
 
@@ -307,15 +312,17 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
     return groupId;
   }
 
-  createTemplateJob(type: 'template' | 'sticker') {
+  createTemplateJob(
+    type: 'template' | 'sticker',
+    center?: { x: number; y: number }
+  ) {
     const middlewares: ((job: TemplateJob) => void)[] = [];
 
     if (type === 'template') {
-      const currentContentBound = getCommonBound(
-        (
-          this.blocks.map(block => Bound.deserialize(block.xywh)) as IBound[]
-        ).concat(this.elements)
+      const bounds = [...this.blocks, ...this.elements].map(i =>
+        Bound.deserialize(i.xywh)
       );
+      const currentContentBound = getCommonBound(bounds);
 
       if (currentContentBound) {
         currentContentBound.x +=
@@ -330,7 +337,7 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
 
     if (type === 'sticker') {
       middlewares.push(
-        createStickerMiddleware(this.viewport.center, () =>
+        createStickerMiddleware(center || this.viewport.center, () =>
           this.layer.generateIndex()
         )
       );
@@ -419,7 +426,7 @@ export class EdgelessRootService extends RootService implements SurfaceContext {
     id = typeof id === 'string' ? id : id.id;
 
     const el = this.getElementById(id);
-    if (isGfxContainerElm(el)) {
+    if (isGfxGroupCompatibleModel(el)) {
       el.childIds.forEach(childId => {
         this.removeElement(childId);
       });

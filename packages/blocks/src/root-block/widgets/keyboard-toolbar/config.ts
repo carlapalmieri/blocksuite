@@ -1,9 +1,9 @@
 import type { FrameBlockModel } from '@blocksuite/affine-model';
+import type { AffineTextAttributes } from '@blocksuite/affine-shared/types';
 import type { BlockStdScope } from '@blocksuite/block-std';
 import type { TemplateResult } from 'lit';
 
 import {
-  type AffineTextAttributes,
   getInlineEditorByModel,
   insertContent,
   REFERENCE_NODE,
@@ -16,8 +16,6 @@ import {
 import { viewPresets } from '@blocksuite/data-view/view-presets';
 import { assertType } from '@blocksuite/global/utils';
 import {
-  ArrowDownBigIcon,
-  ArrowUpBigIcon,
   AttachmentIcon,
   BoldIcon,
   BulletedListIcon,
@@ -36,6 +34,7 @@ import {
   FrameIcon,
   GithubIcon,
   GroupIcon,
+  ImageIcon,
   ItalicIcon,
   LinkedPageIcon,
   LinkIcon,
@@ -82,11 +81,6 @@ export type KeyboardToolbarConfig = {
    * @default false
    */
   useScreenHeight?: boolean;
-  /**
-   * @description The safe bottom padding of the keyboard toolbar.
-   * It is useful when the device has a rounded corner screen.
-   */
-  safeBottomPadding?: string;
 };
 
 export type KeyboardToolbarItem =
@@ -127,9 +121,9 @@ export type KeyboardToolbarContext = {
   std: BlockStdScope;
   rootComponent: PageRootBlockComponent;
   /**
-   * Close tool bar
+   * Close tool bar, and blur the focus if blur is true, default is false
    */
-  closeToolbar: () => void;
+  closeToolbar: (blur?: boolean) => void;
   /**
    * Close current tool panel and show virtual keyboard
    */
@@ -301,7 +295,7 @@ const pageToolGroup: KeyboardToolPanelGroup = {
 
         return std.doc.schema.flavourSchemaMap.has('affine:embed-linked-doc');
       },
-      action: ({ rootComponent, closeToolbar }) => {
+      action: ({ rootComponent, closeToolPanel }) => {
         const { std } = rootComponent;
 
         const linkedDocWidget = std.view.getWidget(
@@ -327,7 +321,7 @@ const pageToolGroup: KeyboardToolPanelGroup = {
             // Wait for range to be updated
             inlineEditor?.slots.inlineRangeSync.once(() => {
               linkedDocWidget.show('mobile');
-              closeToolbar();
+              closeToolPanel();
             });
           })
           .run();
@@ -341,7 +335,7 @@ const contentMediaToolGroup: KeyboardToolPanelGroup = {
   items: [
     {
       name: 'Image',
-      icon: NewPageIcon(),
+      icon: ImageIcon(),
       showWhen: ({ std }) =>
         std.doc.schema.flavourSchemaMap.has('affine:image'),
       action: ({ std }) => {
@@ -884,8 +878,42 @@ export const defaultKeyboardToolbarConfig: KeyboardToolbarConfig = {
     // TODO(@L-Sun): add ai function in AFFiNE side
     // { icon: AiIcon(iconStyle) },
     textSubToolbarConfig,
-    ...listToolActionItems,
-    ...textToolActionItems.filter(({ name }) => name === 'Divider'),
+    {
+      name: 'Image',
+      icon: ImageIcon(),
+      showWhen: ({ std }) =>
+        std.doc.schema.flavourSchemaMap.has('affine:image'),
+      action: ({ std }) => {
+        std.command
+          .chain()
+          .getSelectedModels()
+          .insertImages({ removeEmptyLine: true })
+          .run();
+      },
+    },
+    {
+      name: 'Attachment',
+      icon: AttachmentIcon(),
+      showWhen: ({ std }) =>
+        std.doc.schema.flavourSchemaMap.has('affine:attachment'),
+      action: async ({ std }) => {
+        const { selectedModels } = std.command.exec('getSelectedModels');
+        const model = selectedModels?.[0];
+        if (!model) return;
+
+        const file = await openFileOrFiles();
+        if (!file) return;
+
+        const attachmentService = std.getService('affine:attachment');
+        if (!attachmentService) return;
+        const maxFileSize = attachmentService.maxFileSize;
+
+        await addSiblingAttachmentBlocks(std.host, [file], maxFileSize, model);
+        if (model.text?.length === 0) {
+          std.doc.deleteBlock(model);
+        }
+      },
+    },
     {
       name: 'Undo',
       icon: UndoIcon(),
@@ -922,6 +950,8 @@ export const defaultKeyboardToolbarConfig: KeyboardToolbarConfig = {
           .run();
       },
     },
+    ...listToolActionItems,
+    ...textToolActionItems.filter(({ name }) => name === 'Divider'),
     {
       name: 'CollapseTab',
       icon: CollapseTabIcon(),
@@ -969,42 +999,6 @@ export const defaultKeyboardToolbarConfig: KeyboardToolbarConfig = {
           .draftSelectedModels()
           .duplicateSelectedModels()
           .run();
-      },
-    },
-    ...databaseToolGroup.items.filter(({ name }) => name === 'Table view'),
-    ...pageToolGroup.items.filter(({ name }) => name === 'LinkedPage'),
-    {
-      name: 'Move Up',
-      icon: ArrowUpBigIcon(),
-      action: ({ std }) => {
-        const { selectedModels } = std.command.exec('getSelectedModels');
-        const model = selectedModels?.[0];
-        if (!model) return;
-
-        const previousSiblingModel = std.doc.getPrev(model);
-        if (!previousSiblingModel) return;
-
-        const parentModel = std.doc.getParent(previousSiblingModel);
-        if (!parentModel) return;
-
-        std.doc.moveBlocks([model], parentModel, previousSiblingModel, true);
-      },
-    },
-    {
-      name: 'Move Down',
-      icon: ArrowDownBigIcon(),
-      action: ({ std }) => {
-        const { selectedModels } = std.command.exec('getSelectedModels');
-        const model = selectedModels?.[0];
-        if (!model) return;
-
-        const nextSiblingModel = std.doc.getNext(model);
-        if (!nextSiblingModel) return;
-
-        const parentModel = std.doc.getParent(nextSiblingModel);
-        if (!parentModel) return;
-
-        std.doc.moveBlocks([model], parentModel, nextSiblingModel, true);
       },
     },
     {

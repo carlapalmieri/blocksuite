@@ -2,14 +2,16 @@ import type { Doc } from '@blocksuite/store';
 
 import { nToLast } from '@blocksuite/global/utils';
 
-import type { GfxBlockElementModel, GfxModel } from '../gfx/gfx-block-model.js';
+import type { GfxLocalElementModel } from '../gfx/index.js';
 import type { Layer } from '../gfx/layer.js';
-import type { SurfaceBlockModel } from '../gfx/surface/surface-model.js';
+import type { GfxBlockElementModel } from '../gfx/model/gfx-block-model.js';
+import type { GfxModel } from '../gfx/model/model.js';
+import type { SurfaceBlockModel } from '../gfx/model/surface/surface-model.js';
 
 import {
-  type GfxContainerElement,
-  isGfxContainerElm,
-} from '../gfx/surface/container-element.js';
+  type GfxGroupCompatibleInterface,
+  isGfxGroupCompatibleModel,
+} from '../gfx/model/base.js';
 
 export function getLayerEndZIndex(layers: Layer[], layerIndex: number) {
   const layer = layers[layerIndex];
@@ -17,7 +19,7 @@ export function getLayerEndZIndex(layers: Layer[], layerIndex: number) {
     ? layer.type === 'block'
       ? layer.zIndex + layer.elements.length - 1
       : layer.zIndex
-    : 1;
+    : 0;
 }
 
 export function updateLayersZIndex(layers: Layer[], startIdx: number) {
@@ -33,7 +35,7 @@ export function updateLayersZIndex(layers: Layer[], startIdx: number) {
 }
 
 export function getElementIndex(indexable: GfxModel) {
-  const groups = indexable.groups as GfxContainerElement[];
+  const groups = indexable.groups as GfxGroupCompatibleInterface[];
 
   if (groups.length) {
     const groupIndexes = groups
@@ -96,27 +98,29 @@ export function renderableInEdgeless(
  * SortOrder.AFTER means a should be rendered after b and so on.
  * @returns
  */
-export function compare(a: GfxModel, b: GfxModel) {
-  const surface = a.surface ?? b.surface;
-  if (!surface) return SortOrder.SAME;
-
-  if (isGfxContainerElm(a) && a.hasDescendant(b)) {
+export function compare(
+  a: GfxModel | GfxLocalElementModel,
+  b: GfxModel | GfxLocalElementModel
+) {
+  if (isGfxGroupCompatibleModel(a) && b.groups.includes(a)) {
     return SortOrder.BEFORE;
-  } else if (isGfxContainerElm(b) && b.hasDescendant(a)) {
+  } else if (isGfxGroupCompatibleModel(b) && a.groups.includes(b)) {
     return SortOrder.AFTER;
   } else {
-    const aGroups = a.groups as GfxContainerElement[];
-    const bGroups = b.groups as GfxContainerElement[];
+    const aGroups = a.groups as GfxGroupCompatibleInterface[];
+    const bGroups = b.groups as GfxGroupCompatibleInterface[];
 
     let i = 1;
-    let aGroup: GfxModel | GfxContainerElement | undefined = nToLast(
-      aGroups,
-      i
-    );
-    let bGroup: GfxModel | GfxContainerElement | undefined = nToLast(
-      bGroups,
-      i
-    );
+    let aGroup:
+      | GfxModel
+      | GfxGroupCompatibleInterface
+      | GfxLocalElementModel
+      | undefined = nToLast(aGroups, i);
+    let bGroup:
+      | GfxModel
+      | GfxGroupCompatibleInterface
+      | GfxLocalElementModel
+      | undefined = nToLast(bGroups, i);
 
     while (aGroup === bGroup && aGroup) {
       ++i;

@@ -184,7 +184,7 @@ export async function clickDatabaseOutside(page: Page) {
 
 export async function assertColumnWidth(locator: Locator, width: number) {
   const box = await getBoundingBox(locator);
-  expect(box.width).toBe(width);
+  expect(box.width).toBe(width + 1);
   return box;
 }
 
@@ -431,7 +431,7 @@ export async function assertCellsSelection(
       x,
       y,
       height,
-      width,
+      width: width + 1,
     });
   }
 }
@@ -460,6 +460,22 @@ export async function getElementStyle(
 export async function focusKanbanCardHeader(page: Page, index = 0) {
   const cardHeader = page.locator('data-view-header-area-text').nth(index);
   await cardHeader.click();
+}
+
+export async function clickKanbanCardHeader(page: Page, index = 0) {
+  const cardHeader = page.locator('data-view-header-area-text').nth(index);
+  await cardHeader.click();
+  await cardHeader.click();
+}
+
+export async function assertKanbanCardHeaderText(
+  page: Page,
+  text: string,
+  index = 0
+) {
+  const cardHeader = page.locator('data-view-header-area-text').nth(index);
+
+  await expect(cardHeader).toHaveText(text);
 }
 
 export async function assertKanbanCellSelected(

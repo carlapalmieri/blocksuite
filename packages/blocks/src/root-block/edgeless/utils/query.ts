@@ -26,7 +26,7 @@ import {
   type EmbedLoomModel,
   type EmbedSyncedDocModel,
   type EmbedYoutubeModel,
-  type FrameBlockModel,
+  FrameBlockModel,
   type ImageBlockModel,
   MindmapElementModel,
   type NoteBlockModel,
@@ -74,12 +74,8 @@ export function isEdgelessTextBlock(
   );
 }
 
-export function isFrameBlock(
-  element: BlockModel | BlockSuite.EdgelessModel | null
-): element is FrameBlockModel {
-  return (
-    !!element && 'flavour' in element && element.flavour === 'affine:frame'
-  );
+export function isFrameBlock(element: unknown): element is FrameBlockModel {
+  return !!element && (element as BlockModel).flavour === 'affine:frame';
 }
 
 export function isImageBlock(
@@ -273,6 +269,17 @@ export function getSelectedRect(selected: BlockSuite.EdgelessModel[]): DOMRect {
   if (selected.length === 0) {
     return new DOMRect();
   }
+
+  const lockedElementsByFrame = selected
+    .map(selectable => {
+      if (selectable instanceof FrameBlockModel && selectable.isLocked()) {
+        return selectable.descendantElements;
+      }
+      return [];
+    })
+    .flat();
+
+  selected = [...new Set([...selected, ...lockedElementsByFrame])];
 
   if (selected.length === 1) {
     const [x, y, w, h] = deserializeXYWH(selected[0].xywh);

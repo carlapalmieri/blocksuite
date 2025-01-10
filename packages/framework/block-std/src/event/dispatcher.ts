@@ -115,6 +115,7 @@ export class UIEventDispatcher extends LifeCycleWatcher {
     this._keyboardControl = new KeyboardControl(this);
     this._rangeControl = new RangeControl(this);
     this._clipboardControl = new ClipboardControl(this);
+    this.disposables.add(this._pointerControl);
   }
 
   private _bindEvents() {
@@ -172,6 +173,15 @@ export class UIEventDispatcher extends LifeCycleWatcher {
       }
 
       this._setActive(false);
+    });
+    this.disposables.addFromEvent(this.host, 'dragover', () => {
+      this._setActive(true);
+    });
+    this.disposables.addFromEvent(this.host, 'dragend', () => {
+      this._setActive(false);
+    });
+    this.disposables.addFromEvent(this.host, 'drop', () => {
+      this._setActive(true);
     });
     this.disposables.addFromEvent(this.host, 'pointerenter', () => {
       if (this._isActiveElementOutsideHost()) {

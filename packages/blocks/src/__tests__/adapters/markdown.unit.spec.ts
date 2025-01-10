@@ -12,7 +12,7 @@ import {
 import { AssetsManager, MemoryBlobCRUD } from '@blocksuite/store';
 import { describe, expect, test } from 'vitest';
 
-import { MarkdownAdapter } from '../../_common/adapters/markdown.js';
+import { MarkdownAdapter } from '../../_common/adapters/markdown/index.js';
 import { nanoidReplacement } from '../../_common/test-utils/test-utils.js';
 import { embedSyncedDocMiddleware } from '../../_common/transformers/middlewares.js';
 import { createJob } from '../utils/create-job.js';
@@ -1749,6 +1749,27 @@ hhh
                 },
                 {
                   type: 'block',
+                  id: 'C0sH2Ee6cz-MysVNLNrBt',
+                  flavour: 'affine:embed-linked-doc',
+                  props: {
+                    index: 'a0',
+                    xywh: '[0,0,0,0]',
+                    rotate: 0,
+                    pageId: '4T5ObMgEIMII-4Bexyta1',
+                    style: 'horizontal',
+                    caption: null,
+                    params: {
+                      mode: 'page',
+                      blockIds: ['abc', '123'],
+                      elementIds: ['def', '456'],
+                      databaseId: 'deadbeef',
+                      databaseRowId: '123',
+                    },
+                  },
+                  children: [],
+                },
+                {
+                  type: 'block',
                   id: 'block:f-Z6nRrGK_',
                   flavour: 'affine:paragraph',
                   props: {
@@ -1798,6 +1819,22 @@ hhh
                                 reference: {
                                   type: 'LinkedPage',
                                   pageId: 'deadbeef',
+                                  params: {
+                                    mode: 'page',
+                                    blockIds: ['abc', '123'],
+                                    elementIds: ['def', '456'],
+                                    databaseId: 'deadbeef',
+                                    databaseRowId: '123',
+                                  },
+                                },
+                              },
+                            },
+                            {
+                              insert: ' ',
+                              attributes: {
+                                reference: {
+                                  type: 'LinkedPage',
+                                  pageId: 'foobar',
                                 },
                               },
                             },
@@ -1869,11 +1906,13 @@ hhh
 
 &#x20;   bbb
 
+[untitled](https://example.com/4T5ObMgEIMII-4Bexyta1?mode=page\\&blockIds=abc%2C123\\&elementIds=def%2C456\\&databaseId=deadbeef\\&databaseRowId=123)
+
 &#x20;   ccc
 
 &#x20;       ddd
 
-&#x20;       eee[test]()
+&#x20;       eee[test](https://example.com/deadbeef?mode=page\\&blockIds=abc%2C123\\&elementIds=def%2C456\\&databaseId=deadbeef\\&databaseRowId=123)[](https://example.com/foobar)
 
 &#x20;       fff
 
@@ -1883,6 +1922,7 @@ hhh
 `;
     const middleware: JobMiddleware = ({ adapterConfigs }) => {
       adapterConfigs.set('title:deadbeef', 'test');
+      adapterConfigs.set('docLinkBaseUrl', 'https://example.com');
     };
     const mdAdapter = new MarkdownAdapter(createJob([middleware]));
     const target = await mdAdapter.fromBlockSnapshot({
@@ -2380,8 +2420,6 @@ describe('markdown to snapshot', () => {
           ],
         },
       ],
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     };
@@ -2389,8 +2427,6 @@ describe('markdown to snapshot', () => {
     const mdAdapter = new MarkdownAdapter(createJob());
     const rawSliceSnapshot = await mdAdapter.toSliceSnapshot({
       file: markdown,
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     });
@@ -2435,8 +2471,6 @@ describe('markdown to snapshot', () => {
           ],
         },
       ],
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     };
@@ -2444,8 +2478,6 @@ describe('markdown to snapshot', () => {
     const mdAdapter = new MarkdownAdapter(createJob());
     const rawSliceSnapshot = await mdAdapter.toSliceSnapshot({
       file: markdown,
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     });
@@ -2490,8 +2522,6 @@ describe('markdown to snapshot', () => {
           ],
         },
       ],
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     };
@@ -2499,8 +2529,6 @@ describe('markdown to snapshot', () => {
     const mdAdapter = new MarkdownAdapter(createJob());
     const rawSliceSnapshot = await mdAdapter.toSliceSnapshot({
       file: markdown,
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     });
@@ -2723,6 +2751,7 @@ hhh
             },
             checked: false,
             collapsed: false,
+            order: null,
           },
           children: [
             {
@@ -2741,6 +2770,7 @@ hhh
                 },
                 checked: false,
                 collapsed: false,
+                order: null,
               },
               children: [
                 {
@@ -2759,6 +2789,7 @@ hhh
                     },
                     checked: false,
                     collapsed: false,
+                    order: null,
                   },
                   children: [],
                 },
@@ -2780,6 +2811,7 @@ hhh
                 },
                 checked: false,
                 collapsed: false,
+                order: null,
               },
               children: [],
             },
@@ -2801,6 +2833,7 @@ hhh
             },
             checked: false,
             collapsed: false,
+            order: null,
           },
           children: [],
         },
@@ -2854,6 +2887,7 @@ hhh
             },
             checked: false,
             collapsed: false,
+            order: null,
           },
           children: [
             {
@@ -2872,6 +2906,7 @@ hhh
                 },
                 checked: true,
                 collapsed: false,
+                order: null,
               },
               children: [
                 {
@@ -2890,6 +2925,7 @@ hhh
                     },
                     checked: false,
                     collapsed: false,
+                    order: null,
                   },
                   children: [],
                 },
@@ -2911,6 +2947,7 @@ hhh
                 },
                 checked: true,
                 collapsed: false,
+                order: null,
               },
               children: [],
             },
@@ -2932,6 +2969,116 @@ hhh
             },
             checked: false,
             collapsed: false,
+            order: null,
+          },
+          children: [],
+        },
+      ],
+    };
+
+    const mdAdapter = new MarkdownAdapter(createJob());
+    const rawBlockSnapshot = await mdAdapter.toBlockSnapshot({
+      file: markdown,
+    });
+    expect(nanoidReplacement(rawBlockSnapshot)).toEqual(blockSnapshot);
+  });
+
+  test('non consecutive numbered list', async () => {
+    const markdown = `
+1. aaa
+
+bbb
+
+3. ccc
+4. ddd
+`;
+
+    const blockSnapshot: BlockSnapshot = {
+      type: 'block',
+      id: 'matchesReplaceMap[0]',
+      flavour: 'affine:note',
+      props: {
+        xywh: '[0,0,800,95]',
+        background: DEFAULT_NOTE_BACKGROUND_COLOR,
+        index: 'a0',
+        hidden: false,
+        displayMode: NoteDisplayMode.DocAndEdgeless,
+      },
+      children: [
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[1]',
+          flavour: 'affine:list',
+          props: {
+            type: 'numbered',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'aaa',
+                },
+              ],
+            },
+            checked: false,
+            collapsed: false,
+            order: 1,
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[2]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'bbb',
+                },
+              ],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[3]',
+          flavour: 'affine:list',
+          props: {
+            type: 'numbered',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'ccc',
+                },
+              ],
+            },
+            checked: false,
+            collapsed: false,
+            order: 3,
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[4]',
+          flavour: 'affine:list',
+          props: {
+            type: 'numbered',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: 'ddd',
+                },
+              ],
+            },
+            checked: false,
+            collapsed: false,
+            order: 4,
           },
           children: [],
         },
@@ -3039,8 +3186,6 @@ hhh
           ],
         },
       ],
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     };
@@ -3048,8 +3193,6 @@ hhh
     const mdAdapter = new MarkdownAdapter(createJob());
     const rawSliceSnapshot = await mdAdapter.toSliceSnapshot({
       file: markdown,
-      pageVersion: 0,
-      workspaceVersion: 0,
       workspaceId: '',
       pageId: '',
     });
@@ -3499,6 +3642,204 @@ hhh
     };
 
     const mdAdapter = new MarkdownAdapter(createJob());
+    const rawBlockSnapshot = await mdAdapter.toBlockSnapshot({
+      file: markdown,
+    });
+    expect(nanoidReplacement(rawBlockSnapshot)).toEqual(blockSnapshot);
+  });
+
+  test('reference', async () => {
+    const markdown = `
+aaa
+
+&#x20;   bbb
+
+[untitled](https://example.com/4T5ObMgEIMII-4Bexyta1)
+
+&#x20;   ccc
+
+&#x20;       ddd
+
+&#x20;       eee[test](https://example.com/deadbeef?mode=page\\&blockIds=abc%2C123\\&elementIds=def%2C456)[](https://example.com/foobar)
+
+&#x20;       fff
+
+&#x20;   ggg
+
+hhh
+`;
+    const blockSnapshot: BlockSnapshot = {
+      type: 'block',
+      id: 'matchesReplaceMap[0]',
+      flavour: 'affine:note',
+      props: {
+        xywh: '[0,0,800,95]',
+        background: '--affine-note-background-white',
+        index: 'a0',
+        hidden: false,
+        displayMode: 'both',
+      },
+      children: [
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[1]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: 'aaa' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[2]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: '    bbb' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[3]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                {
+                  insert: ' ',
+                  attributes: {
+                    reference: {
+                      type: 'LinkedPage',
+                      pageId: '4T5ObMgEIMII-4Bexyta1',
+                      params: {},
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[4]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: '    ccc' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[5]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: '        ddd' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[6]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [
+                { insert: '        eee' },
+                {
+                  insert: ' ',
+                  attributes: {
+                    reference: {
+                      type: 'LinkedPage',
+                      pageId: 'deadbeef',
+                      params: {
+                        mode: 'page',
+                        blockIds: ['abc', '123'],
+                        elementIds: ['def', '456'],
+                      },
+                    },
+                  },
+                },
+                {
+                  insert: ' ',
+                  attributes: {
+                    reference: {
+                      type: 'LinkedPage',
+                      pageId: 'foobar',
+                      params: {},
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[7]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: '        fff' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[8]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: '    ggg' }],
+            },
+          },
+          children: [],
+        },
+        {
+          type: 'block',
+          id: 'matchesReplaceMap[9]',
+          flavour: 'affine:paragraph',
+          props: {
+            type: 'text',
+            text: {
+              '$blocksuite:internal:text$': true,
+              delta: [{ insert: 'hhh' }],
+            },
+          },
+          children: [],
+        },
+      ],
+    };
+    const middleware: JobMiddleware = ({ adapterConfigs }) => {
+      adapterConfigs.set('docLinkBaseUrl', 'https://example.com');
+    };
+    const mdAdapter = new MarkdownAdapter(createJob([middleware]));
     const rawBlockSnapshot = await mdAdapter.toBlockSnapshot({
       file: markdown,
     });

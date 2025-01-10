@@ -2,7 +2,7 @@
 
 // Context: Lean towards breaking out any localizable content into constants so it's
 // easier to track content we may need to localize in the future. (i18n)
-const UNTITLED_PAGE_NAME = 'Untitled';
+const UNTITLED_PAGE_NAME = 'Sin título';
 
 /** Tools for exporting files to device. For example, via browser download. */
 export const FileExporter = {

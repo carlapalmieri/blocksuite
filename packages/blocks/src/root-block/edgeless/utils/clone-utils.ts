@@ -15,7 +15,7 @@ import {
 import {
   getTopElements,
   type GfxModel,
-  isGfxContainerElm,
+  isGfxGroupCompatibleModel,
   type SerializedElement,
 } from '@blocksuite/block-std/gfx';
 import { type BlockSnapshot, Job } from '@blocksuite/store';
@@ -32,37 +32,32 @@ export function getSortedCloneElements(elements: GfxModel[]) {
     if (set.has(element)) return;
 
     set.add(element);
-    if (isGfxContainerElm(element)) {
+    if (isGfxGroupCompatibleModel(element)) {
       element.descendantElements.map(descendant => set.add(descendant));
     }
   });
   return sortEdgelessElements([...set]);
 }
 
-export async function prepareCloneData(
-  elements: GfxModel[],
-  std: BlockStdScope
-) {
+export function prepareCloneData(elements: GfxModel[], std: BlockStdScope) {
   elements = sortEdgelessElements(elements);
   const job = new Job({
     collection: std.collection,
   });
-  const res = await Promise.all(
-    elements.map(async element => {
-      const data = await serializeElement(element, elements, job);
-      return data;
-    })
-  );
+  const res = elements.map(element => {
+    const data = serializeElement(element, elements, job);
+    return data;
+  });
   return res.filter((d): d is SerializedElement | BlockSnapshot => !!d);
 }
 
-export async function serializeElement(
+export function serializeElement(
   element: GfxModel,
   elements: GfxModel[],
   job: Job
 ) {
   if (element instanceof GfxBlockModel) {
-    const snapshot = await job.blockToSnapshot(element);
+    const snapshot = job.blockToSnapshot(element);
     if (!snapshot) {
       return;
     }
@@ -123,7 +118,7 @@ export function sortEdgelessElements(elements: GfxModel[]) {
   };
 
   const traverse = (element: GfxModel) => {
-    if (isGfxContainerElm(element)) {
+    if (isGfxGroupCompatibleModel(element)) {
       moveConnectorToEnd(element.childElements).forEach(child =>
         traverse(child)
       );

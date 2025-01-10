@@ -4,7 +4,11 @@ import {
   getViewportElement,
 } from '@blocksuite/affine-shared/utils';
 import { PropTypes, requiredProperties } from '@blocksuite/block-std';
-import { throttle, WithDisposable } from '@blocksuite/global/utils';
+import {
+  SignalWatcher,
+  throttle,
+  WithDisposable,
+} from '@blocksuite/global/utils';
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -19,11 +23,14 @@ import {
 } from '../../../_common/components/utils.js';
 import { getPopperPosition } from '../../utils/position.js';
 import { linkedDocPopoverStyles } from './styles.js';
+import { resolveSignal } from './utils.js';
 
 @requiredProperties({
   context: PropTypes.object,
 })
-export class LinkedDocPopover extends WithDisposable(LitElement) {
+export class LinkedDocPopover extends SignalWatcher(
+  WithDisposable(LitElement)
+) {
   static override styles = linkedDocPopoverStyles;
 
   private _abort = () => {
@@ -41,6 +48,10 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
 
   private _updateLinkedDocGroup = async () => {
     const query = this._query;
+    if (this._updateLinkedDocGroupAbortController) {
+      this._updateLinkedDocGroupAbortController.abort();
+    }
+    this._updateLinkedDocGroupAbortController = new AbortController();
 
     if (query === null) {
       this.context.close();
@@ -50,9 +61,12 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
       query,
       this._abort,
       this.context.std.host,
-      this.context.inlineEditor
+      this.context.inlineEditor,
+      this._updateLinkedDocGroupAbortController.signal
     );
   };
+
+  private _updateLinkedDocGroupAbortController: AbortController | null = null;
 
   private get _actionGroup() {
     return this._linkedDocGroup.map(group => {
@@ -77,13 +91,13 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
 
   private _getActionItems(group: LinkedMenuGroup) {
     const isExpanded = !!this._expanded.get(group.name);
+    const items = resolveSignal(group.items);
     if (isExpanded) {
-      return group.items;
+      return items;
     }
-    const isOverflow =
-      !!group.maxDisplay && group.items.length > group.maxDisplay;
+    const isOverflow = !!group.maxDisplay && items.length > group.maxDisplay;
     if (isOverflow) {
-      return group.items.slice(0, group.maxDisplay).concat({
+      return items.slice(0, group.maxDisplay).concat({
         key: `${group.name} More`,
         name: group.overflowText || 'more',
         icon: MoreHorizontalIcon,
@@ -93,7 +107,7 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
         },
       });
     }
-    return group.items;
+    return items;
   }
 
   private _isTextOverflowing(element: HTMLElement) {
@@ -104,7 +118,7 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
     super.connectedCallback();
 
     // init
-    void this._updateLinkedDocGroup();
+    this._updateLinkedDocGroup().catch(console.error);
     this._disposables.addFromEvent(this, 'mousedown', e => {
       // Prevent input from losing focus
       e.preventDefault();
@@ -188,7 +202,7 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
   }
 
   override render() {
-    const MAX_HEIGHT = 410;
+    const MAX_HEIGHT = 380;
     const style = this._position
       ? styleMap({
           transform: `translate(${this._position.x}, ${this._position.y})`,
@@ -201,49 +215,51 @@ export class LinkedDocPopover extends WithDisposable(LitElement) {
     // XXX This is a side effect
     let accIdx = 0;
     return html`<div class="linked-doc-popover" style="${style}">
-      ${this._actionGroup.map((group, idx) => {
-        return html`
-          <div class="divider" ?hidden=${idx === 0}></div>
-          <div class="group-title">${group.name}</div>
-          <div class="group" style=${group.styles ?? ''}>
-            ${group.items.map(({ key, name, icon, action }) => {
-              accIdx++;
-              const curIdx = accIdx - 1;
-              const tooltip = this._showTooltip
-                ? html`<affine-tooltip tip-position=${'right'}
-                    >${name}</affine-tooltip
-                  >`
-                : nothing;
-              return html`<icon-button
-                width="280px"
-                height="32px"
-                data-id=${key}
-                text=${name}
-                hover=${this._activatedItemIndex === curIdx}
-                @click=${() => {
-                  action()?.catch(console.error);
-                }}
-                @mousemove=${() => {
-                  // Use `mousemove` instead of `mouseover` to avoid navigate conflict with keyboard
-                  this._activatedItemIndex = curIdx;
-                  // show tooltip whether text length overflows
-                  for (const button of this.iconButtons.values()) {
-                    if (button.dataset.id == key && button.textElement) {
-                      const isOverflowing = this._isTextOverflowing(
-                        button.textElement
-                      );
-                      this._showTooltip = isOverflowing;
-                      break;
+      ${this._actionGroup
+        .filter(group => group.items.length)
+        .map((group, idx) => {
+          return html`
+            <div class="divider" ?hidden=${idx === 0}></div>
+            <div class="group-title">${group.name}</div>
+            <div class="group" style=${group.styles ?? ''}>
+              ${group.items.map(({ key, name, icon, action }) => {
+                accIdx++;
+                const curIdx = accIdx - 1;
+                const tooltip = this._showTooltip
+                  ? html`<affine-tooltip tip-position=${'right'}
+                      >${name}</affine-tooltip
+                    >`
+                  : nothing;
+                return html`<icon-button
+                  width="280px"
+                  height="30px"
+                  data-id=${key}
+                  .text=${name}
+                  hover=${this._activatedItemIndex === curIdx}
+                  @click=${() => {
+                    action()?.catch(console.error);
+                  }}
+                  @mousemove=${() => {
+                    // Use `mousemove` instead of `mouseover` to avoid navigate conflict with keyboard
+                    this._activatedItemIndex = curIdx;
+                    // show tooltip whether text length overflows
+                    for (const button of this.iconButtons.values()) {
+                      if (button.dataset.id == key && button.textElement) {
+                        const isOverflowing = this._isTextOverflowing(
+                          button.textElement
+                        );
+                        this._showTooltip = isOverflowing;
+                        break;
+                      }
                     }
-                  }
-                }}
-              >
-                ${icon} ${tooltip}
-              </icon-button>`;
-            })}
-          </div>
-        `;
-      })}
+                  }}
+                >
+                  ${icon} ${tooltip}
+                </icon-button>`;
+              })}
+            </div>
+          `;
+        })}
     </div>`;
   }
 

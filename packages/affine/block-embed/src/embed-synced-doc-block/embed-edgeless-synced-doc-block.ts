@@ -1,3 +1,5 @@
+import type { AliasInfo } from '@blocksuite/affine-model';
+
 import {
   EMBED_CARD_HEIGHT,
   EMBED_CARD_WIDTH,
@@ -21,8 +23,7 @@ export class EmbedEdgelessSyncedDocBlockComponent extends toEdgelessEmbedBlock(
   EmbedSyncedDocBlockComponent
 ) {
   protected override _renderSyncedView = () => {
-    const syncedDoc = this.syncedDoc;
-    const editorMode = this.syncedDocMode;
+    const { syncedDoc, editorMode } = this;
 
     assertExists(syncedDoc, 'Doc should exist');
 
@@ -114,8 +115,8 @@ export class EmbedEdgelessSyncedDocBlockComponent extends toEdgelessEmbedBlock(
     );
   };
 
-  override convertToCard = () => {
-    const { id, doc, pageId, caption, xywh } = this.model;
+  override convertToCard = (aliasInfo?: AliasInfo) => {
+    const { id, doc, caption, xywh } = this.model;
 
     const edgelessService = this.rootService;
     const style = 'vertical';
@@ -130,7 +131,13 @@ export class EmbedEdgelessSyncedDocBlockComponent extends toEdgelessEmbedBlock(
     // @ts-expect-error TODO: fix after edgeless refactor
     const newId = edgelessService.addBlock(
       'affine:embed-linked-doc',
-      { pageId, xywh: bound.serialize(), style, caption },
+      {
+        xywh: bound.serialize(),
+        style,
+        caption,
+        ...this.referenceInfo,
+        ...aliasInfo,
+      },
       // @ts-expect-error TODO: fix after edgeless refactor
       edgelessService.surface
     );

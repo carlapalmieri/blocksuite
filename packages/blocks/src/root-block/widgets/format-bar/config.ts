@@ -21,6 +21,7 @@ import {
   Heading5Icon,
   Heading6Icon,
   ItalicIcon,
+  LinkedDocIcon,
   LinkIcon,
   MoreVerticalIcon,
   NumberedListIcon,
@@ -31,6 +32,7 @@ import {
 } from '@blocksuite/affine-components/icons';
 import { toast } from '@blocksuite/affine-components/toast';
 import { renderGroups } from '@blocksuite/affine-components/toolbar';
+import { TelemetryProvider } from '@blocksuite/affine-shared/services';
 import { tableViewMeta } from '@blocksuite/data-view/view-presets';
 import { assertExists } from '@blocksuite/global/utils';
 import { Slice } from '@blocksuite/store';
@@ -38,6 +40,12 @@ import { html, type TemplateResult } from 'lit';
 
 import type { AffineFormatBarWidget } from './format-bar.js';
 
+import {
+  convertSelectedBlocksToLinkedDoc,
+  getTitleFromSelectedModels,
+  notifyDocCreated,
+  promptDocTitle,
+} from '../../../_common/utils/render-linked-doc.js';
 import { convertToDatabase } from '../../../database-block/data-source.js';
 import { DATABASE_CONVERT_WHITE_LIST } from '../../../database-block/utils/block-utils.js';
 import { FormatBarContext } from './context.js';
@@ -182,6 +190,61 @@ export function toolbarDefaultConfig(toolbar: AffineFormatBarWidget) {
       },
     })
     .addDivider()
+    .addInlineAction({
+      id: 'convert-to-linked-doc',
+      name: 'Create Linked Doc',
+      icon: LinkedDocIcon,
+      isActive: () => false,
+      action: (chain, formatBar) => {
+        const [_, ctx] = chain
+          .getSelectedModels({
+            types: ['block', 'text'],
+            mode: 'highest',
+          })
+          .draftSelectedModels()
+          .run();
+        const { draftedModels, selectedModels } = ctx;
+        if (!selectedModels?.length || !draftedModels) return;
+
+        const host = formatBar.host;
+        host.selection.clear();
+
+        const doc = host.doc;
+        const autofill = getTitleFromSelectedModels(selectedModels);
+        void promptDocTitle(host, autofill).then(async title => {
+          if (title === null) return;
+          await convertSelectedBlocksToLinkedDoc(
+            host.std,
+            doc,
+            draftedModels,
+            title
+          );
+          notifyDocCreated(host, doc);
+          host.std.getOptional(TelemetryProvider)?.track('DocCreated', {
+            control: 'create linked doc',
+            page: 'doc editor',
+            module: 'format toolbar',
+            type: 'embed-linked-doc',
+          });
+          host.std.getOptional(TelemetryProvider)?.track('LinkedDocCreated', {
+            control: 'create linked doc',
+            page: 'doc editor',
+            module: 'format toolbar',
+            type: 'embed-linked-doc',
+          });
+        });
+      },
+      showWhen: chain => {
+        const [_, ctx] = chain
+          .getSelectedModels({
+            types: ['block', 'text'],
+            mode: 'highest',
+          })
+          .run();
+        const { selectedModels } = ctx;
+        return !!selectedModels && selectedModels.length > 0;
+      },
+    })
     .addBlockTypeSwitch({
       flavour: 'affine:paragraph',
       type: 'text',
@@ -379,12 +442,12 @@ export function toolbarMoreButton(toolbar: AffineFormatBarWidget) {
 
   return html`
     <editor-menu-button
-      .contentPadding=${'8px'}
-      .button=${html`
-        <editor-icon-button aria-label="Más" .tooltip=${'Más'}>
+      .contentPadding="${'8px'}"
+      .button="${html`
+        <editor-icon-button aria-label="More" .tooltip=${'Más'}>
           ${MoreVerticalIcon}
         </editor-icon-button>
-      `}
+      `}"
     >
       <div data-size="large" data-orientation="vertical">${actions}</div>
     </editor-menu-button>

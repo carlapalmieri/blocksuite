@@ -1,30 +1,31 @@
 import type {
   GfxBlockElementModel,
-  GfxContainerElement,
+  GfxCompatibleProps,
   GfxElementGeometry,
+  GfxGroupCompatibleInterface,
   GfxModel,
   PointTestOptions,
 } from '@blocksuite/block-std/gfx';
 
 import {
+  canSafeAddToContainer,
   descendantElementsImpl,
-  gfxContainerSymbol,
+  generateKeyBetweenV2,
+  GfxCompatible,
+  gfxGroupCompatibleSymbol,
   hasDescendantElementImpl,
 } from '@blocksuite/block-std/gfx';
-import { Bound, type SerializedXYWH } from '@blocksuite/global/utils';
+import { Bound } from '@blocksuite/global/utils';
 import { BlockModel, defineBlockSchema, type Text } from '@blocksuite/store';
 
 import type { Color } from '../../consts/index.js';
 
-import { GfxCompatible } from '../../utils/index.js';
-
 export type FrameBlockProps = {
   title: Text;
   background: Color;
-  xywh: SerializedXYWH;
-  index: string;
   childElementIds?: Record<string, boolean>;
-};
+  presentationIndex?: string;
+} & GfxCompatibleProps;
 
 export const FrameBlockSchema = defineBlockSchema({
   flavour: 'affine:frame',
@@ -34,6 +35,8 @@ export const FrameBlockSchema = defineBlockSchema({
     xywh: `[0,0,100,100]`,
     index: 'a0',
     childElementIds: Object.create(null),
+    presentationIndex: generateKeyBetweenV2(null, null),
+    lockedBySelf: false,
   }),
   metadata: {
     version: 1,
@@ -48,9 +51,9 @@ export const FrameBlockSchema = defineBlockSchema({
 
 export class FrameBlockModel
   extends GfxCompatible<FrameBlockProps>(BlockModel)
-  implements GfxElementGeometry, GfxContainerElement
+  implements GfxElementGeometry, GfxGroupCompatibleInterface
 {
-  [gfxContainerSymbol] = true as const;
+  [gfxGroupCompatibleSymbol] = true as const;
 
   get childElements() {
     if (!this.surface) return [];
@@ -77,13 +80,17 @@ export class FrameBlockModel
   }
 
   addChild(element: GfxModel) {
+    if (!canSafeAddToContainer(this, element)) return;
+
     this.doc.transact(() => {
       this.childElementIds = { ...this.childElementIds, [element.id]: true };
     });
   }
 
-  addChildren(elements: (GfxModel | string)[]): void {
-    elements = [...new Set(elements)];
+  addChildren(elements: GfxModel[]): void {
+    elements = [...new Set(elements)].filter(element =>
+      canSafeAddToContainer(this, element)
+    );
 
     const newChildren: Record<string, boolean> = {};
     for (const element of elements) {

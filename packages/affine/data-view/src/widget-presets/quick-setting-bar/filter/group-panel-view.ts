@@ -264,43 +264,50 @@ export class FilterGroupView extends SignalWatcher(ShadowlessElement) {
   private _clickConditionOps(target: HTMLElement, i: number) {
     const filter = this.filterGroup.value.conditions[i];
     popFilterableSimpleMenu(popupTargetFromElement(target), [
-      menu.action({
-        name:
-          filter.type === 'filter'
-            ? 'Convertir en grupo'
-            : 'Encapsular en grupo',
-        prefix: ConvertIcon(),
-        onHover: hover => {
-          this.containerClass = hover
-            ? { index: i, class: 'hover-style' }
-            : undefined;
-        },
-        hide: () => this.depth + getDepth(filter) > 3,
-        select: () => {
-          this.onChange({
-            type: 'group',
-            op: 'and',
-            conditions: [this.filterGroup.value],
-          });
-        },
-      }),
-      menu.action({
-        name: 'Duplicar',
-        prefix: DuplicateIcon(),
-        onHover: hover => {
-          this.containerClass = hover
-            ? { index: i, class: 'hover-style' }
-            : undefined;
-        },
-        select: () => {
-          const conditions = [...this.filterGroup.value.conditions];
-          conditions.splice(
-            i + 1,
-            0,
-            JSON.parse(JSON.stringify(conditions[i]))
-          );
-          this.onChange({ ...this.filterGroup.value, conditions: conditions });
-        },
+      menu.group({
+        items: [
+          menu.action({
+            name:
+              filter.type === 'filter'
+                ? 'Convertir en grupo'
+                : 'Encapsular en grupo',
+            prefix: ConvertIcon(),
+            onHover: hover => {
+              this.containerClass = hover
+                ? { index: i, class: 'hover-style' }
+                : undefined;
+            },
+            hide: () => this.depth + getDepth(filter) > 3,
+            select: () => {
+              this.onChange({
+                type: 'group',
+                op: 'and',
+                conditions: [this.filterGroup.value],
+              });
+            },
+          }),
+          menu.action({
+            name: 'Duplicar',
+            prefix: DuplicateIcon(),
+            onHover: hover => {
+              this.containerClass = hover
+                ? { index: i, class: 'hover-style' }
+                : undefined;
+            },
+            select: () => {
+              const conditions = [...this.filterGroup.value.conditions];
+              conditions.splice(
+                i + 1,
+                0,
+                JSON.parse(JSON.stringify(conditions[i]))
+              );
+              this.onChange({
+                ...this.filterGroup.value,
+                conditions: conditions,
+              });
+            },
+          }),
+        ],
       }),
       menu.group({
         name: '',

@@ -8,7 +8,7 @@ import {
 import { EMBED_CARD_HEIGHT } from '@blocksuite/affine-shared/consts';
 import { matchFlavours, SpecProvider } from '@blocksuite/affine-shared/utils';
 import { BlockStdScope } from '@blocksuite/block-std';
-import { assertExists, Bound, getCommonBound } from '@blocksuite/global/utils';
+import { assertExists } from '@blocksuite/global/utils';
 import {
   type BlockModel,
   BlockViewType,
@@ -29,7 +29,14 @@ export function renderLinkedDocInCard(
     `Trying to load page ${card.model.pageId} in linked page block, but the page is not found.`
   );
 
-  renderSurfaceRef(card);
+  if ('bannerContainer' in card) {
+    if (card.editorMode === 'page') {
+      renderPageAsBanner(card).catch(e => {
+        console.error(e);
+        card.isError = true;
+      });
+    }
+  }
 
   renderNoteContent(card).catch(e => {
     console.error(e);
@@ -37,48 +44,7 @@ export function renderLinkedDocInCard(
   });
 }
 
-function renderSurfaceRef(
-  card: EmbedLinkedDocBlockComponent | EmbedSyncedDocCard
-) {
-  card.isBannerEmpty = true;
-
-  const surfaceRefService = card.std.getService('affine:surface-ref');
-  assertExists(surfaceRefService, `Surface ref service not found.`);
-  card.surfaceRefService = surfaceRefService;
-
-  card.cleanUpSurfaceRefRenderer();
-
-  const linkedDoc = card.linkedDoc;
-  assertExists(
-    linkedDoc,
-    `Trying to load page ${card.model.pageId} in linked page block, but the page is not found.`
-  );
-
-  card.surfaceRefRenderer = card.surfaceRefService.getRenderer(
-    card,
-    card.model.id,
-    linkedDoc
-  );
-
-  card.surfaceRefRenderer.slots.mounted.on(() => {
-    if (card.editorMode === 'edgeless') {
-      renderEdgelessAbstract(card).catch(e => {
-        console.error(e);
-        card.isError = true;
-      });
-    } else {
-      renderPageAbstract(card).catch(e => {
-        console.error(e);
-        card.isError = true;
-      });
-    }
-  });
-  card.surfaceRefRenderer.mount();
-}
-
-async function renderPageAbstract(
-  card: EmbedLinkedDocBlockComponent | EmbedSyncedDocCard
-) {
+async function renderPageAsBanner(card: EmbedSyncedDocCard) {
   const linkedDoc = card.linkedDoc;
   assertExists(
     linkedDoc,
@@ -96,15 +62,15 @@ async function renderPageAbstract(
   )[0];
 
   if (target) {
-    await renderImageAbstract(card, target);
+    await renderImageAsBanner(card, target);
     return;
   }
 
   card.isBannerEmpty = true;
 }
 
-async function renderImageAbstract(
-  card: EmbedLinkedDocBlockComponent | EmbedSyncedDocCard,
+async function renderImageAsBanner(
+  card: EmbedSyncedDocCard,
   image: BlockModel
 ) {
   const sourceId = (image as ImageBlockModel).sourceId;
@@ -125,7 +91,7 @@ async function renderImageAbstract(
 }
 
 async function addCover(
-  card: EmbedLinkedDocBlockComponent | EmbedSyncedDocCard,
+  card: EmbedSyncedDocCard,
   cover: HTMLElement | TemplateResult<1>
 ) {
   const coverContainer = await card.bannerContainer;
@@ -138,31 +104,6 @@ async function addCover(
     coverContainer.append(cover);
   } else {
     render(cover, coverContainer);
-  }
-}
-
-async function renderEdgelessAbstract(
-  card: EmbedLinkedDocBlockComponent | EmbedSyncedDocCard
-) {
-  const surfaceRefRenderer = card.surfaceRefRenderer;
-  assertExists(surfaceRefRenderer, 'Surface ref renderer is not found.');
-
-  const renderer = surfaceRefRenderer.surfaceRenderer;
-  const container = document.createElement('div');
-  await addCover(card, container);
-  renderer.attach(container);
-
-  // TODO: we may also need to get bounds of surface block's children
-  const bounds = Array.from(
-    surfaceRefRenderer.surfaceModel?.elementModels ?? []
-    // @ts-expect-error TODO: fix after edgeless refactor
-  ).map(element => Bound.deserialize(element.xywh));
-  const bound = getCommonBound(bounds);
-  if (bound) {
-    renderer.viewport.onResize();
-    renderer.viewport.setViewportByBound(bound);
-  } else {
-    card.isBannerEmpty = true;
   }
 }
 
@@ -204,6 +145,11 @@ async function renderNoteContent(
   card.isNoteContentEmpty = false;
 
   const noteContainer = await card.noteContainer;
+
+  if (!noteContainer) {
+    return;
+  }
+
   while (noteContainer.firstChild) {
     noteContainer.firstChild.remove();
   }
@@ -258,13 +204,10 @@ async function renderNoteContent(
 }
 
 function filterTextModel(model: BlockModel) {
-  if (matchFlavours(model, ['affine:divider'])) {
-    return true;
+  if (matchFlavours(model, ['affine:paragraph', 'affine:list'])) {
+    return !!model.text?.toString().length;
   }
-  if (!matchFlavours(model, ['affine:paragraph', 'affine:list'])) {
-    return false;
-  }
-  return !!model.text?.toString().length;
+  return false;
 }
 
 export function getNotesFromDoc(doc: Doc) {
@@ -313,4 +256,42 @@ export function isEmptyNote(note: BlockModel) {
 function getSurfaceBlock(doc: Doc) {
   const blocks = doc.getBlocksByFlavour('affine:surface');
   return blocks.length !== 0 ? (blocks[0].model as SurfaceBlockModel) : null;
+}
+
+/**
+ * Gets the document content with a max length.
+ */
+export function getDocContentWithMaxLength(doc: Doc, maxlength = 500) {
+  const notes = getNotesFromDoc(doc);
+  if (!notes) return;
+
+  const noteChildren = notes.flatMap(note =>
+    note.children.filter(model => filterTextModel(model))
+  );
+  if (!noteChildren.length) return;
+
+  let count = 0;
+  let reached = false;
+  const texts = [];
+
+  for (const model of noteChildren) {
+    let t = model.text?.toString();
+    if (t?.length) {
+      const c: number = count + Math.max(0, texts.length - 1);
+
+      if (t.length + c > maxlength) {
+        t = t.substring(0, maxlength - c);
+        reached = true;
+      }
+
+      texts.push(t);
+      count += t.length;
+
+      if (reached) {
+        break;
+      }
+    }
+  }
+
+  return texts.join('\n');
 }

@@ -2,6 +2,7 @@ import {
   EMBED_CARD_HEIGHT,
   EMBED_CARD_WIDTH,
 } from '@blocksuite/affine-shared/consts';
+import { cloneReferenceInfoWithoutAliases } from '@blocksuite/affine-shared/utils';
 import { Bound } from '@blocksuite/global/utils';
 
 import { toEdgelessEmbedBlock } from '../common/to-edgeless-embed-block.js';
@@ -11,7 +12,7 @@ export class EmbedEdgelessLinkedDocBlockComponent extends toEdgelessEmbedBlock(
   EmbedLinkedDocBlockComponent
 ) {
   override convertToEmbed = () => {
-    const { id, doc, pageId, caption, xywh } = this.model;
+    const { id, doc, caption, xywh } = this.model;
 
     // synced doc entry controlled by awareness flag
     const isSyncedDocEnabled = doc.awarenessStore.getFlag(
@@ -35,7 +36,11 @@ export class EmbedEdgelessLinkedDocBlockComponent extends toEdgelessEmbedBlock(
     // @ts-expect-error TODO: fix after edgeless refactor
     const newId = edgelessService.addBlock(
       'affine:embed-synced-doc',
-      { pageId, xywh: bound.serialize(), caption },
+      {
+        xywh: bound.serialize(),
+        caption,
+        ...cloneReferenceInfoWithoutAliases(this.referenceInfo$.peek()),
+      },
       // @ts-expect-error TODO: fix after edgeless refactor
       edgelessService.surface
     );
@@ -60,7 +65,7 @@ export class EmbedEdgelessLinkedDocBlockComponent extends toEdgelessEmbedBlock(
 
   protected override _handleClick(evt: MouseEvent): void {
     if (this.config.handleClick) {
-      this.config.handleClick(evt, this.host, this.referenceInfo);
+      this.config.handleClick(evt, this.host, this.referenceInfo$.peek());
       return;
     }
   }

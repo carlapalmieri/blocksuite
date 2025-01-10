@@ -4,9 +4,10 @@ import { computed, type ReadonlySignal, signal } from '@preact/signals-core';
 
 import type { DataViewContextKey } from '../data-source/context.js';
 import type { Variable } from '../expression/types.js';
-import type { FilterGroup } from '../filter/types.js';
+import type { DVJSON } from '../index.js';
 import type { TypeInstance } from '../logical/type.js';
 import type { PropertyMetaConfig } from '../property/property-config.js';
+import type { TraitKey } from '../traits/key.js';
 import type { DatabaseFlags } from '../types.js';
 import type { UniComponent } from '../utils/uni-component/index.js';
 import type { DataViewDataType, ViewMeta } from '../view/data-view.js';
@@ -22,9 +23,7 @@ export type MainProperties = {
   imageColumn?: string;
 };
 
-export interface SingleView<
-  ViewData extends DataViewDataType = DataViewDataType,
-> {
+export interface SingleView {
   readonly id: string;
   readonly type: string;
   readonly manager: ViewManager;
@@ -34,10 +33,6 @@ export interface SingleView<
   delete(): void;
 
   duplicate(): void;
-
-  data$: ReadonlySignal<ViewData | undefined>;
-
-  dataUpdate(updater: (viewData: ViewData) => Partial<ViewData>): void;
 
   readonly name$: ReadonlySignal<string>;
 
@@ -49,10 +44,6 @@ export interface SingleView<
   readonly detailProperties$: ReadonlySignal<string[]>;
   readonly rows$: ReadonlySignal<string[]>;
 
-  readonly filter$: ReadonlySignal<FilterGroup>;
-
-  filterSet(filter: FilterGroup): void;
-
   readonly vars$: ReadonlySignal<Variable[]>;
 
   readonly featureFlags$: ReadonlySignal<DatabaseFlags>;
@@ -63,9 +54,9 @@ export interface SingleView<
 
   cellJsonValueGet(rowId: string, propertyId: string): unknown;
 
-  cellStringValueGet(rowId: string, propertyId: string): string | undefined;
+  cellJsonValueSet(rowId: string, propertyId: string, value: DVJSON): void;
 
-  cellRenderValueSet(rowId: string, propertyId: string, value: unknown): void;
+  cellStringValueGet(rowId: string, propertyId: string): string | undefined;
 
   cellGet(rowId: string, propertyId: string): Cell;
 
@@ -133,9 +124,11 @@ export interface SingleView<
 
   propertyMove(propertyId: string, position: InsertToPosition): void;
 
-  IconGet(type: string): UniComponent | undefined;
+  propertyIconGet(type: string): UniComponent | undefined;
 
   contextGet<T>(key: DataViewContextKey<T>): T;
+
+  traitGet<T>(key: TraitKey<T>): T | undefined;
 
   mainProperties$: ReadonlySignal<MainProperties>;
 
@@ -146,17 +139,17 @@ export interface SingleView<
 
 export abstract class SingleViewBase<
   ViewData extends DataViewDataType = DataViewDataType,
-> implements SingleView<ViewData>
+> implements SingleView
 {
   private searchString = signal('');
+
+  private traitMap = new Map<symbol, unknown>();
 
   data$ = computed(() => {
     return this.dataSource.viewDataGet(this.id) as ViewData | undefined;
   });
 
   abstract detailProperties$: ReadonlySignal<string[]>;
-
-  abstract filter$: ReadonlySignal<FilterGroup>;
 
   protected lockRows$ = signal(false);
 
@@ -235,7 +228,7 @@ export abstract class SingleViewBase<
     public id: string
   ) {}
 
-  private filterRowsMapping(rows: string[], searchString: string): string[] {
+  private searchRowsMapping(rows: string[], searchString: string): string[] {
     return rows.filter(id => {
       if (searchString) {
         const containsSearchString = this.propertyIds$.value.some(
@@ -269,8 +262,21 @@ export abstract class SingleViewBase<
     });
   }
 
-  cellRenderValueSet(rowId: string, propertyId: string, value: unknown): void {
-    this.dataSource.cellValueChange(rowId, propertyId, value);
+  cellJsonValueSet(rowId: string, propertyId: string, value: DVJSON): void {
+    const type = this.propertyTypeGet(propertyId);
+    if (!type) {
+      return;
+    }
+    const fromJson = this.dataSource.propertyMetaGet(type).config.cellFromJson;
+    this.dataSource.cellValueChange(
+      rowId,
+      propertyId,
+      fromJson({
+        value,
+        data: this.propertyDataGet(propertyId),
+        dataSource: this.dataSource,
+      })
+    );
   }
 
   cellStringValueGet(rowId: string, propertyId: string): string | undefined {
@@ -320,12 +326,6 @@ export abstract class SingleViewBase<
 
   duplicate(): void {
     this.manager.viewDuplicate(this.id);
-  }
-
-  abstract filterSet(filter: FilterGroup): void;
-
-  IconGet(type: string): UniComponent | undefined {
-    return this.dataSource.propertyMetaGet(type).renderer.icon;
   }
 
   abstract isShow(rowId: string): boolean;
@@ -384,6 +384,10 @@ export abstract class SingleViewBase<
   abstract propertyHideGet(propertyId: string): boolean;
 
   abstract propertyHideSet(propertyId: string, hide: boolean): void;
+
+  propertyIconGet(type: string): UniComponent | undefined {
+    return this.dataSource.propertyMetaGet(type).renderer.icon;
+  }
 
   propertyIdGetByIndex(index: number): string {
     return this.propertyIds$.value[index];
@@ -466,10 +470,19 @@ export abstract class SingleViewBase<
   abstract rowPrevGet(rowId: string): string;
 
   protected rowsMapping(rows: string[]): string[] {
-    return this.filterRowsMapping(rows, this.searchString.value);
+    return this.searchRowsMapping(rows, this.searchString.value);
   }
 
   setSearch(str: string): void {
     this.searchString.value = str;
+  }
+
+  traitGet<T>(key: TraitKey<T>): T | undefined {
+    return this.traitMap.get(key.key) as T | undefined;
+  }
+
+  protected traitSet<T>(key: TraitKey<T>, value: T): T {
+    this.traitMap.set(key.key, value);
+    return value;
   }
 }

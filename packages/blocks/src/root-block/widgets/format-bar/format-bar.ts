@@ -1,7 +1,5 @@
-import type {
-  AffineTextAttributes,
-  RichText,
-} from '@blocksuite/affine-components/rich-text';
+import type { RichText } from '@blocksuite/affine-components/rich-text';
+import type { AffineTextAttributes } from '@blocksuite/affine-shared/types';
 import type {
   BaseSelection,
   BlockComponent,
@@ -16,7 +14,11 @@ import {
 } from '@blocksuite/affine-components/toolbar';
 import { matchFlavours } from '@blocksuite/affine-shared/utils';
 import { WidgetComponent } from '@blocksuite/block-std';
-import { assertExists, DisposableGroup } from '@blocksuite/global/utils';
+import {
+  assertExists,
+  DisposableGroup,
+  nextTick,
+} from '@blocksuite/global/utils';
 import {
   autoUpdate,
   computePosition,
@@ -146,7 +148,9 @@ export class AffineFormatBarWidget extends WidgetComponent {
             }
           }
 
-          await this.host.getUpdateComplete();
+          // We cannot use `host.getUpdateComplete()` here
+          // because it would cause excessive DOM queries, leading to UI jamming.
+          await nextTick();
 
           if (textSelection) {
             const block = this.host.view.getBlock(textSelection.blockId);
@@ -178,7 +182,7 @@ export class AffineFormatBarWidget extends WidgetComponent {
             return;
           }
 
-          if (blockSelections.length > 0) {
+          if (this.block && blockSelections.length > 0) {
             this._displayType = 'block';
             const selectedBlocks = blockSelections
               .map(selection => {

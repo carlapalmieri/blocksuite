@@ -1,5 +1,6 @@
 import type { Text } from '@blocksuite/store';
 
+import { stopPropagation } from '@blocksuite/affine-shared/utils';
 import { ShadowlessElement } from '@blocksuite/block-std';
 import { WithDisposable } from '@blocksuite/global/utils';
 import { css, html } from 'lit';
@@ -44,6 +45,7 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
     .affine-database-title .text {
       user-select: none;
       opacity: 0;
+      white-space: pre-wrap;
     }
 
     .affine-database-title[data-title-focus='false'] textarea {
@@ -53,8 +55,8 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
     .affine-database-title[data-title-focus='false'] .text {
       text-overflow: ellipsis;
       overflow: hidden;
-      white-space: nowrap;
       opacity: 1;
+      white-space: pre;
     }
 
     .affine-database-title [data-title-empty='true']::before {
@@ -68,6 +70,10 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
       color: var(--affine-placeholder-color);
     }
   `;
+
+  private compositionEnd = () => {
+    this.titleText.replace(0, this.titleText.length, this.input.value);
+  };
 
   private onBlur = () => {
     this.isFocus = false;
@@ -140,8 +146,11 @@ export class DatabaseTitle extends WithDisposable(ShadowlessElement) {
         .disabled="${this.readonly}"
         @input="${this.onInput}"
         @keydown="${this.onKeyDown}"
+        @copy="${stopPropagation}"
+        @paste="${stopPropagation}"
         @focus="${this.onFocus}"
         @blur="${this.onBlur}"
+        @compositionend="${this.compositionEnd}"
         data-block-is-database-title="true"
         title="${this.titleText.toString()}"
       ></textarea>

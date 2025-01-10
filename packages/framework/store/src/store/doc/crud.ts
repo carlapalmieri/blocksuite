@@ -67,34 +67,67 @@ export class DocCRUD {
 
     this._schema.validate(flavour, parentFlavour);
 
-    const yBlock = new Y.Map() as YBlock;
-    this._yBlocks.set(id, yBlock);
+    const hasBlock = this._yBlocks.has(id);
 
-    const version = schema.version;
-    const children = (
-      initialProps.children as undefined | (string | BlockModel)[]
-    )?.map(child => (typeof child === 'string' ? child : child.id));
+    if (hasBlock) {
+      const yBlock = this._yBlocks.get(id);
+      const existedParent = this.getParent(id);
+      if (yBlock && existedParent) {
+        const yParent = this._yBlocks.get(existedParent) as YBlock;
+        const yParentChildren = yParent.get('sys:children') as Y.Array<string>;
+        const index = yParentChildren.toArray().indexOf(id);
+        yParentChildren.delete(index, 1);
+        if (
+          parentIndex != null &&
+          index != null &&
+          existedParent === parent &&
+          index < parentIndex
+        ) {
+          parentIndex--;
+        }
+        const props = {
+          ...initialProps,
+        };
+        delete props.id;
+        delete props.flavour;
+        delete props.children;
 
-    yBlock.set('sys:id', id);
-    yBlock.set('sys:flavour', flavour);
-    yBlock.set('sys:version', version);
-    yBlock.set('sys:children', Y.Array.from(children ?? []));
+        Object.entries(props).forEach(([key, value]) => {
+          if (value === undefined) return;
 
-    const defaultProps = schema.model.props?.(internalPrimitives) ?? {};
-    const props = {
-      ...defaultProps,
-      ...initialProps,
-    };
+          yBlock.set(`prop:${key}`, native2Y(value));
+        });
+      }
+    } else {
+      const yBlock = new Y.Map() as YBlock;
+      this._yBlocks.set(id, yBlock);
 
-    delete props.id;
-    delete props.flavour;
-    delete props.children;
+      const version = schema.version;
+      const children = (
+        initialProps.children as undefined | (string | BlockModel)[]
+      )?.map(child => (typeof child === 'string' ? child : child.id));
 
-    Object.entries(props).forEach(([key, value]) => {
-      if (value === undefined) return;
+      yBlock.set('sys:id', id);
+      yBlock.set('sys:flavour', flavour);
+      yBlock.set('sys:version', version);
+      yBlock.set('sys:children', Y.Array.from(children ?? []));
 
-      yBlock.set(`prop:${key}`, native2Y(value));
-    });
+      const defaultProps = schema.model.props?.(internalPrimitives) ?? {};
+      const props = {
+        ...defaultProps,
+        ...initialProps,
+      };
+
+      delete props.id;
+      delete props.flavour;
+      delete props.children;
+
+      Object.entries(props).forEach(([key, value]) => {
+        if (value === undefined) return;
+
+        yBlock.set(`prop:${key}`, native2Y(value));
+      });
+    }
 
     const parentId =
       parent ?? (schema.model.role === 'root' ? null : this.root);
@@ -105,7 +138,12 @@ export class DocCRUD {
     if (!yParent) return;
 
     const yParentChildren = yParent.get('sys:children') as Y.Array<string>;
-    const index = parentIndex ?? yParentChildren.length;
+    const index =
+      parentIndex != null
+        ? parentIndex > yParentChildren.length
+          ? yParentChildren.length
+          : parentIndex
+        : yParentChildren.length;
     yParentChildren.insert(index, [id]);
   }
 

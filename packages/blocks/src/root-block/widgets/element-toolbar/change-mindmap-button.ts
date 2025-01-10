@@ -276,7 +276,7 @@ export function renderMindmapButton(
 
     const group = edgeless.service.surface.getGroup(e.id);
 
-    if (group?.type === 'mindmap') {
+    if (group && 'type' in group && group.type === 'mindmap') {
       mindmaps.push(group as MindmapElementModel);
     }
   });
@@ -293,12 +293,4 @@ export function renderMindmapButton(
     >
     </edgeless-change-mindmap-button>
   `;
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'edgeless-change-mindmap-style-panel': EdgelessChangeMindmapStylePanel;
-    'edgeless-change-mindmap-layout-panel': EdgelessChangeMindmapLayoutPanel;
-    'edgeless-change-mindmap-button': EdgelessChangeMindmapButton;
-  }
 }

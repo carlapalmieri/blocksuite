@@ -8,10 +8,14 @@ import {
   type IBound,
   last,
 } from '@blocksuite/global/utils';
+import { Signal } from '@preact/signals-core';
 
 import type { BlockStdScope } from '../scope/block-std-scope.js';
 import type { BlockComponent } from '../view/index.js';
-import type { SurfaceBlockModel } from './surface/surface-model.js';
+import type { CursorType } from './cursor.js';
+import type { PointTestOptions } from './model/base.js';
+import type { GfxModel } from './model/model.js';
+import type { SurfaceBlockModel } from './model/surface/surface-model.js';
 
 import { LifeCycleWatcher } from '../extension/lifecycle-watcher.js';
 import { onSurfaceAdded } from '../utils/gfx.js';
@@ -19,16 +23,15 @@ import {
   GfxClassExtenderIdentifier,
   GfxExtensionIdentifier,
 } from './extension.js';
-import { GfxBlockElementModel, type GfxModel } from './gfx-block-model.js';
 import { GridManager } from './grid.js';
 import { gfxControllerKey } from './identifiers.js';
 import { KeyboardController } from './keyboard.js';
 import { LayerManager } from './layer.js';
+import { GfxBlockElementModel } from './model/gfx-block-model.js';
 import {
   GfxGroupLikeElementModel,
   GfxPrimitiveElementModel,
-  type PointTestOptions,
-} from './surface/element-model.js';
+} from './model/surface/element-model.js';
 import { Viewport } from './viewport.js';
 
 export class GfxController extends LifeCycleWatcher {
@@ -37,6 +40,8 @@ export class GfxController extends LifeCycleWatcher {
   private _disposables: DisposableGroup = new DisposableGroup();
 
   private _surface: SurfaceBlockModel | null = null;
+
+  readonly cursor$ = new Signal<CursorType>();
 
   readonly grid: GridManager;
 
@@ -206,7 +211,7 @@ export class GfxController extends LifeCycleWatcher {
     } else if (picked) {
       let index = results.length - 1;
 
-      while (picked.group !== null) {
+      while (picked.group instanceof GfxGroupLikeElementModel) {
         if (--index < 0) {
           picked = null;
           break;
@@ -270,7 +275,7 @@ export class GfxController extends LifeCycleWatcher {
   }
 
   override mounted() {
-    this.viewport.setViewportElm(this.std.host);
+    this.viewport.setViewportElement(this.std.host);
     this.std.provider.getAll(GfxExtensionIdentifier).forEach(ext => {
       ext.mounted();
     });
@@ -280,6 +285,7 @@ export class GfxController extends LifeCycleWatcher {
     this.std.provider.getAll(GfxExtensionIdentifier).forEach(ext => {
       ext.unmounted();
     });
+    this.viewport.clearViewportElement();
     this._disposables.dispose();
   }
 

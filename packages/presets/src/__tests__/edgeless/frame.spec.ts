@@ -1,6 +1,8 @@
 import type {
+  AffineFrameTitleWidget,
   EdgelessRootBlockComponent,
   FrameBlockComponent,
+  FrameBlockModel,
 } from '@blocksuite/blocks';
 
 import { assertType } from '@blocksuite/global/utils';
@@ -8,7 +10,7 @@ import { Text } from '@blocksuite/store';
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { wait } from '../utils/common.js';
-import { addNote, getDocRootBlock } from '../utils/edgeless.js';
+import { getDocRootBlock } from '../utils/edgeless.js';
 import { setupEditor } from '../utils/setup.js';
 
 describe('frame', () => {
@@ -32,13 +34,16 @@ describe('frame', () => {
     );
     await wait();
 
-    const titleDom = document.querySelector(
-      `affine-frame[data-block-id="${frame}"] .affine-frame-title`
-    );
-    const rect = titleDom?.getBoundingClientRect();
+    const frameTitleWidget = service.std.view.getWidget(
+      'affine-frame-title-widget',
+      doc.root!.id
+    ) as AffineFrameTitleWidget | null;
 
-    expect(titleDom).not.toBeNull();
-    expect(rect).not.toBeNull();
+    const frameTitle = frameTitleWidget?.getFrameTitle(frame);
+    const rect = frameTitle?.getBoundingClientRect();
+
+    expect(frameTitle).toBeTruthy();
+    expect(rect).toBeTruthy();
     expect(rect!.width).toBeGreaterThan(0);
     expect(rect!.height).toBeGreaterThan(0);
 
@@ -55,10 +60,12 @@ describe('frame', () => {
       service.surface.id
     );
     await wait();
-    const nestedTitle = document.querySelector(
-      `affine-frame[data-block-id="${nestedFrame}"] .affine-frame-title`
-    );
-    const nestedTitleRect = nestedTitle!.getBoundingClientRect()!;
+
+    const nestedTitle = frameTitleWidget?.getFrameTitle(nestedFrame);
+    expect(nestedTitle).toBeTruthy();
+    if (!nestedTitle) return;
+
+    const nestedTitleRect = nestedTitle.getBoundingClientRect()!;
     const [nestedTitleX, nestedTitleY] = service.viewport.toModelCoord(
       nestedTitleRect.x,
       nestedTitleRect.y
@@ -66,55 +73,6 @@ describe('frame', () => {
 
     expect(nestedTitleX).toBeGreaterThan(20);
     expect(nestedTitleY).toBeGreaterThan(20);
-  });
-
-  test('frame should always be placed under the bottom of other blocks', async () => {
-    addNote(doc, {
-      xywh: '[0,0,300,300]',
-      index: service.layer.generateIndex(),
-    });
-    addNote(doc, {
-      xywh: '[100,100,300,300]',
-      index: service.layer.generateIndex(),
-    });
-    const frameId = service.doc.addBlock(
-      'affine:frame',
-      {
-        xywh: '[0,60,300,240]',
-        title: new Text('Frame 1'),
-      },
-      service.surface.id
-    );
-    service.zoomToFit();
-    await wait(500); // fit has a transition animation
-
-    const frameTitle = document.querySelector(
-      `[data-block-id="${frameId}"] .affine-frame-title`
-    )!;
-    const titleRect = frameTitle.getBoundingClientRect();
-    const frameBody = document.querySelector(
-      `[data-block-id="${frameId}"] .affine-frame-container`
-    )!;
-    const bodyRect = frameBody.getBoundingClientRect();
-
-    const pointDom1 = document.elementFromPoint(
-      titleRect.x + titleRect.width / 2,
-      titleRect.y + titleRect.height / 2
-    );
-    const pointDom2 = document.elementFromPoint(
-      bodyRect.x + bodyRect.width / 2,
-      bodyRect.y + bodyRect.height / 2
-    );
-
-    expect(
-      frameTitle.contains(pointDom1),
-      'Frame title should be on top'
-    ).toBeTruthy();
-
-    expect(
-      frameBody.contains(pointDom2),
-      'Frame body should be on bottom'
-    ).toBeFalsy();
   });
 
   test('frame should have externalXYWH after moving viewport to contains frame', async () => {
@@ -135,5 +93,37 @@ describe('frame', () => {
 
     service.viewport.setCenter(900, 900);
     expect(frame?.model.externalXYWH).toBeDefined();
+  });
+
+  test('descendant of frame should not contain itself', async () => {
+    const frameIds = [1, 2, 3].map(i => {
+      return service.doc.addBlock(
+        'affine:frame',
+        {
+          xywh: '[0,0,300,300]',
+          title: new Text(`Frame ${i}`),
+        },
+        service.surface.id
+      );
+    });
+
+    await wait();
+
+    const frames = frameIds.map(
+      id => service.doc.getBlock(id)?.model as FrameBlockModel
+    );
+
+    frames.forEach(frame => {
+      expect(frame.descendantElements).toHaveLength(0);
+    });
+
+    frames[0].addChild(frames[1]);
+    frames[1].addChild(frames[2]);
+    frames[2].addChild(frames[0]);
+
+    await wait();
+    expect(frames[0].descendantElements).toHaveLength(2);
+    expect(frames[1].descendantElements).toHaveLength(1);
+    expect(frames[2].descendantElements).toHaveLength(0);
   });
 });

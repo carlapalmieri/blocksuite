@@ -2,21 +2,20 @@ import type { BlockModel, BlockProps } from '@blocksuite/store';
 
 import {
   ConnectorElementModel,
+  MindmapElementModel,
   NOTE_MIN_HEIGHT,
   NOTE_MIN_WIDTH,
   NoteBlockModel,
 } from '@blocksuite/affine-model';
 import {
-  type GfxContainerElement,
+  type GfxGroupCompatibleInterface,
   type GfxModel,
-  isGfxContainerElm,
+  isGfxGroupCompatibleModel,
 } from '@blocksuite/block-std/gfx';
 import { Bound, clamp } from '@blocksuite/global/utils';
 
-import { LayoutableMindmapElementModel } from './mindmap/utils.js';
-
 function updatChildElementsXYWH(
-  container: GfxContainerElement,
+  container: GfxGroupCompatibleInterface,
   targetBound: Bound,
   updateElement: (id: string, props: Record<string, unknown>) => void,
   updateBlock: (
@@ -61,7 +60,7 @@ export function updateXYWH(
     updateElement(ele.id, {
       xywh: bound.serialize(),
     });
-  } else if (ele instanceof LayoutableMindmapElementModel) {
+  } else if (ele instanceof MindmapElementModel) {
     const rootId = ele.tree.id;
     const rootEle = ele.childElements.find(child => child.id === rootId);
     if (rootEle) {
@@ -71,7 +70,7 @@ export function updateXYWH(
       updateXYWH(rootEle, rootBound, updateElement, updateBlock);
     }
     ele.layout();
-  } else if (isGfxContainerElm(ele)) {
+  } else if (isGfxGroupCompatibleModel(ele)) {
     updatChildElementsXYWH(ele, bound, updateElement, updateBlock);
     updateElement(ele.id, {
       xywh: bound.serialize(),

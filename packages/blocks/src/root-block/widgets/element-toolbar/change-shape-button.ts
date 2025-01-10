@@ -20,6 +20,7 @@ import {
   getShapeRadius,
   getShapeType,
   LineWidth,
+  MindmapElementModel,
   SHAPE_FILL_COLORS,
   SHAPE_STROKE_COLORS,
   ShapeStyle,
@@ -495,18 +496,12 @@ export class EdgelessChangeShapeButton extends WithDisposable(LitElement) {
   accessor fillColorButton!: EdgelessColorPickerButton;
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'edgeless-change-shape-button': EdgelessChangeShapeButton;
-  }
-}
-
 export function renderChangeShapeButton(
   edgeless: EdgelessRootBlockComponent,
   elements?: ShapeElementModel[]
 ) {
   if (!elements?.length) return nothing;
-  if (elements.some(e => edgeless.service.surface.isInMindmap(e.id)))
+  if (elements.some(e => e.group instanceof MindmapElementModel))
     return nothing;
 
   return html`
