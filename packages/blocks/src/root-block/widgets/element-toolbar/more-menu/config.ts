@@ -8,7 +8,7 @@ import type { MenuItemGroup } from '@blocksuite/affine-components/toolbar';
 
 import { isPeekable, peek } from '@blocksuite/affine-components/peek';
 import { TelemetryProvider } from '@blocksuite/affine-shared/services';
-import { Bound, getCommonBoundWithRotation } from '@blocksuite/global/utils';
+import { Bound } from '@blocksuite/global/utils';
 import {
   ArrowDownBigBottomIcon,
   ArrowDownBigIcon,
@@ -31,13 +31,10 @@ import type { ImageBlockComponent } from '../../../../image-block/image-block.js
 import type { ElementToolbarMoreMenuContext } from './context.js';
 
 import {
-  createLinkedDocFromEdgelessElements,
   createLinkedDocFromNote,
-  notifyDocCreated,
   promptDocTitle,
 } from '../../../../_common/utils/render-linked-doc.js';
 import { duplicate } from '../../../edgeless/utils/clipboard-utils.js';
-import { getSortedCloneElements } from '../../../edgeless/utils/clone-utils.js';
 import { moveConnectors } from '../../../edgeless/utils/connector.js';
 import { deleteElements } from '../../../edgeless/utils/crud.js';
 
@@ -297,74 +294,6 @@ export const conversionsGroup: MenuItemGroup<ElementToolbarMoreMenuContext> = {
         });
       },
       when: ctx => !!ctx.getNoteBlock(),
-    },
-    {
-      icon: LinkedPageIcon({ width: '20', height: '20' }),
-      label: 'Create linked doc',
-      type: 'create-linked-doc',
-      action: async ({
-        doc,
-        selection,
-        service,
-        surface,
-        edgeless,
-        host,
-        std,
-      }) => {
-        const title = await promptDocTitle(host);
-        if (title === null) return;
-
-        const elements = getSortedCloneElements(selection.selectedElements);
-        const linkedDoc = createLinkedDocFromEdgelessElements(
-          host,
-          elements,
-          title
-        );
-        // delete selected elements
-        doc.transact(() => {
-          deleteElements(edgeless, elements);
-        });
-        // insert linked doc card
-        const width = 364;
-        const height = 390;
-        const bound = getCommonBoundWithRotation(elements);
-        const cardId = service.addBlock(
-          'affine:embed-linked-doc',
-          {
-            xywh: `[${bound.center[0] - width / 2}, ${bound.center[1] - height / 2}, ${width}, ${height}]`,
-            style: 'vertical',
-            pageId: linkedDoc.id,
-          },
-          surface.model.id
-        );
-        selection.set({
-          elements: [cardId],
-          editing: false,
-        });
-        std.getOptional(TelemetryProvider)?.track('CanvasElementAdded', {
-          control: 'context-menu',
-          page: 'whiteboard editor',
-          module: 'toolbar',
-          segment: 'toolbar',
-          type: 'embed-linked-doc',
-        });
-        std.getOptional(TelemetryProvider)?.track('DocCreated', {
-          control: 'create linked doc',
-          page: 'whiteboard editor',
-          module: 'format toolbar',
-          type: 'embed-linked-doc',
-        });
-        std.getOptional(TelemetryProvider)?.track('LinkedDocCreated', {
-          control: 'create linked doc',
-          page: 'whiteboard editor',
-          module: 'format toolbar',
-          type: 'embed-linked-doc',
-          other: 'new doc',
-        });
-
-        notifyDocCreated(host, doc);
-      },
-      when: ctx => !(ctx.getLinkedDocBlock() || ctx.getNoteBlock()),
     },
   ],
 };

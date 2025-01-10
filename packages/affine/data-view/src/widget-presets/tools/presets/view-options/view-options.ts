@@ -122,7 +122,7 @@ const createSettingMenus = (
     const filterCount = filterTrait.filter$.value.conditions.length;
     settingItems.push(
       menu.action({
-        name: 'Filter',
+        name: 'Filtrar',
         prefix: FilterIcon(),
         postfix: html` <div style="font-size: 14px;">
             ${filterCount === 0
@@ -249,7 +249,7 @@ export const popViewOptions = (
           postfix: html` <div
               style="font-size: 14px;text-transform: capitalize;"
             >
-              ${view.type}
+              ${view.type === 'table' ? 'tabla' : 'kanban'}
             </div>
             ${ArrowRightSmallIcon()}`,
           select: () => {
@@ -307,7 +307,7 @@ export const popViewOptions = (
               options: {
                 title: {
                   onBack: reopen,
-                  text: 'Layout',
+                  text: 'Diseño',
                 },
                 items: [
                   menu => {

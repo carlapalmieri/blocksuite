@@ -134,7 +134,7 @@ export function createLinkedDocMenuGroup(
         : 'No se encontraron notas para enlazar',
     items: docs,
     maxDisplay: MAX_DOCS,
-    overflowText: `${filteredDocList.length - MAX_DOCS} more docs`,
+    overflowText: `${filteredDocList.length - MAX_DOCS} nota${filteredDocList.length - MAX_DOCS > 1 ? 's' : ''} más`,
   };
 }
 

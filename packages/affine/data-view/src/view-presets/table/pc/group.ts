@@ -112,7 +112,7 @@ export class TableGroup extends SignalWatcher(
     const ele = e.currentTarget as HTMLElement;
     popFilterableSimpleMenu(popupTargetFromElement(ele), [
       menu.action({
-        name: 'Ungroup',
+        name: 'Desagrupar',
         hide: () => group.value == null,
         select: () => {
           group.rows.forEach(id => {
@@ -121,7 +121,7 @@ export class TableGroup extends SignalWatcher(
         },
       }),
       menu.action({
-        name: 'Delete Cards',
+        name: 'Eliminar tarjetas',
         select: () => {
           this.view.rowDelete(group.rows);
         },
@@ -272,7 +272,7 @@ export class TableGroup extends SignalWatcher(
               data-test-id="affine-database-add-row-button"
               role="button"
             >
-              ${PlusIcon()}<span style="font-size: 12px">New Record</span>
+              ${PlusIcon()}<span style="font-size: 12px">Nuevo registro</span>
             </div>
           </div>`}
       <affine-database-column-stats .view="${this.view}" .group="${this.group}">
