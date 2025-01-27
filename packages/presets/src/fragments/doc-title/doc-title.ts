@@ -48,7 +48,7 @@ export class DocTitle extends WithDisposable(ShadowlessElement) {
     }
 
     .doc-title-container-empty::before {
-      content: 'Título';
+      content: 'Sin título';
       color: var(--affine-placeholder-color);
       position: absolute;
       opacity: 0.5;

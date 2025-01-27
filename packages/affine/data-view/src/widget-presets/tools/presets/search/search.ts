@@ -166,12 +166,20 @@ export class DataViewHeaderToolsSearch extends WidgetBase<
                 alignItems: 'center',
                 boxSizing: 'border-box',
                 padding: '2px 6px',
+                marginRight: '2px',
                 borderRadius: '4px',
                 background: 'var(--affine-white-10)',
               })}
               >Escape</span
             >
-            para borrar todo
+            <span
+              style=${styleMap({
+                display: 'flex',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+              })}
+              >para borrar todo</span
+            >
           </affine-tooltip>
         </div>
       </label>
