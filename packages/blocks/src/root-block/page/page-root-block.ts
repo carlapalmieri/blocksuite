@@ -174,9 +174,7 @@ export class PageRootBlockComponent extends BlockComponent<
 
   get viewportElement(): HTMLDivElement | null {
     if (this._viewportElement) return this._viewportElement;
-    this._viewportElement = this.host.closest(
-      '.affine-page-viewport'
-    ) as HTMLDivElement | null;
+    this._viewportElement = getScrollContainer(this) as HTMLDivElement;
     return this._viewportElement;
   }
 

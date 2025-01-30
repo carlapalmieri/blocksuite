@@ -97,6 +97,12 @@ export class AffinePageDraggingAreaWidget extends WidgetComponent<
     top = Math.max(top, conY - viewportTop);
     bottom = Math.min(bottom, scrollHeight);
 
+    const viewPort = this.scrollContainer.getElementsByClassName(
+      'affine-page-viewport'
+    )[0] as HTMLDivElement;
+
+    const containerTop = viewPort.offsetTop - this.scrollContainer.offsetTop;
+
     const userRect = {
       left,
       top,
@@ -110,6 +116,7 @@ export class AffinePageDraggingAreaWidget extends WidgetComponent<
       width: userRect.width,
       height: userRect.height,
     });
+    this.rect.top -= containerTop;
     this._lastPointerState = state;
 
     if (shouldAutoScroll) {

@@ -1,6 +1,10 @@
 export const getScrollContainer = (ele: HTMLElement) => {
   let container: HTMLElement | null = ele;
-  while (container && !isScrollable(container)) {
+  while (
+    container &&
+    (!isScrollable(container) ||
+      container.classList.contains('affine-page-viewport'))
+  ) {
     container = container.parentElement;
   }
   return container ?? document.body;
